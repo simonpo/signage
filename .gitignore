@@ -1,0 +1,18 @@
+# Secrets & credentials
+tv-token.txt
+*.txt
+
+# Generated / runtime files
+uploaded.json
+*.log
+__pycache__/
+*.pyc
+
+# Virtual env (if you commit it — usually don't)
+signage-env/
+env/
+venv/
+
+# IDE files
+.vscode/
+.idea/
