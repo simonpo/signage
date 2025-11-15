@@ -1,52 +1,68 @@
-# Samsung Frame TV Signage
+# 🖼️ Samsung Frame TV Signage
 
-Generates and uploads dynamic signage images to a Samsung Frame TV in Art Mode.
+Automatically generates and uploads dynamic signage images to your Samsung Frame TV in Art Mode.
 
-## Features
+---
 
-- Fetches real-time data from Home Assistant (Tesla battery/range)
-- Pulls weather and stock quotes
-- Renders high-resolution 4K images with gradient background
-- Securely uploads via `samsungtvws` (2024+ Frame support)
-- All secrets stored in `.env` (never committed)
+## 🚀 Features
 
-## Quick Start
+- Real-time data from Home Assistant (Tesla battery/range)
+- Live weather and stock quotes
+- 4K image rendering with gradient backgrounds
+- Secure uploads via [`samsungtvws`](https://github.com/NickWaterton/samsung-tv-ws-api) (supports 2024+ Samsung Frame)
+- Secrets stored in `.env` (never committed to git)
 
-```bash
-git clone https://github.com/simonpo/signage.git
-cd signage
+---
 
-# 1. Copy template
-cp .env.example .env
+## ⚡ Quick Start
 
-# 2. Edit with your values
-nano .env
-#    - TV_IP, HA_URL, HA_TOKEN
-#    - API keys, entities
+1. **Clone the repository**
+    ```bash
+    git clone https://github.com/simonpo/signage.git
+    cd signage
+    ```
 
-# 3. Install
-pip install -r requirements.txt
+2. **Set up your environment**
+    - Copy the `.env` example and add your configuration:
+      ```bash
+      cp .env.example .env
+      nano .env       # Edit TV_IP, HA_URL, HA_TOKEN, API keys, entities, etc.
+      ```
 
-# 4. Run
-python generate_signage.py   # creates images
-python upload_to_frame.py    # uploads to TV
+3. **Install dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-## Files
+4. **Generate & upload images**
+    ```bash
+    python generate_signage.py   # Generates new images in art_folder/
+    python upload_to_frame.py    # Uploads images to your TV
+    ```
 
-- `generate_signage.py` — creates images in `art_folder/`
-- `upload_to_frame.py`   — uploads new images to TV
-- `.env`                 — **your secrets** (git-ignored)
-- `.env.example`         — template
-- `requirements.txt`     — locked dependencies
+---
 
-## Security
+## 📁 Project Structure
 
-- **Never commit `.env`**
-- Use long-lived HA token (Profile → Long-Lived Access Tokens)
+- `generate_signage.py` — Create images in `art_folder/`
+- `upload_to_frame.py` — Upload images to Frame TV
+- `.env` — Your configuration & secrets (**never commit!**)
+- `.env.example` — Safe template to copy & edit
+- `requirements.txt` — Locked Python dependencies
+
+---
+
+## 🔒 Security
+
+- **Never commit your `.env` file!**
+- Use long-lived HA tokens ([Profile → Long-Lived Access Tokens](https://www.home-assistant.io/docs/authentication/#long-lived-access-tokens))
 - Rotate API keys regularly
 
-## Chapeau!
+---
+
+## 🙏 Credits
 
 - **Samsung TV WebSocket API**:  
-  [Nick Waterton’s `samsung-tv-ws-api` fork](https://github.com/NickWaterton/samsung-tv-ws-api)  
-  Critical for 2024+ Frame TV Art Mode support. Thank you, Nick!
+  Thanks to [Nick Waterton’s `samsung-tv-ws-api` fork](https://github.com/NickWaterton/samsung-tv-ws-api) for critical support of 2024+ Frame TV Art Mode.
+
+---
