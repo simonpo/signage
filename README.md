@@ -29,8 +29,10 @@ Automatically generates and uploads dynamic signage images to your Samsung Frame
       nano .env       # Edit TV_IP, HA_URL, HA_TOKEN, API keys, entities, etc.
       ```
 
-3. **Install dependencies**
+3. **Setup Virtual Environment and Install dependencies**
     ```bash
+    python3 -m venv signage-env
+    source signage-env/bin/activate
     pip install -r requirements.txt
     ```
 
