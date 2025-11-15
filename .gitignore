@@ -1,13 +1,19 @@
-# === YOUR CUSTOM EXCLUSIONS ===
+# === CUSTOM EXCLUSIONS ===
 .specstory/
-art_folder/
 test_tesla.py
 tv-token.txt
 uploaded.json
 
+# === OUTPUT DIRECTORY (placeholder only) ===
+# Keep folder, block all contents except .gitkeep
+art_folder/
+art_folder/*
+!art_folder/
+!art_folder/.gitkeep
+
 # === Python & Dev ===
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 *.log
@@ -34,11 +40,3 @@ ENV/
 *.tmp
 *.bak
 *.swp
-art_folder/*
-
-# Block all files in art_folder/
-art_folder/*
-# But keep the folder itself
-!art_folder/
-# Keep .gitkeep so folder stays in Git
-!art_folder/.gitkeep
