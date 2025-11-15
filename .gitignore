@@ -35,3 +35,10 @@ ENV/
 *.bak
 *.swp
 art_folder/*
+
+# Block all files in art_folder/
+art_folder/*
+# But keep the folder itself
+!art_folder/
+# Keep .gitkeep so folder stays in Git
+!art_folder/.gitkeep
