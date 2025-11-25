@@ -45,3 +45,4 @@ ENV/
 *.tmp
 *.bak
 *.swp
+REFACTORING_COMPLETE.md

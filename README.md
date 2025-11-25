@@ -1,70 +1,88 @@
-# 🖼️ Samsung Frame TV Signage
+# Samsung Frame TV Signage
 
-Automatically generates and uploads dynamic signage images to your Samsung Frame TV in Art Mode.
+Generates data-driven images for display on Samsung Frame TVs in Art Mode. Still very much a work in progress.
 
----
+## What it does
 
-## 🚀 Features
+Fetches data from various sources (weather APIs, personal weather stations, ferry schedules, speedtest trackers, etc.) and renders them as 4K images with configurable backgrounds. These can be uploaded to a Samsung Frame TV to display alongside regular artwork.
 
-- Real-time data from Home Assistant (Tesla battery/range)
-- Live weather and stock quotes
-- 4K image rendering with gradient backgrounds
-- Secure uploads via [`samsungtvws`](https://github.com/NickWaterton/samsung-tv-ws-api) (supports 2024+ Samsung Frame)
-- Secrets stored in `.env` (never committed to git)
+The layout engine needs significant work and many planned topics haven't been implemented yet. See `ROADMAP.md` for what's planned.
 
----
+## Available topics
 
-## ⚡ Quick Start
+- `weather` - OpenWeatherMap data with expanded conditions
+- `ambient` - Personal Ambient Weather station data
+- `sensors` - Multi-sensor view from Ambient Weather (greenhouse, chicken coop, etc.)
+- `ferry` - WSDOT ferry schedules (Fauntleroy/Southworth route)
+- `speedtest` - Local speedtest tracker results
+- `tesla` - Home Assistant integration (battery, range)
+- `stock` - Stock quotes
+- `whales` - Marine traffic (when implemented)
+- `sports` - Sports scores (partially implemented)
 
-1. **Clone the repository**
-    ```bash
-    git clone https://github.com/simonpo/signage.git
-    cd signage
-    ```
+Run `python generate_signage.py --source <topic>` to generate an image, or `--source all` for everything.
 
-2. **Set up your environment**
-    - Copy the `.env` example and add your configuration:
-      ```bash
-      cp .env.example .env
-      nano .env       # Edit TV_IP, HA_URL, HA_TOKEN, API keys, entities, etc.
-      ```
+## Setup
 
-3. **Setup Virtual Environment and Install dependencies**
-    ```bash
-    python3 -m venv signage-env
-    source signage-env/bin/activate
-    pip install -r requirements.txt
-    ```
+1. Clone and create a virtual environment:
+   ```bash
+   git clone https://github.com/simonpo/signage.git
+   cd signage
+   ./scripts/setup.sh
+   ```
 
-4. **Generate & upload images**
-    ```bash
-    python generate_signage.py   # Generates new images in art_folder/
-    python upload_to_frame.py    # Uploads images to your TV
-    ```
+2. Configure your environment:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys, URLs, and tokens
+   ```
 
----
+3. Generate an image:
+   ```bash
+   source signage-env/bin/activate
+   python generate_signage.py --source weather
+   ```
 
-## 📁 Project Structure
+4. Upload to your TV (optional):
+   ```bash
+   python upload_to_frame.py
+   ```
 
-- `generate_signage.py` — Create images in `art_folder/`
-- `upload_to_frame.py` — Upload images to Frame TV
-- `.env` — Your configuration & secrets (**never commit!**)
-- `.env.example` — Safe template to copy & edit
-- `requirements.txt` — Locked Python dependencies
+## Configuration
 
----
+All configuration is done via environment variables in `.env`. See `.env.example` for the full list of options. Key settings:
 
-## 🔒 Security
+- API keys for OpenWeatherMap, Ambient Weather, etc.
+- Background mode (`local`, `pexels`, `unsplash`, or `gradient`)
+- Topic-specific settings (sensor names, ferry routes, etc.)
 
-- **Never commit your `.env` file!**
-- Use long-lived HA tokens ([Profile → Long-Lived Access Tokens](https://www.home-assistant.io/docs/authentication/#long-lived-access-tokens))
-- Rotate API keys regularly
+Don't commit your `.env` file.
 
----
+## Project structure
 
-## 🙏 Credits
+```
+src/
+  clients/        - API clients for data sources
+  models/         - Data models and signage content
+  renderers/      - Image rendering and layouts
+  backgrounds/    - Background providers
+  utils/          - File management, caching
+backgrounds/      - Local background images organised by topic
+art_folder/       - Generated images (gitignored)
+```
 
-- **Samsung TV WebSocket API**:  
-  Thanks to [Nick Waterton’s `samsung-tv-ws-api` fork](https://github.com/NickWaterton/samsung-tv-ws-api) for critical support of 2024+ Frame TV Art Mode.
+## Scheduling
 
----
+Run `./scripts/setup_cron.sh` to configure automated generation. Edit the script first to set which topics you want and how often.
+
+## Known issues
+
+- Layout engine uses fixed spacing that doesn't adapt well to content length
+- Some topics (whales, sports) are partially implemented
+- Ferry layout could be improved
+- No support for multiple weather locations yet
+- Background image selection is basic
+
+## Credits
+
+Uses [Nick Waterton's samsung-tv-ws-api fork](https://github.com/NickWaterton/samsung-tv-ws-api) for uploads to 2024+ Frame TVs.
