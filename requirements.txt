@@ -1,3 +1,17 @@
+# Core dependencies
+requests>=2.31.0
+python-dotenv>=1.0.0
+pytz>=2023.3
+
+# Web scraping and automation
+playwright>=1.40.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# HTTP client with retry support
+urllib3>=2.0.0
+
+# Samsung TV integration (from existing requirements)
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.2
 aiosignal==1.4.0
@@ -11,7 +25,7 @@ cryptography==46.0.3
 frozenlist==1.8.0
 idna==3.11
 multidict==6.7.0
-pillow==12.0.0
+pillow==11.3.0
 propcache==0.4.1
 py3rijndael==0.3.3
 pycparser==2.23

@@ -1,47 +1,28 @@
 #!/usr/bin/env python3
 """
-Generate signage images from HA, Weather, Stock.
-All config from .env — NO SECRETS IN CODE.
+Generate signage images for Samsung Frame TV.
+Modular architecture with clean separation of concerns.
 """
 
-import json
+import argparse
 import logging
-import os
-import random
-from datetime import datetime
-from pathlib import Path
+import sys
+from typing import Optional
 
-import pytz
-import requests
-from dotenv import load_dotenv
-from PIL import Image, ImageDraw, ImageFont
-
-# === LOAD .env ===
-load_dotenv()
-
-# === CONFIG FROM .env ===
-HA_URL = os.getenv("HA_URL")
-HA_TOKEN = os.getenv("HA_TOKEN")
-TESLA_BATTERY = os.getenv("TESLA_BATTERY")
-TESLA_RANGE = os.getenv("TESLA_RANGE")
-WEATHER_CITY = os.getenv("WEATHER_CITY")
-WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
-STOCK_SYMBOL = os.getenv("STOCK_SYMBOL")
-STOCK_API_KEY = os.getenv("STOCK_API_KEY")
-OUTPUT_DIR = os.getenv("OUTPUT_DIR", "art_folder")
-FONT_PATH = os.getenv("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
-TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
-
-# === VALIDATE REQUIRED ===
-required = ["HA_URL", "HA_TOKEN", "TESLA_BATTERY", "TESLA_RANGE", "WEATHER_CITY", "WEATHER_API_KEY"]
-missing = [v for v in required if not os.getenv(v)]
-if missing:
-    raise RuntimeError(f"Missing .env vars: {', '.join(missing)}")
-
-# === PATHS ===
-BASE_DIR = Path(__file__).parent.resolve()
-OUTPUT_PATH = BASE_DIR / OUTPUT_DIR
-os.makedirs(OUTPUT_PATH, exist_ok=True)
+from src.clients.ferry import FerryClient
+from src.clients.homeassistant import HomeAssistantClient
+from src.clients.marine_traffic import MarineTrafficClient
+from src.clients.sports.nfl import NFLClient
+from src.clients.stock import StockClient
+from src.clients.weather import WeatherClient
+from src.clients.ambient_weather import AmbientWeatherClient
+from src.clients.speedtest import SpeedtestClient
+from src.clients.whale_tracker import WhaleTrackerClient
+from src.config import Config
+from src.models.signage_data import TeslaData
+from src.renderers.image_renderer import SignageRenderer
+from src.renderers.map_renderer import MapRenderer
+from src.utils.file_manager import FileManager
 
 # === LOGGING ===
 logging.basicConfig(
@@ -50,129 +31,427 @@ logging.basicConfig(
     datefmt="%H:%M:%S"
 )
 
-# === TIME ===
-try:
-    tz = pytz.timezone(TIMEZONE)
-    now = datetime.now(tz)
-except Exception as e:
-    logging.warning(f"Invalid timezone {TIMEZONE}: {e}. Using UTC.")
-    tz = pytz.UTC
-    now = datetime.now(tz)
+logger = logging.getLogger(__name__)
+
+logger = logging.getLogger(__name__)
 
 
-# === HA FETCH ===
-def fetch_ha(entity_id):
-    headers = {
-        "Authorization": f"Bearer {HA_TOKEN}",
-        "Content-Type": "application/json"
-    }
+# === GENERATOR FUNCTIONS ===
+
+def generate_tesla(
+    renderer: SignageRenderer,
+    ha_client: HomeAssistantClient,
+    file_mgr: FileManager
+) -> None:
+    """Generate Tesla signage."""
     try:
-        url = f"{HA_URL.rstrip('/')}/api/states/{entity_id}"
-        r = requests.get(url, headers=headers, timeout=10)
-        r.raise_for_status()
-        data = r.json()
-        return data.get("state", "N/A"), data.get("attributes", {})
+        logger.info("Generating Tesla signage...")
+        
+        # Fetch data from Home Assistant
+        batt, battr = ha_client.get_entity_state(Config.TESLA_BATTERY)
+        rng, rattr = ha_client.get_entity_state(Config.TESLA_RANGE)
+        
+        # Create data model
+        tesla_data = TeslaData(
+            battery_level=batt,
+            battery_unit=battr.get("unit_of_measurement", "%"),
+            range=rng,
+            range_unit=rattr.get("unit_of_measurement", " mi")
+        )
+        
+        # Convert to signage content
+        content = tesla_data.to_signage()
+        
+        # Get output path and timestamp
+        timestamp = Config.get_current_time()
+        output_path = file_mgr.get_file_path("tesla", timestamp)
+        
+        # Render
+        renderer.render(content, output_path, timestamp)
+        
+        # Cleanup old files
+        file_mgr.cleanup_old_files("tesla")
+        
+        logger.info("✓ Tesla signage complete")
+    
     except Exception as e:
-        logging.error(f"HA fetch failed for {entity_id}: {e}")
-        return "N/A", {}
+        logger.error(f"Failed to generate Tesla signage: {e}")
 
 
-# === CREATE IMAGE ===
-def create_signage(lines, filename):
-    img = Image.new("RGB", (3840, 2160), (30, 30, 80))
-    draw = ImageDraw.Draw(img)
-
-    # Gradient background
-    for y in range(2160):
-        r = int(30 + (y / 2160) * 100)
-        g = int(30 + (y / 2160) * 150)
-        b = int(80 + (y / 2160) * 175)
-        draw.line([(0, y), (3840, y)], fill=(r, g, b))
-
-    # Fonts
+def generate_weather(
+    renderer: SignageRenderer,
+    weather_client: WeatherClient,
+    file_mgr: FileManager
+) -> None:
+    """Generate weather signage."""
     try:
-        font_title = ImageFont.truetype(FONT_PATH, 180)
-        font_body = ImageFont.truetype(FONT_PATH, 120)
-        font_small = ImageFont.truetype(FONT_PATH, 80)
+        logger.info("Generating weather signage...")
+        
+        # Fetch weather data
+        weather_data = weather_client.get_weather()
+        
+        if not weather_data:
+            logger.warning("No weather data available")
+            return
+        
+        # Convert to signage content
+        content = weather_data.to_signage()
+        
+        # Get output path and timestamp
+        timestamp = Config.get_current_time()
+        output_path = file_mgr.get_file_path("weather", timestamp)
+        
+        # Render
+        renderer.render(content, output_path, timestamp)
+        
+        # Cleanup
+        file_mgr.cleanup_old_files("weather")
+        
+        logger.info("✓ Weather signage complete")
+    
     except Exception as e:
-        logging.warning(f"Font load failed: {e}. Using default.")
-        font_title = font_body = font_small = ImageFont.load_default()
+        logger.error(f"Failed to generate weather signage: {e}")
 
-    # Draw lines
-    y = 400
-    for line in lines:
-        bbox = draw.textbbox((0, 0), line, font=font_body)
-        x = (3840 - bbox[2]) / 2
-        draw.text((x, y), line, fill=(255, 255, 255), font=font_body)
-        y += 220
 
-    # Timestamp
-    ts = f"Updated: {now.strftime('%m/%d %I:%M %p %Z')}"
-    bbox = draw.textbbox((0, 0), ts, font=font_small)
-    x = (3840 - bbox[2]) / 2
-    draw.text((x, 1850), ts, fill=(200, 200, 255), font=font_small)
+def generate_ambient_weather(
+    renderer: SignageRenderer,
+    ambient_client: AmbientWeatherClient,
+    file_mgr: FileManager
+) -> None:
+    """Generate Ambient Weather station signage."""
+    try:
+        logger.info("Generating Ambient Weather signage...")
+        
+        # Fetch data from personal weather station
+        ambient_data = ambient_client.get_weather()
+        
+        if not ambient_data:
+            logger.warning("No Ambient Weather data available")
+            return
+        
+        # Convert to signage content
+        content = ambient_data.to_signage()
+        
+        # Get output path and timestamp
+        timestamp = Config.get_current_time()
+        output_path = file_mgr.get_file_path("ambient", timestamp)
+        
+        # Render
+        renderer.render(content, output_path, timestamp)
+        
+        # Cleanup
+        file_mgr.cleanup_old_files("ambient")
+        
+        logger.info("✓ Ambient Weather signage complete")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate Ambient Weather signage: {e}")
 
-    # Save
-    path = OUTPUT_PATH / filename
-    img.save(path, "JPEG", quality=95)
-    logging.info(f"Saved: {path}")
-    return path
+
+def generate_ambient_sensors(
+    renderer: SignageRenderer,
+    ambient_client: AmbientWeatherClient,
+    file_mgr: FileManager
+) -> None:
+    """Generate multi-sensor display showing all Ambient Weather sensors."""
+    try:
+        logger.info("Generating Ambient Weather multi-sensor display...")
+        
+        # Fetch all sensor data
+        sensor_data = ambient_client.get_all_sensors()
+        
+        if not sensor_data:
+            logger.warning("No Ambient Weather sensor data available")
+            return
+        
+        # Convert to signage content
+        content = sensor_data.to_signage()
+        
+        # Get output path and timestamp
+        timestamp = Config.get_current_time()
+        output_path = file_mgr.get_file_path("sensors", timestamp)
+        
+        # Render
+        renderer.render(content, output_path, timestamp)
+        
+        # Cleanup
+        file_mgr.cleanup_old_files("sensors")
+        
+        logger.info(f"✓ Multi-sensor display complete ({len(sensor_data.sensors)} sensors)")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate multi-sensor display: {e}")
+
+
+def generate_speedtest(
+    renderer: SignageRenderer,
+    speedtest_client: SpeedtestClient,
+    file_mgr: FileManager
+) -> None:
+    """Generate speedtest signage."""
+    try:
+        logger.info("Generating speedtest signage...")
+        
+        # Fetch latest speedtest data
+        speedtest_data = speedtest_client.get_latest()
+        
+        if not speedtest_data:
+            logger.warning("No speedtest data available")
+            return
+        
+        # Convert to signage content
+        content = speedtest_data.to_signage()
+        
+        # Get output path and timestamp
+        timestamp = Config.get_current_time()
+        output_path = file_mgr.get_file_path("speedtest", timestamp)
+        
+        # Render
+        renderer.render(content, output_path, timestamp)
+        
+        # Cleanup
+        file_mgr.cleanup_old_files("speedtest")
+        
+        logger.info(f"✓ Speedtest signage complete: {speedtest_data.download:.1f} Mbps down")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate speedtest signage: {e}")
+
+
+def generate_stock(
+    renderer: SignageRenderer,
+    stock_client: StockClient,
+    file_mgr: FileManager
+) -> None:
+    """Generate stock quote signage."""
+    try:
+        logger.info("Generating stock signage...")
+        
+        # Fetch stock data
+        stock_data = stock_client.get_quote()
+        
+        if not stock_data:
+            logger.warning("No stock data available")
+            return
+        
+        # Convert to signage content
+        content = stock_data.to_signage()
+        
+        # Get output path and timestamp
+        timestamp = Config.get_current_time()
+        output_path = file_mgr.get_file_path("stock", timestamp)
+        
+        # Render
+        renderer.render(content, output_path, timestamp)
+        
+        # Cleanup
+        file_mgr.cleanup_old_files("stock")
+        
+        logger.info("✓ Stock signage complete")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate stock signage: {e}")
+
+
+def generate_ferry(
+    renderer: SignageRenderer,
+    ferry_client: FerryClient,
+    file_mgr: FileManager
+) -> None:
+    """Generate ferry schedule signage."""
+    try:
+        logger.info("Generating ferry signage...")
+        
+        # Fetch ferry data
+        ferry_data = ferry_client.get_ferry_data()
+        
+        if not ferry_data:
+            logger.warning("No ferry data available")
+            return
+        
+        # Render ferry map if we have vessel data
+        map_path = None
+        if ferry_data.vessels:
+            map_renderer = MapRenderer()
+            ferry_map = map_renderer.render_ferry_map(ferry_data.vessels)
+            
+            # Save map temporarily
+            map_path = Config.CACHE_PATH / "ferry_map_temp.jpg"
+            ferry_map.save(map_path, "JPEG", quality=95)
+        
+        # Convert to signage content
+        content = ferry_data.to_signage(map_path)
+        
+        # Get output path and timestamp
+        timestamp = Config.get_current_time()
+        output_path = file_mgr.get_file_path("ferry", timestamp)
+        
+        # Render (will composite map onto right half if map_path provided)
+        renderer.render(content, output_path, timestamp)
+        
+        # Cleanup
+        file_mgr.cleanup_old_files("ferry")
+        
+        logger.info("✓ Ferry signage complete")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate ferry signage: {e}")
+
+
+def generate_whales(
+    renderer: SignageRenderer,
+    whale_client: WhaleTrackerClient,
+    file_mgr: FileManager
+) -> None:
+    """Generate whale sighting signage."""
+    try:
+        logger.info("Generating whale sightings signage...")
+        
+        # Fetch whale data
+        whale_data = whale_client.get_sightings()
+        
+        if not whale_data:
+            logger.warning("No whale data available")
+            return
+        
+        # Convert to signage content
+        content = whale_data.to_signage()
+        
+        # Get output path and timestamp
+        timestamp = Config.get_current_time()
+        output_path = file_mgr.get_file_path("whales", timestamp)
+        
+        # Render
+        renderer.render(content, output_path, timestamp)
+        
+        # Cleanup
+        file_mgr.cleanup_old_files("whales")
+        
+        logger.info("✓ Whale signage complete")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate whale signage: {e}")
+
+
+def generate_sports(
+    renderer: SignageRenderer,
+    file_mgr: FileManager,
+    sport_type: str = "all"
+) -> None:
+    """Generate sports signage for enabled teams."""
+    try:
+        logger.info(f"Generating sports signage ({sport_type})...")
+        
+        generated = 0
+        
+        # NFL / Seahawks
+        if (sport_type in ["all", "nfl"]) and Config.SEAHAWKS_ENABLED:
+            try:
+                nfl_client = NFLClient()
+                sports_data = nfl_client.get_team_data()
+                
+                if sports_data:
+                    content = sports_data.to_signage()
+                    timestamp = Config.get_current_time()
+                    output_path = file_mgr.get_file_path("nfl_seahawks", timestamp)
+                    
+                    renderer.render(content, output_path, timestamp)
+                    file_mgr.cleanup_old_files("nfl_seahawks")
+                    generated += 1
+            
+            except Exception as e:
+                logger.error(f"Failed to generate NFL signage: {e}")
+        
+        # TODO: Add Arsenal (football), Rugby, Cricket when implemented
+        
+        if generated > 0:
+            logger.info(f"✓ Sports signage complete ({generated} generated)")
+        else:
+            logger.warning("No sports teams enabled")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate sports signage: {e}")
 
 
 # === MAIN ===
+
 def main():
-    # 1. Tesla
-    batt, battr = fetch_ha(TESLA_BATTERY)
-    rng, rattr = fetch_ha(TESLA_RANGE)
-    unit_b = battr.get("unit_of_measurement", "%")
-    unit_r = rattr.get("unit_of_measurement", " mi")
-    create_signage([
-        "Tesla Model Y",
-        f"Battery: {batt}{unit_b}",
-        f"Range: {rng}{unit_r}"
-    ], f"tesla_{random.randint(1000,9999)}.jpg")
-
-    # 2. Weather
+    """Main entry point."""
+    parser = argparse.ArgumentParser(
+        description="Generate signage images for Samsung Frame TV"
+    )
+    parser.add_argument(
+        "--source",
+        choices=["all", "tesla", "weather", "ambient", "sensors", "speedtest", "stock", "ferry", "whales", "sports", "nfl"],
+        default="all",
+        help="Which signage to generate"
+    )
+    parser.add_argument(
+        "--daemon",
+        action="store_true",
+        help="Run in daemon mode with scheduler"
+    )
+    
+    args = parser.parse_args()
+    
+    # Validate configuration
     try:
-        url = f"http://api.openweathermap.org/data/2.5/weather"
-        params = {"q": WEATHER_CITY, "appid": WEATHER_API_KEY, "units": "imperial"}
-        r = requests.get(url, params=params, timeout=10)
-        r.raise_for_status()
-        w = r.json()
-        temp = w["main"]["temp"]
-        desc = w["weather"][0]["description"].title()
-        create_signage([
-            f"Weather in {WEATHER_CITY}",
-            f"{temp}°F",
-            desc
-        ], f"weather_{random.randint(1000,9999)}.jpg")
-    except Exception as e:
-        logging.error(f"Weather fetch failed: {e}")
-
-    # 3. Stock
-    if STOCK_API_KEY and STOCK_SYMBOL:
-        try:
-            url = "https://www.alphavantage.co/query"
-            params = {
-                "function": "GLOBAL_QUOTE",
-                "symbol": STOCK_SYMBOL,
-                "apikey": STOCK_API_KEY
-            }
-            r = requests.get(url, params=params, timeout=10)
-            r.raise_for_status()
-            s = r.json()
-            quote = s.get("Global Quote", {})
-            price = quote.get("05. price", "N/A")
-            change = quote.get("10. change percent", "N/A")
-            create_signage([
-                STOCK_SYMBOL,
-                f"${price}",
-                f"{change}"
-            ], f"stock_{random.randint(1000,9999)}.jpg")
-        except Exception as e:
-            logging.error(f"Stock fetch failed: {e}")
-
-    logging.info(f"Generated images in: {OUTPUT_PATH}")
+        Config.validate()
+    except RuntimeError as e:
+        logger.error(f"Configuration error: {e}")
+        sys.exit(1)
+    
+    # Initialize renderer and file manager
+    renderer = SignageRenderer()
+    file_mgr = FileManager()
+    
+    # Run generators based on source selection
+    if args.daemon:
+        # Import and run scheduler
+        from src.scheduler import SignageScheduler
+        
+        logger.info("Starting daemon mode...")
+        scheduler = SignageScheduler(renderer, file_mgr)
+        scheduler.run_daemon()
+    
+    else:
+        # One-time generation
+        if args.source in ["all", "tesla"]:
+            with HomeAssistantClient() as ha_client:
+                generate_tesla(renderer, ha_client, file_mgr)
+        
+        if args.source in ["all", "weather"]:
+            with WeatherClient() as weather_client:
+                generate_weather(renderer, weather_client, file_mgr)
+        
+        if args.source == "ambient":
+            with AmbientWeatherClient() as ambient_client:
+                generate_ambient_weather(renderer, ambient_client, file_mgr)
+        
+        if args.source == "sensors":
+            with AmbientWeatherClient() as ambient_client:
+                generate_ambient_sensors(renderer, ambient_client, file_mgr)
+        
+        if args.source == "speedtest":
+            with SpeedtestClient() as speedtest_client:
+                generate_speedtest(renderer, speedtest_client, file_mgr)
+        
+        if args.source in ["all", "stock"]:
+            with StockClient() as stock_client:
+                generate_stock(renderer, stock_client, file_mgr)
+        
+        if args.source in ["all", "ferry"]:
+            with FerryClient() as ferry_client:
+                generate_ferry(renderer, ferry_client, file_mgr)
+        
+        if args.source in ["all", "whales"]:
+            with WhaleTrackerClient() as whale_client:
+                generate_whales(renderer, whale_client, file_mgr)
+        
+        if args.source in ["all", "sports", "nfl"]:
+            generate_sports(renderer, file_mgr, sport_type=args.source)
+        
+        logger.info(f"All signage generation complete. Files in: {Config.OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

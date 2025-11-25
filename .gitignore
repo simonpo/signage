@@ -25,6 +25,11 @@ venv/
 .venv/
 ENV/
 
+# === Cache ===
+.cache/
+*.pyc
+.pytest_cache/
+
 # === IDE & Editor ===
 .vscode/
 .idea/
