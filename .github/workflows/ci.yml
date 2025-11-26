@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black ruff mypy
+          pip install -r requirements.txt
+      
+      - name: Run black
+        run: black --check --diff .
+      
+      - name: Run ruff
+        run: ruff check .
+      
+      - name: Run mypy
+        run: mypy src/ --ignore-missing-imports
+        continue-on-error: true  # Start permissive, enforce later
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+          pip install -r requirements.txt
+      
+      - name: Install Playwright browsers
+        run: playwright install chromium
+      
+      - name: Run tests
+        run: pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=xml
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  config-validation:
+    name: Config Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic pydantic-settings python-dotenv
+      
+      - name: Create test .env
+        run: |
+          cat > .env << 'ENVEOF'
+          HA_URL=http://test:8123
+          HA_TOKEN=test_token_12345678901234567890
+          TESLA_BATTERY=sensor.test_battery
+          TESLA_RANGE=sensor.test_range
+          WEATHER_CITY=TestCity
+          WEATHER_API_KEY=test_weather_key_123
+          ENVEOF
+      
+      - name: Validate configuration
+        run: python src/config_validator.py

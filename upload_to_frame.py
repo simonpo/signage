@@ -8,6 +8,7 @@ import json
 import logging
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 from samsungtvws import SamsungTVWS
 
@@ -35,24 +36,19 @@ LOG_PATH = BASE_DIR / UPLOADED_LOG
 
 # === LOGGING ===
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s",
-    datefmt="%H:%M:%S"
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s", datefmt="%H:%M:%S"
 )
 
 # === Suppress SSL warnings (safe on LAN) ===
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def main():
     # === STEP 1: Connect to TV ===
     try:
-        tv = SamsungTVWS(
-            host=TV_IP,
-            port=TV_PORT,
-            token_file=str(TOKEN_PATH)
-        )
+        tv = SamsungTVWS(host=TV_IP, port=TV_PORT, token_file=str(TOKEN_PATH))
         tv.open()
         logging.info(f"Connected to Samsung Frame TV at {TV_IP}:{TV_PORT}")
     except Exception as e:
@@ -76,7 +72,7 @@ def main():
     uploaded = set()
     if LOG_PATH.exists():
         try:
-            with open(LOG_PATH, 'r') as f:
+            with open(LOG_PATH) as f:
                 uploaded = set(json.load(f))
             logging.info(f"Loaded {len(uploaded)} previously uploaded files")
         except Exception as e:
@@ -92,16 +88,16 @@ def main():
     for file_path in ART_PATH.iterdir():
         if not file_path.is_file():
             continue
-        if not file_path.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+        if not file_path.name.lower().endswith((".jpg", ".jpeg", ".png")):
             continue
         if file_path.name in uploaded:
             continue
 
         try:
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 data = f.read()
 
-            file_type = 'JPEG' if file_path.suffix.lower() in {'.jpg', '.jpeg'} else 'PNG'
+            file_type = "JPEG" if file_path.suffix.lower() in {".jpg", ".jpeg"} else "PNG"
             art_id = art.upload(data, file_type=file_type)
             uploaded.add(file_path.name)
             new_uploads += 1
@@ -111,7 +107,7 @@ def main():
 
     # === STEP 5: Save updated log ===
     try:
-        with open(LOG_PATH, 'w') as f:
+        with open(LOG_PATH, "w") as f:
             json.dump(sorted(uploaded), f, indent=2)
     except Exception as e:
         logging.error(f"Failed to save {LOG_PATH}: {e}")
@@ -125,7 +121,7 @@ def main():
     try:
         available = art.available()
         if len(available) > 100:
-            old_ids = [item['id'] for item in available[:-100]]
+            old_ids = [item["id"] for item in available[:-100]]
             art.delete_list(old_ids)
             logging.info(f"Deleted {len(old_ids)} old artworks")
     except Exception as e:

@@ -7,8 +7,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from src.config import Config
-from src.models.signage_data import SignageContent, TeslaData
+from src.models.signage_data import TeslaData
 from src.renderers.image_renderer import SignageRenderer
 
 
@@ -25,49 +24,51 @@ def test_renderer_initialization():
 def test_render_tesla_signage():
     """Test rendering Tesla signage to exact dimensions."""
     renderer = SignageRenderer()
-    
+
     # Create test data
-    tesla_data = TeslaData(
-        battery_level="85",
-        battery_unit="%",
-        range="250",
-        range_unit=" mi"
-    )
-    
+    tesla_data = TeslaData(battery_level="85", battery_unit="%", range="250", range_unit=" mi")
+
     content = tesla_data.to_signage()
-    
+
     # Render to temp file
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
         output_path = Path(tmp.name)
-    
+
     try:
-        result = renderer.render(content, output_path)
-        
+        # render() now returns a list of paths (for multi-profile support)
+        results = renderer.render(content, filename=output_path.name)
+
+        # Get the first result path
+        assert len(results) > 0
+        result_path = Path(results[0])
+
         # Verify file exists
-        assert result.exists()
-        
+        assert result_path.exists()
+
         # Verify dimensions
-        img = Image.open(result)
+        img = Image.open(result_path)
         assert img.size == (3840, 2160)
         assert img.mode == "RGB"
-        
+
         img.close()
-    
+
     finally:
         # Cleanup
-        if output_path.exists():
-            output_path.unlink()
+        for result in results:
+            result_path = Path(result)
+            if result_path.exists():
+                result_path.unlink()
 
 
 def test_image_exact_dimensions():
     """Paranoid test: ensure all rendered images are EXACTLY 3840x2160."""
     from src.utils.image_utils import ensure_exact_size
-    
+
     # Create test image of wrong size
     img = Image.new("RGB", (1920, 1080))
-    
+
     # Correct it
     corrected = ensure_exact_size(img, 3840, 2160)
-    
+
     # Verify
     assert corrected.size == (3840, 2160)

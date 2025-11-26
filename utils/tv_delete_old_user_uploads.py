@@ -5,9 +5,10 @@ You choose the threshold in hours.
 """
 
 import os
+from datetime import datetime, timedelta
+
 from dotenv import load_dotenv
 from samsungtvws import SamsungTVWS
-from datetime import datetime, timedelta
 
 # --- Load .env variables ---
 load_dotenv()
@@ -18,11 +19,13 @@ TOKEN_FILE = os.getenv("TOKEN_FILE", "tv-token.txt")
 THRESHOLD_HOURS = 5  # Set your desired age threshold here
 AGE_LIMIT = timedelta(hours=THRESHOLD_HOURS)
 
+
 def parse_date(s):
     try:
         return datetime.strptime(s, "%Y:%m:%d %H:%M:%S")
     except Exception:
         return None
+
 
 def main():
     tv = SamsungTVWS(host=TV_IP, port=TV_PORT, token_file=TOKEN_FILE)
@@ -54,6 +57,7 @@ def main():
         print("Deletion complete.")
 
     tv.close()
+
 
 if __name__ == "__main__":
     main()
