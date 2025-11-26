@@ -86,6 +86,12 @@ class WeatherData:
     wind_speed: float
     wind_direction: int
     visibility: Optional[int] = None  # meters
+    cloudiness: Optional[int] = None  # percentage 0-100
+    pressure: Optional[int] = None  # hPa
+    sunrise: Optional[int] = None  # unix timestamp
+    sunset: Optional[int] = None  # unix timestamp
+    wind_gust: Optional[float] = None  # mph
+    rain_1h: Optional[float] = None  # mm in last hour
 
     def to_signage(self) -> SignageContent:
         """Convert to signage with beautiful multi-section layout."""
@@ -194,6 +200,9 @@ class AmbientWeatherData:
             condition = "rainy"
         elif self.dailyrainin > 0:
             condition = "cloudy"
+        elif self.solarradiation is not None and self.solarradiation == 0:
+            # Nighttime (no solar radiation) - use default/night background
+            condition = "default"
         else:
             condition = "sunny"
 
@@ -593,66 +602,6 @@ class FerryData:
             background_mode="local",
             background_query="ferry",
             map_image=map_path,
-        )
-
-
-@dataclass
-class MarineTrafficData:
-    """Marine traffic screenshot data."""
-
-    screenshot_path: Path
-    vessel_count: int
-    timestamp: datetime
-
-    def to_signage(self) -> SignageContent:
-        """
-        Marine traffic uses the screenshot as background.
-        Minimal text overlay with timestamp.
-        """
-        return SignageContent(
-            lines=[
-                "Puget Sound Marine Traffic",
-                f"Active Vessels: {self.vessel_count}",
-            ],
-            filename_prefix="marine",
-            layout_type="centered",
-            background_mode="local",
-            background_query=str(self.screenshot_path),
-        )
-
-
-@dataclass
-class WhaleData:
-    """Whale sighting information."""
-
-    sightings: list[dict]  # List of recent sightings
-    last_sighting_date: Optional[str] = None
-
-    def to_signage(self) -> SignageContent:
-        """Convert to signage with left-aligned sighting list."""
-        lines = ["Recent Whale Sightings"]
-
-        if not self.sightings:
-            lines.append("")
-            lines.append("No recent sightings")
-            if self.last_sighting_date:
-                lines.append(f"Last seen: {self.last_sighting_date}")
-        else:
-            for sighting in self.sightings[:5]:
-                date = sighting.get("date", "Unknown")
-                species = sighting.get("species", "Unknown")
-                location = sighting.get("location", "")
-                lines.append("")
-                lines.append(f"{date} - {species}")
-                if location:
-                    lines.append(f"  {location}")
-
-        return SignageContent(
-            lines=lines,
-            filename_prefix="whales",
-            layout_type="left",
-            background_mode="unsplash",
-            background_query="orca whale ocean",
         )
 
 

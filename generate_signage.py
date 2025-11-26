@@ -11,12 +11,10 @@ import sys
 from src.clients.ambient_weather import AmbientWeatherClient
 from src.clients.ferry import FerryClient
 from src.clients.homeassistant import HomeAssistantClient
-from src.clients.marine_traffic import MarineTrafficClient
 from src.clients.speedtest import SpeedtestClient
 from src.clients.sports.nfl import NFLClient
 from src.clients.stock import StockClient
 from src.clients.weather import WeatherClient
-from src.clients.whale_tracker import WhaleTrackerClient
 from src.config import Config
 from src.models.signage_data import TeslaData
 from src.renderers.image_renderer import SignageRenderer
@@ -315,9 +313,7 @@ def generate_ferry_map(
         ferry_map_img = map_renderer.render_full_map(ferry_map_data.vessels)
 
         # Save using OutputManager
-        timestamp = Config.get_current_time()
-        timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
-        filename = f"ferry_map_{timestamp_str}.png"
+        filename = "ferry_map.png"
 
         paths = output_manager.save_image(ferry_map_img, filename, source="ferry_map")
 
@@ -330,35 +326,6 @@ def generate_ferry_map(
     except Exception as e:
         logger.error(f"Failed to generate ferry map: {e}")
         raise
-
-
-def generate_whales(
-    renderer: SignageRenderer, whale_client: WhaleTrackerClient, file_mgr: FileManager
-) -> None:
-    """Generate whale sighting signage."""
-    try:
-        logger.info("Generating whale sightings signage...")
-
-        # Fetch whale data
-        whale_data = whale_client.get_sightings()
-
-        if not whale_data:
-            logger.warning("No whale data available")
-            return
-
-        # Convert to signage content
-        content = whale_data.to_signage()
-
-        # Render
-        _render_and_save(renderer, content, "whales")
-
-        # Cleanup
-        file_mgr.cleanup_old_files("whales")
-
-        logger.info("✓ Whale signage complete")
-
-    except Exception as e:
-        logger.error(f"Failed to generate whale signage: {e}")
 
 
 def generate_sports(
@@ -436,41 +403,6 @@ def generate_sports(
         logger.error(f"Failed to generate sports signage: {e}")
 
 
-def generate_marine(
-    marine_client: MarineTrafficClient, output_manager: OutputManager, file_mgr: FileManager
-) -> None:
-    """Generate marine traffic signage via screenshot."""
-    try:
-        logger.info("Generating marine traffic signage...")
-
-        # Capture marine traffic map
-        marine_data = marine_client.capture_map()
-
-        if not marine_data or not marine_data.screenshot_path:
-            logger.warning("No marine traffic data available")
-            return
-
-        # Load screenshot and save via OutputManager
-        from PIL import Image
-
-        marine_img = Image.open(marine_data.screenshot_path)
-
-        timestamp = Config.get_current_time()
-        timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
-        filename = f"marine_{timestamp_str}.png"
-
-        paths = output_manager.save_image(marine_img, filename, source="marine")
-
-        # Cleanup old files
-        file_mgr.cleanup_old_files("marine")
-
-        logger.info(f"✓ Marine traffic complete: {len(paths)} profile(s)")
-        logger.info(f"   Timestamp: {timestamp.strftime('%I:%M %p')}")
-
-    except Exception as e:
-        logger.error(f"Failed to generate marine traffic signage: {e}")
-
-
 # === MAIN ===
 
 
@@ -489,8 +421,6 @@ def main():
             "stock",
             "ferry",
             "ferry_map",
-            "marine",
-            "whales",
             "sports",
             "nfl",
             "arsenal",
@@ -562,13 +492,6 @@ def main():
             with FerryClient() as ferry_client:
                 generate_ferry_map(ferry_client, output_manager, file_mgr)
 
-        if args.source in ["all", "whales"]:
-            with WhaleTrackerClient() as whale_client:
-                generate_whales(renderer, whale_client, file_mgr)
-
-        if args.source in ["all", "marine"]:
-            marine_client = MarineTrafficClient()
-            generate_marine(marine_client, output_manager, file_mgr)
 
         if args.source in ["all", "sports", "nfl"]:
             generate_sports(renderer, file_mgr, sport_type=args.source)

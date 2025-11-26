@@ -67,14 +67,6 @@ class Config:
     FERRY_BG_MODE = os.getenv("FERRY_BG_MODE", "local")
     WSDOT_API_KEY = os.getenv("WSDOT_API_KEY")
 
-    # ===== Marine Traffic =====
-    MARINE_TRAFFIC_URL = os.getenv("MARINE_TRAFFIC_URL")
-    MARINE_TRAFFIC_USERNAME = os.getenv("MARINE_TRAFFIC_USERNAME")
-    MARINE_TRAFFIC_PASSWORD = os.getenv("MARINE_TRAFFIC_PASSWORD")
-
-    # ===== Whale Tracker =====
-    WHALE_TRACKER_URL = os.getenv("WHALE_TRACKER_URL", "https://whalemuseum.org/whale-sightings")
-
     # ===== Sports =====
     ARSENAL_ENABLED = os.getenv("ARSENAL_ENABLED", "false").lower() == "true"
     SEAHAWKS_ENABLED = os.getenv("SEAHAWKS_ENABLED", "false").lower() == "true"

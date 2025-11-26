@@ -13,7 +13,6 @@ from src.clients.homeassistant import HomeAssistantClient
 from src.clients.sports.nfl import NFLClient
 from src.clients.stock import StockClient
 from src.clients.weather import WeatherClient
-from src.clients.whale_tracker import WhaleTrackerClient
 from src.config import Config
 from src.renderers.image_renderer import SignageRenderer
 from src.utils.file_manager import FileManager
@@ -216,22 +215,6 @@ class SignageScheduler:
 
         except Exception as e:
             logger.error(f"Ferry generator failed: {e}")
-
-    def _check_and_run_whales(self) -> None:
-        """Check and run whale sightings generator."""
-        if not self.should_run("whales"):
-            return
-
-        try:
-            from generate_signage import generate_whales
-
-            with WhaleTrackerClient() as whale_client:
-                generate_whales(self.renderer, whale_client, self.file_mgr)
-
-            self.last_run["whales"] = datetime.now()
-
-        except Exception as e:
-            logger.error(f"Whales generator failed: {e}")
 
     def _check_and_run_sports(self) -> None:
         """Check and run sports generators."""

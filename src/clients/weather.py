@@ -79,9 +79,23 @@ class WeatherClient(APIClient):
             # Wind data
             wind_speed = data.get("wind", {}).get("speed", 0)
             wind_direction = data.get("wind", {}).get("deg", 0)
+            wind_gust = data.get("wind", {}).get("gust")
 
             # Visibility (in meters)
             visibility = data.get("visibility")
+
+            # Cloudiness percentage
+            cloudiness = data.get("clouds", {}).get("all")
+
+            # Pressure
+            pressure = data["main"].get("pressure")
+
+            # Sunrise and sunset (unix timestamps)
+            sunrise = data.get("sys", {}).get("sunrise")
+            sunset = data.get("sys", {}).get("sunset")
+
+            # Rain volume (last hour, in mm)
+            rain_1h = data.get("rain", {}).get("1h")
 
             # Map to our background categories
             condition = self.CONDITION_MAP.get(main_condition, "default")
@@ -98,9 +112,20 @@ class WeatherClient(APIClient):
                 wind_speed=wind_speed,
                 wind_direction=wind_direction,
                 visibility=visibility,
+                cloudiness=cloudiness,
+                pressure=pressure,
+                sunrise=sunrise,
+                sunset=sunset,
+                wind_gust=wind_gust,
+                rain_1h=rain_1h,
             )
 
             logger.info(f"Weather: {temp}°F, {description}, Humidity: {humidity}%")
+            logger.info(
+                f"Additional data - Cloudiness: {cloudiness}%, Pressure: {pressure}mb, "
+                f"Visibility: {visibility}m, Wind gust: {wind_gust}, Rain: {rain_1h}mm, "
+                f"Sunrise: {sunrise}, Sunset: {sunset}"
+            )
             return weather
 
         except (ValueError, KeyError, IndexError) as e:
