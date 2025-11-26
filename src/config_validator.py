@@ -70,14 +70,6 @@ class SignageConfig(BaseSettings):
     FERRY_BG_MODE: str = Field(default="local", pattern="^(local|gradient|unsplash|pexels)$")
     WSDOT_API_KEY: Optional[str] = Field(default=None, description="WSDOT API key")
 
-    # Marine Traffic
-    MARINE_TRAFFIC_URL: Optional[str] = Field(default=None)
-    MARINE_TRAFFIC_USERNAME: Optional[str] = Field(default=None)
-    MARINE_TRAFFIC_PASSWORD: Optional[str] = Field(default=None)
-
-    # Whale Tracker
-    WHALE_TRACKER_URL: str = Field(default="https://whalemuseum.org/whale-sightings")
-
     # Sports Teams
     SEAHAWKS_ENABLED: bool = Field(default=False)
     SEAHAWKS_TEAM_ID: str = Field(default="26")

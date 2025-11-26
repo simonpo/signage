@@ -4,6 +4,9 @@
 ✅ Core refactoring complete - modular architecture implemented
 ✅ Real WSDOT Ferry API integration working
 ✅ Virtual environment setup automation
+✅ Weather display enhanced with comprehensive API data (Nov 2025)
+✅ HTML rendering system with modern layouts
+✅ Nighttime detection for ambient weather displays
 
 ## Planned Improvements
 
@@ -16,12 +19,13 @@
   - Optimize font sizes and spacing for better readability
   - Review two-column layout for better visual balance
 
-### API Integrations (Stubs)
-- [ ] Implement WSDOT Ferry API (vessel tracking endpoints)
-- [ ] Implement Whale Tracker web scraping
-- [ ] Implement Football API integration (Premier League)
-- [ ] Implement Rugby API integration
-- [ ] Implement Cricket API integration
+### API Integrations
+- [x] OpenWeatherMap full integration (current weather with all available fields)
+- [x] WSDOT Ferry API (schedule and vessel tracking)
+- [x] Football API integration (Premier League via football-data.org)
+- [x] Ambient Weather personal station API
+- [ ] Rugby API integration
+- [ ] Cricket API integration
 - [ ] Investigate Kitsap Transit Fast Ferry API/data source
   - Check for GTFS feed availability
   - Contact transit agency about API access
@@ -59,3 +63,11 @@
 - ✅ 7-day file retention
 - ✅ Multiple background providers with fallback
 - ✅ Live sports detection for dynamic scheduling
+- ✅ Weather display comprehensive enhancement (Nov 2025)
+  - Added 7 new OpenWeatherMap API fields (cloudiness, pressure, sunrise/sunset, wind gust, rain)
+  - Modern two-column dashboard layout with glass-morphism cards
+  - Smart weather icon selection based on conditions
+  - Sunrise/sunset times with emoji icons
+- ✅ Ambient weather nighttime detection using solar radiation
+- ✅ Ferry map static filename for cleaner TV rotation
+- ✅ Removed non-functional features (marine traffic, whale tracker)

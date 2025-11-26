@@ -1,217 +1,323 @@
 {% extends "base.html" %}
 
-{% block title %}Modern Weather{% endblock %}
+{% block title %}Weather{% endblock %}
 
 {% block styles %}
-/* Modern weather layout inspired by contemporary weather apps */
-.modern-weather {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 120px 180px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+/* Modern weather dashboard with comprehensive information */
+.weather-dashboard {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 100px;
+    padding: 120px 140px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    height: 100%;
 }
 
-/* Top row: icon + temperature */
-.top-row {
+/* Left column: Main weather */
+.main-weather {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     justify-content: space-between;
-    width: 100%;
+}
+
+/* City name */
+.city-name {
+    font-size: 72px;
+    font-weight: 300;
+    margin-bottom: 60px;
+    opacity: 0.9;
+    letter-spacing: 1px;
+}
+
+/* Hero section: icon + temp */
+.hero-section {
+    display: flex;
+    align-items: center;
+    gap: 80px;
     margin-bottom: 40px;
 }
 
-/* Weather icon area - top left */
 .weather-icon {
-    font-size: 220px;
+    font-size: 280px;
     line-height: 1;
-    margin-right: 120px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
 }
 
-/* Main temperature - large and bold */
-.main-temp {
-    font-size: 380px;
+.temperature-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-temperature {
+    font-size: 340px;
     font-weight: 200;
-    letter-spacing: -12px;
     line-height: 0.85;
-    margin-top: -20px;
+    letter-spacing: -8px;
 }
 
-/* Condition text */
-.condition {
-    font-size: 100px;
-    font-weight: 300;
-    margin-bottom: 120px;
-    padding-left: 10px;
-}
-
-/* Feels like temperature */
-.feels-like {
+.condition-text {
     font-size: 90px;
     font-weight: 300;
-    margin-bottom: 140px;
-    padding-left: 10px;
+    margin-top: 20px;
+    opacity: 0.9;
 }
 
-.feels-like-label {
+.feels-like {
+    font-size: 75px;
     font-weight: 300;
+    margin-top: 40px;
     opacity: 0.75;
 }
 
-/* Stats grid - two columns */
-.stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 200px;
-    margin-bottom: 120px;
-    width: 100%;
-    max-width: 1800px;
-}
-
-.stat {
-    text-align: center;
-}
-
-.stat-label {
-    font-size: 55px;
-    font-weight: 300;
-    opacity: 0.65;
-    margin-bottom: 25px;
-    text-transform: capitalize;
-}
-
-.stat-value {
-    font-size: 110px;
-    font-weight: 300;
-}
-
-/* Additional details */
-.details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 100px;
-    font-size: 65px;
-    font-weight: 300;
-    opacity: 0.85;
-    padding-left: 10px;
-}
-
-.detail-item {
+/* Temperature range */
+.temp-range {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 60px;
+    margin: 60px 0;
+    font-size: 70px;
+    font-weight: 300;
 }
 
-.detail-label {
-    opacity: 0.75;
+.temp-range-label {
+    opacity: 0.7;
+}
+
+.temp-range-value {
+    font-size: 85px;
+}
+
+/* Sun times */
+.sun-times {
+    display: flex;
+    gap: 120px;
+    margin-top: auto;
+    padding-top: 40px;
+}
+
+.sun-time {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    font-size: 60px;
+    font-weight: 300;
+}
+
+.sun-icon {
+    font-size: 75px;
+}
+
+/* Right column: Data grid */
+.data-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-content: start;
+}
+
+.data-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    padding: 45px 50px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.3s ease;
+}
+
+.data-card-label {
+    font-size: 50px;
+    font-weight: 300;
+    opacity: 0.65;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+}
+
+.data-card-value {
+    font-size: 88px;
+    font-weight: 300;
+    line-height: 1.1;
+}
+
+.data-card-unit {
+    font-size: 58px;
+    opacity: 0.7;
+    margin-left: 8px;
+}
+
+.data-card-secondary {
+    font-size: 46px;
+    opacity: 0.6;
+    margin-top: 12px;
+    font-weight: 300;
+}
+
+/* Special cards */
+.wind-card {
+    grid-column: span 2;
+}
+
+.wind-details {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+
+.wind-direction {
+    font-size: 120px;
+    font-weight: 300;
+    opacity: 0.9;
+}
+
+.wind-speed {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Rain card highlight */
+.rain-card {
+    background: rgba(100, 150, 255, 0.15);
+    border-color: rgba(100, 150, 255, 0.3);
+}
+
+/* Responsive emoji sizing */
+@media (max-width: 3840px) {
+    .weather-icon {
+        font-size: 280px;
+    }
 }
 {% endblock %}
 
 {% block content %}
 <div class="safe-zone">
-    <div class="modern-weather">
-        {# Use namespace to allow variable assignment in loops #}
-        {% set weather = namespace(
-            location='',
-            temp='',
-            condition='',
-            feels_like='',
-            humidity='',
-            wind='',
-            high='',
-            low='',
-            visibility=''
-        ) %}
-        
-        {# Parse weather data #}
-        {% for line in lines %}
-            {% if line.strip() %}
-                {% if loop.index0 == 0 %}
-                    {% set weather.location = line.strip() %}
-                {% elif loop.index0 == 2 and '°F' in line %}
-                    {% set weather.temp = line.replace('°F', '°').strip() %}
-                {% elif loop.index0 == 3 %}
-                    {% set weather.condition = line.strip() %}
-                {% elif 'High:' in line and 'Humidity:' in line %}
-                    {% set parts = line.split('Humidity:') %}
-                    {% set weather.high = parts[0].replace('High:', '').strip() %}
-                    {% set weather.humidity = parts[1].strip() %}
-                {% elif 'Low:' in line and 'Wind:' in line %}
-                    {% set parts = line.split('Wind:') %}
-                    {% set weather.low = parts[0].replace('Low:', '').strip() %}
-                    {% set weather.wind = parts[1].strip() %}
-                {% elif 'Feels:' in line %}
-                    {% if 'Visibility:' in line %}
-                        {% set parts = line.split('Visibility:') %}
-                        {% set weather.feels_like = parts[0].replace('Feels:', '').strip() %}
-                        {% set weather.visibility = parts[1].strip() %}
+    <div class="weather-dashboard">
+        {# Left Column: Main Weather #}
+        <div class="main-weather">
+            {# City name #}
+            <div class="city-name">{{ city }}</div>
+            
+            {# Hero: Icon + Temperature #}
+            <div class="hero-section">
+                <div class="weather-icon">
+                    {% if 'rain' in description.lower() or rain_in %}
+                        🌧️
+                    {% elif 'thunder' in description.lower() %}
+                        ⛈️
+                    {% elif 'snow' in description.lower() %}
+                        ❄️
+                    {% elif 'cloud' in description.lower() and cloudiness and cloudiness > 50 %}
+                        ☁️
+                    {% elif cloudiness and cloudiness > 20 %}
+                        ⛅
                     {% else %}
-                        {% set weather.feels_like = line.replace('Feels:', '').strip() %}
+                        ☀️
                     {% endif %}
+                </div>
+                
+                <div class="temperature-section">
+                    <div class="main-temperature">{{ temperature|int }}°</div>
+                    <div class="condition-text">{{ description }}</div>
+                </div>
+            </div>
+            
+            {# Feels like #}
+            <div class="feels-like">
+                Feels like {{ feels_like|int }}°
+            </div>
+            
+            {# Temperature range #}
+            <div class="temp-range">
+                <span class="temp-range-label">↑</span>
+                <span class="temp-range-value">{{ temp_high|int }}°</span>
+                <span class="temp-range-label">↓</span>
+                <span class="temp-range-value">{{ temp_low|int }}°</span>
+            </div>
+            
+            {# Sunrise and sunset #}
+            {% if sunrise_time or sunset_time %}
+            <div class="sun-times">
+                {% if sunrise_time %}
+                <div class="sun-time">
+                    <span class="sun-icon">🌅</span>
+                    <span>{{ sunrise_time }}</span>
+                </div>
                 {% endif %}
-            {% endif %}
-        {% endfor %}
-        
-        {# Top row: icon + temperature #}
-        <div class="top-row">
-            <div class="weather-icon">
-                {% if 'rain' in weather.condition.lower() %}
-                    🌧️
-                {% elif 'cloud' in weather.condition.lower() %}
-                    ☁️
-                {% elif 'sun' in weather.condition.lower() or 'clear' in weather.condition.lower() %}
-                    ☀️
-                {% elif 'snow' in weather.condition.lower() %}
-                    ❄️
-                {% else %}
-                    🌤️
+                {% if sunset_time %}
+                <div class="sun-time">
+                    <span class="sun-icon">🌇</span>
+                    <span>{{ sunset_time }}</span>
+                </div>
                 {% endif %}
             </div>
-            <div class="main-temp">{{ weather.temp }}</div>
+            {% endif %}
         </div>
         
-        {# Condition #}
-        {% if weather.condition %}
-        <div class="condition">{{ weather.condition }}</div>
-        {% endif %}
-        
-        {# Feels like #}
-        {% if weather.feels_like %}
-        <div class="feels-like">
-            <span class="feels-like-label">Feels Like</span> {{ weather.feels_like }}
-        </div>
-        {% endif %}
-        
-        {# Stats grid #}
-        <div class="stats-grid">
-            {% if weather.humidity %}
-            <div class="stat">
-                <div class="stat-label">Humidity</div>
-                <div class="stat-value">{{ weather.humidity }}</div>
+        {# Right Column: Data Grid #}
+        <div class="data-grid">
+            {# Humidity #}
+            <div class="data-card">
+                <div class="data-card-label">Humidity</div>
+                <div class="data-card-value">
+                    {{ humidity }}<span class="data-card-unit">%</span>
+                </div>
+            </div>
+            
+            {# Pressure #}
+            {% if pressure %}
+            <div class="data-card">
+                <div class="data-card-label">Pressure</div>
+                <div class="data-card-value">
+                    {{ pressure }}<span class="data-card-unit">mb</span>
+                </div>
             </div>
             {% endif %}
             
-            {% if weather.high %}
-            <div class="stat">
-                <div class="stat-label">High / Low</div>
-                <div class="stat-value">{{ weather.high }} / {{ weather.low }}</div>
-            </div>
-            {% endif %}
-        </div>
-        
-        {# Additional details #}
-        <div class="details">
-            {% if weather.wind %}
-            <div class="detail-item">
-                <span class="detail-label">Wind:</span>
-                <span>{{ weather.wind }}</span>
+            {# Visibility #}
+            {% if visibility_mi %}
+            <div class="data-card">
+                <div class="data-card-label">Visibility</div>
+                <div class="data-card-value">
+                    {{ "%.1f"|format(visibility_mi) }}<span class="data-card-unit">mi</span>
+                </div>
             </div>
             {% endif %}
             
-            {% if weather.visibility %}
-            <div class="detail-item">
-                <span class="detail-label">Visibility:</span>
-                <span>{{ weather.visibility }}</span>
+            {# Cloudiness #}
+            {% if cloudiness is not none %}
+            <div class="data-card">
+                <div class="data-card-label">Cloud Cover</div>
+                <div class="data-card-value">
+                    {{ cloudiness }}<span class="data-card-unit">%</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            {# Wind - full width #}
+            <div class="data-card wind-card">
+                <div class="data-card-label">Wind</div>
+                <div class="wind-details">
+                    <div class="wind-direction">{{ wind_direction|compass }}</div>
+                    <div class="wind-speed">
+                        <div class="data-card-value">
+                            {{ "%.1f"|format(wind_speed) }}<span class="data-card-unit">mph</span>
+                        </div>
+                        {% if wind_gust %}
+                        <div class="data-card-secondary">
+                            Gusts to {{ "%.1f"|format(wind_gust) }} mph
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            {# Rain - if raining #}
+            {% if rain_in %}
+            <div class="data-card rain-card" style="grid-column: span 2;">
+                <div class="data-card-label">Rainfall (Last Hour)</div>
+                <div class="data-card-value">
+                    {{ "%.2f"|format(rain_in) }}<span class="data-card-unit">in</span>
+                </div>
             </div>
             {% endif %}
         </div>

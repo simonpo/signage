@@ -324,6 +324,58 @@ class TemplateRenderer:
 
         return self.render("modern_rugby_layout.html", context)
 
+    def render_weather_display(self, weather_data: Any) -> str:
+        """
+        Render modern weather display with comprehensive information.
+
+        Args:
+            weather_data: WeatherData object
+
+        Returns:
+            Rendered HTML string
+        """
+        from datetime import datetime
+
+        # Format sunrise/sunset times if available
+        sunrise_time = None
+        sunset_time = None
+        if weather_data.sunrise:
+            sunrise_time = datetime.fromtimestamp(weather_data.sunrise).strftime("%I:%M %p").lstrip("0")
+        if weather_data.sunset:
+            sunset_time = datetime.fromtimestamp(weather_data.sunset).strftime("%I:%M %p").lstrip("0")
+
+        # Convert visibility to miles
+        visibility_mi = None
+        if weather_data.visibility:
+            visibility_mi = weather_data.visibility / 1609.34
+
+        # Convert rain from mm to inches
+        rain_in = None
+        if weather_data.rain_1h:
+            rain_in = weather_data.rain_1h / 25.4
+
+        context = {
+            "city": weather_data.city,
+            "temperature": weather_data.temperature,
+            "description": weather_data.description,
+            "condition": weather_data.condition,
+            "feels_like": weather_data.feels_like,
+            "temp_high": weather_data.temp_high,
+            "temp_low": weather_data.temp_low,
+            "humidity": weather_data.humidity,
+            "wind_speed": weather_data.wind_speed,
+            "wind_direction": weather_data.wind_direction,
+            "wind_gust": weather_data.wind_gust,
+            "visibility_mi": visibility_mi,
+            "cloudiness": weather_data.cloudiness,
+            "pressure": weather_data.pressure,
+            "sunrise_time": sunrise_time,
+            "sunset_time": sunset_time,
+            "rain_in": rain_in,
+        }
+
+        return self.render("modern_weather_layout.html", context)
+
     def _wind_direction_to_compass(self, degrees: Optional[int]) -> str:
         """Convert wind direction degrees to compass direction."""
         if degrees is None:

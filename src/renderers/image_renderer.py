@@ -286,6 +286,9 @@ class SignageRenderer:
             html = self.template_renderer.render_football_display(sports_data)
         elif content.layout_type == "modern_rugby" and sports_data:
             html = self.template_renderer.render_rugby_display(sports_data)
+        elif content.layout_type == "modern_weather" and weather_data:
+            # Render comprehensive weather display with all API data
+            html = self.template_renderer.render_weather_display(weather_data)
         else:
             # Render text layout template
             html = self.template_renderer.render_layout(
