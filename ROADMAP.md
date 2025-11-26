@@ -22,6 +22,11 @@
 - [ ] Implement Football API integration (Premier League)
 - [ ] Implement Rugby API integration
 - [ ] Implement Cricket API integration
+- [ ] Investigate Kitsap Transit Fast Ferry API/data source
+  - Check for GTFS feed availability
+  - Contact transit agency about API access
+  - Consider web scraping kttracker.com as fallback
+  - Note: May only need static schedule display vs. live tracking
 
 ### Features
 - [ ] Add caching layer for slow APIs

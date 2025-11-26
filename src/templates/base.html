@@ -83,11 +83,26 @@
             justify-content: center;
         }
         
+        /* Timestamp footer */
+        .timestamp {
+            position: absolute;
+            bottom: 8px;  /* Just below safe zone */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 80px;
+            color: #c8c8ff;
+            text-align: center;
+        }
+        
         /* Custom styles for specific layouts */
         {% block styles %}{% endblock %}
     </style>
 </head>
 <body>
     {% block content %}{% endblock %}
+    
+    {% if timestamp %}
+    <div class="timestamp">Updated: {{ timestamp }}</div>
+    {% endif %}
 </body>
 </html>

@@ -342,6 +342,64 @@ class FerryClient(APIClient):
                     delay_minutes = int(match.group(1))
         
         return status, delay_minutes
+    
+    def get_all_vessel_locations(self) -> Optional['FerryMapData']:
+        """
+        Fetch all ferry vessel positions across the entire WSF system.
+        
+        Returns:
+            FerryMapData with all active vessels
+        """
+        from datetime import datetime
+        from src.models.signage_data import FerryMapData
+        
+        try:
+            url = f"{self.VESSEL_BASE_URL}/vessellocations"
+            params = {"apiaccesscode": self.api_key}
+            
+            response = self._make_request(url, params=params)
+            if not response:
+                logger.error("Failed to fetch vessel locations")
+                return None
+            
+            data = response.json()
+            vessels = []
+            
+            for vessel_data in data:
+                if not isinstance(vessel_data, dict):
+                    continue
+                
+                name = vessel_data.get("VesselName", "")
+                latitude = vessel_data.get("Latitude")
+                longitude = vessel_data.get("Longitude")
+                
+                # Skip vessels without location data
+                if latitude is None or longitude is None:
+                    continue
+                
+                # Skip vessels at 0,0 (invalid data)
+                if latitude == 0 and longitude == 0:
+                    continue
+                
+                heading = vessel_data.get("Heading", 0)
+                speed = vessel_data.get("Speed", 0)
+                
+                vessels.append(FerryVessel(
+                    name=name,
+                    latitude=latitude,
+                    longitude=longitude,
+                    speed=speed,
+                    heading=heading
+                ))
+            
+            timestamp = datetime.now().strftime("%I:%M %p").lstrip('0')
+            
+            logger.info(f"Fetched {len(vessels)} ferry vessel locations")
+            return FerryMapData(vessels=vessels, timestamp=timestamp)
+            
+        except Exception as e:
+            logger.error(f"Failed to fetch all vessel locations: {e}")
+            return None
 
 
 class FerryWebScraper:
@@ -360,3 +418,4 @@ class FerryWebScraper:
         """Scrape ferry data from website."""
         logger.warning("Web scraping fallback called but not implemented")
         return None
+

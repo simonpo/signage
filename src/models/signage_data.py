@@ -151,88 +151,19 @@ class AmbientWeatherData:
     humidityin: Optional[int] = None  # Indoor humidity
     
     def to_signage(self) -> SignageContent:
-        """Convert to signage with similar layout to OpenWeatherMap weather."""
-        lines = []
-        
-        # Title with station name
-        lines.append(self.station_name.upper())
-        lines.append("")
-        
-        # Main temperature - large and centered
-        lines.append(f"{self.tempf:.1f}°F")
-        
-        # Condition based on rain
+        """Convert to signage with modern card layout."""
+        # Determine weather condition for background
         if self.hourlyrainin > 0:
             condition = "rainy"
-            lines.append(f"Raining ({self.hourlyrainin:.2f} in/hr)")
         elif self.dailyrainin > 0:
             condition = "cloudy"
-            lines.append(f"Rain Today: {self.dailyrainin:.2f} in")
         else:
             condition = "sunny"
-            lines.append("Clear")
-        
-        lines.append("")
-        
-        # Two-column layout for details
-        # Left column: Temperature details
-        left_col = []
-        if self.temp_high and self.temp_low:
-            left_col.extend([
-                f"High: {self.temp_high:.0f}°",
-                f"Low: {self.temp_low:.0f}°",
-            ])
-        left_col.append(f"Feels: {self.feels_like:.0f}°")
-        left_col.append(f"Dew Pt: {self.dew_point:.0f}°")
-        
-        # Right column: Conditions
-        wind_dir = self._wind_direction_to_compass(self.winddir)
-        right_col = [
-            f"Humidity: {self.humidity}%",
-            f"Wind: {self.windspeedmph:.1f} mph {wind_dir}",
-            f"Pressure: {self.baromrelin:.2f} inHg",
-        ]
-        
-        # Optional fields
-        if self.uv is not None:
-            right_col.append(f"UV Index: {self.uv}")
-        if self.solarradiation is not None:
-            right_col.append(f"Solar: {self.solarradiation:.0f} W/m²")
-        
-        # Combine columns
-        max_rows = max(len(left_col), len(right_col))
-        for i in range(max_rows):
-            left = left_col[i] if i < len(left_col) else ""
-            right = right_col[i] if i < len(right_col) else ""
-            lines.append(f"{left:<20}   {right}")
-        
-        # Indoor air quality section
-        if any([self.pm25_in, self.aqi_pm25_in, self.co2_in, self.tempinf, self.humidityin]):
-            lines.append("")
-            lines.append("INDOOR AIR QUALITY")
-            lines.append("")
-            
-            # Indoor temp/humidity
-            if self.tempinf is not None and self.humidityin is not None:
-                lines.append(f"Indoor: {self.tempinf:.1f}°F, {self.humidityin}% humidity")
-            
-            # PM2.5 and AQI
-            if self.pm25_in is not None:
-                pm_line = f"PM2.5: {self.pm25_in:.1f} µg/m³"
-                if self.aqi_pm25_in:
-                    quality = self._aqi_quality(self.aqi_pm25_in)
-                    pm_line += f"  (AQI {self.aqi_pm25_in} - {quality})"
-                lines.append(pm_line)
-            
-            # CO2
-            if self.co2_in is not None:
-                co2_quality = self._co2_quality(self.co2_in)
-                lines.append(f"CO2: {self.co2_in} ppm  ({co2_quality})")
         
         return SignageContent(
-            lines=lines,
+            lines=[],  # Empty - we'll use custom card renderer
             filename_prefix="ambient",
-            layout_type="weather",
+            layout_type="weather_cards",  # New layout type
             background_mode="local",
             background_query=f"weather/{condition}",
         )
@@ -668,4 +599,21 @@ class WhaleData:
             layout_type="left",
             background_mode="unsplash",
             background_query="orca whale ocean",
+        )
+
+
+@dataclass
+class FerryMapData:
+    """Ferry vessel positions for full-screen map view."""
+    vessels: List[FerryVessel] = field(default_factory=list)
+    timestamp: Optional[str] = None
+    
+    def to_signage(self) -> SignageContent:
+        """Convert to signage - map rendered separately, no text overlay."""
+        return SignageContent(
+            lines=[],  # No text, pure map
+            filename_prefix="ferry_map",
+            layout_type="map",
+            background_mode="none",
+            background_query="",
         )

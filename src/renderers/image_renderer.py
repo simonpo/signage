@@ -1,20 +1,25 @@
 """
 Main image renderer for signage content.
 Coordinates backgrounds, layouts, and text rendering.
+Supports both PIL and HTML rendering modes.
 """
 
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 from PIL import Image, ImageDraw, ImageFont
 
 from src.backgrounds import BackgroundFactory
 from src.config import Config
-from src.models.signage_data import SignageContent
+from src.models.signage_data import SignageContent, AmbientWeatherData
 from src.renderers.text_layouts import LayoutFactory
 from src.utils.image_utils import add_text_overlay, ensure_exact_size
+from src.utils.output_manager import OutputManager
+from src.utils.template_renderer import TemplateRenderer
+from src.utils.html_renderer import SyncHTMLRenderer
+from src.utils.logging_utils import timeit
 
 logger = logging.getLogger(__name__)
 
@@ -23,17 +28,36 @@ class SignageRenderer:
     """
     Main renderer for signage images.
     Produces aesthetically pleasing 4K images with proper composition.
+    Supports both PIL (legacy) and HTML (modern) rendering modes.
     """
     
-    def __init__(self):
-        """Initialize renderer and load fonts."""
+    def __init__(self, use_html: bool = False, output_manager: Optional[OutputManager] = None):
+        """
+        Initialize renderer and load fonts.
+        
+        Args:
+            use_html: Use HTML rendering instead of PIL (default: False for backward compatibility)
+            output_manager: OutputManager instance for multi-resolution saves (creates default if None)
+        """
         self.width = Config.IMAGE_WIDTH
         self.height = Config.IMAGE_HEIGHT
+        self.use_html = use_html
         
-        # Load fonts with fallback
+        # Initialize output manager
+        self.output_manager = output_manager or OutputManager()
+        
+        # Load fonts with fallback (for PIL mode)
         self.font_title = self._load_font(Config.FONT_PATH, 180)
         self.font_body = self._load_font(Config.FONT_PATH, 120)
         self.font_small = self._load_font(Config.FONT_PATH, 80)
+        
+        # Initialize HTML rendering components if needed
+        if self.use_html:
+            self.template_renderer = TemplateRenderer()
+            self.html_renderer = SyncHTMLRenderer()
+            logger.info("SignageRenderer initialized in HTML mode")
+        else:
+            logger.info("SignageRenderer initialized in PIL mode")
     
     def _load_font(self, path: str, size: int) -> ImageFont.FreeTypeFont:
         """
@@ -106,22 +130,55 @@ class SignageRenderer:
         # Draw with subtle color
         draw.text((x, y), ts_text, fill=(200, 200, 255), font=self.font_small)
     
+    @timeit
     def render(
         self,
         content: SignageContent,
-        output_path: Path,
-        timestamp: Optional[datetime] = None
-    ) -> Path:
+        filename: Optional[str] = None,
+        timestamp: Optional[datetime] = None,
+        weather_data: Optional[AmbientWeatherData] = None
+    ) -> List[Path]:
         """
-        Render signage content to image file.
+        Render signage content to image file(s).
         
         Args:
             content: SignageContent to render
-            output_path: Output file path
+            filename: Output filename (defaults to content.filename_prefix + timestamp)
             timestamp: Timestamp for footer (defaults to content.timestamp or now)
+            weather_data: Optional weather data for card-based rendering
         
         Returns:
-            Path to saved image file
+            List of paths where image was saved (one per output profile)
+        """
+        # Generate filename if not provided
+        if filename is None:
+            if timestamp is None:
+                timestamp = content.timestamp or Config.get_current_time()
+            timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
+            filename = f"{content.filename_prefix}_{timestamp_str}.png"
+        
+        # Set timestamp default
+        if timestamp is None:
+            timestamp = content.timestamp or Config.get_current_time()
+        
+        # Choose rendering path
+        if self.use_html:
+            return self._render_html(content, filename, timestamp, weather_data)
+        else:
+            return self._render_pil(content, filename, timestamp, weather_data)
+    
+    def _render_pil(
+        self,
+        content: SignageContent,
+        filename: str,
+        timestamp: datetime,
+        weather_data: Optional[AmbientWeatherData] = None
+    ) -> List[Path]:
+        """
+        Render using PIL (legacy mode).
+        
+        Returns:
+            List of paths where image was saved
         """
         if timestamp is None:
             timestamp = content.timestamp or Config.get_current_time()
@@ -137,6 +194,24 @@ class SignageRenderer:
             content.background_query
         )
         
+        # Step 2: Check if we should use card-based weather renderer
+        if content.layout_type == "weather_cards" and weather_data:
+            from src.renderers.weather_card_renderer import WeatherCardRenderer
+            
+            # Add light overlay for readability
+            img = add_text_overlay(img, opacity=0.3)
+            
+            # Render weather cards
+            card_renderer = WeatherCardRenderer()
+            img = card_renderer.render(weather_data, img)
+            
+            # Save and return
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            img.save(output_path, "JPEG", quality=95)
+            logger.info(f"Saved: {output_path}")
+            return output_path
+        
+        # Standard text-based rendering
         # Step 2: Add semi-transparent overlay for text readability
         img = add_text_overlay(img, opacity=0.4)
         
@@ -162,9 +237,72 @@ class SignageRenderer:
         # Step 6: Paranoid dimension check
         img = ensure_exact_size(img, self.width, self.height)
         
-        # Step 7: Save as high-quality JPEG
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        img.save(output_path, "JPEG", quality=95)
+        # Step 7: Save using OutputManager for multi-resolution support
+        saved_paths = self.output_manager.save_image(
+            img,
+            filename,
+            source=content.filename_prefix
+        )
         
-        logger.info(f"Saved: {output_path}")
-        return output_path
+        return saved_paths
+    
+    @timeit
+    def _render_html(
+        self,
+        content: SignageContent,
+        filename: str,
+        timestamp: datetime,
+        weather_data: Optional[AmbientWeatherData] = None
+    ) -> List[Path]:
+        """
+        Render using HTML templates (modern mode).
+        
+        Returns:
+            List of paths where image was saved
+        """
+        logger.info(
+            f"Rendering {content.filename_prefix} with HTML: "
+            f"{content.layout_type} layout, {content.background_mode} background"
+        )
+        
+        # Step 1: Get background image
+        bg_img = self._get_background_image(
+            content.background_mode,
+            content.background_query
+        )
+        
+        # Step 2: Check if we should use weather cards template
+        if content.layout_type == "weather_cards" and weather_data:
+            html = self.template_renderer.render_weather_cards(weather_data)
+        else:
+            # Render text layout template
+            html = self.template_renderer.render_layout(
+                content.layout_type,
+                content.lines,
+                timestamp=timestamp.strftime("%m/%d %I:%M %p %Z")
+            )
+        
+        # Step 3: Convert HTML to image
+        text_img = self.html_renderer.render_html_to_image(html)
+        
+        # Step 4: Composite text over background
+        # Add semi-transparent overlay for readability
+        bg_img = add_text_overlay(bg_img, opacity=0.4)
+        
+        # Composite text (HTML already has transparent background)
+        bg_img = bg_img.convert("RGBA")
+        text_img = text_img.convert("RGBA")
+        composite = Image.alpha_composite(bg_img, text_img)
+        composite = composite.convert("RGB")
+        
+        # Step 5: Ensure exact size
+        composite = ensure_exact_size(composite, self.width, self.height)
+        
+        # Step 6: Save using OutputManager
+        saved_paths = self.output_manager.save_image(
+            composite,
+            filename,
+            source=content.filename_prefix
+        )
+        
+        return saved_paths

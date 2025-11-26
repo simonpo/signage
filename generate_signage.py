@@ -23,20 +23,45 @@ from src.models.signage_data import TeslaData
 from src.renderers.image_renderer import SignageRenderer
 from src.renderers.map_renderer import MapRenderer
 from src.utils.file_manager import FileManager
+from src.utils.logging_utils import setup_logging
+from src.utils.output_manager import OutputManager
 
 # === LOGGING ===
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s",
-    datefmt="%H:%M:%S"
-)
-
-logger = logging.getLogger(__name__)
-
+# Use new logging setup from utils
+setup_logging()
 logger = logging.getLogger(__name__)
 
 
 # === GENERATOR FUNCTIONS ===
+
+def _render_and_save(
+    renderer: SignageRenderer,
+    content,
+    filename_prefix: str,
+    timestamp=None
+) -> None:
+    """
+    Helper to render content and handle multi-resolution output.
+    
+    Args:
+        renderer: SignageRenderer instance
+        content: SignageContent object
+        filename_prefix: Base filename
+        timestamp: Optional timestamp
+    """
+    if timestamp is None:
+        timestamp = Config.get_current_time()
+    
+    timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
+    filename = f"{filename_prefix}_{timestamp_str}.png"
+    
+    # Render to all output profiles
+    paths = renderer.render(content, filename=filename, timestamp=timestamp)
+    
+    logger.info(f\"✓ Saved to {len(paths)} output profile(s)")
+    for path in paths:
+        logger.debug(f\"  - {path}\")
+
 
 def generate_tesla(
     renderer: SignageRenderer,
@@ -62,12 +87,8 @@ def generate_tesla(
         # Convert to signage content
         content = tesla_data.to_signage()
         
-        # Get output path and timestamp
-        timestamp = Config.get_current_time()
-        output_path = file_mgr.get_file_path("tesla", timestamp)
-        
         # Render
-        renderer.render(content, output_path, timestamp)
+        _render_and_save(renderer, content, "tesla")
         
         # Cleanup old files
         file_mgr.cleanup_old_files("tesla")
@@ -97,12 +118,8 @@ def generate_weather(
         # Convert to signage content
         content = weather_data.to_signage()
         
-        # Get output path and timestamp
-        timestamp = Config.get_current_time()
-        output_path = file_mgr.get_file_path("weather", timestamp)
-        
         # Render
-        renderer.render(content, output_path, timestamp)
+        _render_and_save(renderer, content, "weather")
         
         # Cleanup
         file_mgr.cleanup_old_files("weather")
@@ -132,12 +149,13 @@ def generate_ambient_weather(
         # Convert to signage content
         content = ambient_data.to_signage()
         
-        # Get output path and timestamp
+        # Get timestamp
         timestamp = Config.get_current_time()
-        output_path = file_mgr.get_file_path("ambient", timestamp)
+        timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
+        filename = f"ambient_{timestamp_str}.png"
         
-        # Render
-        renderer.render(content, output_path, timestamp)
+        # Render with weather data for card-based layout
+        renderer.render(content, filename=filename, timestamp=timestamp, weather_data=ambient_data)
         
         # Cleanup
         file_mgr.cleanup_old_files("ambient")
@@ -167,12 +185,8 @@ def generate_ambient_sensors(
         # Convert to signage content
         content = sensor_data.to_signage()
         
-        # Get output path and timestamp
-        timestamp = Config.get_current_time()
-        output_path = file_mgr.get_file_path("sensors", timestamp)
-        
         # Render
-        renderer.render(content, output_path, timestamp)
+        _render_and_save(renderer, content, "sensors")
         
         # Cleanup
         file_mgr.cleanup_old_files("sensors")
@@ -202,12 +216,8 @@ def generate_speedtest(
         # Convert to signage content
         content = speedtest_data.to_signage()
         
-        # Get output path and timestamp
-        timestamp = Config.get_current_time()
-        output_path = file_mgr.get_file_path("speedtest", timestamp)
-        
         # Render
-        renderer.render(content, output_path, timestamp)
+        _render_and_save(renderer, content, "speedtest")
         
         # Cleanup
         file_mgr.cleanup_old_files("speedtest")
@@ -237,12 +247,8 @@ def generate_stock(
         # Convert to signage content
         content = stock_data.to_signage()
         
-        # Get output path and timestamp
-        timestamp = Config.get_current_time()
-        output_path = file_mgr.get_file_path("stock", timestamp)
-        
         # Render
-        renderer.render(content, output_path, timestamp)
+        _render_and_save(renderer, content, "stock")
         
         # Cleanup
         file_mgr.cleanup_old_files("stock")
@@ -282,12 +288,8 @@ def generate_ferry(
         # Convert to signage content
         content = ferry_data.to_signage(map_path)
         
-        # Get output path and timestamp
-        timestamp = Config.get_current_time()
-        output_path = file_mgr.get_file_path("ferry", timestamp)
-        
-        # Render (will composite map onto right half if map_path provided)
-        renderer.render(content, output_path, timestamp)
+        # Render
+        _render_and_save(renderer, content, "ferry")
         
         # Cleanup
         file_mgr.cleanup_old_files("ferry")
@@ -296,6 +298,46 @@ def generate_ferry(
     
     except Exception as e:
         logger.error(f"Failed to generate ferry signage: {e}")
+
+
+def generate_ferry_map(
+    ferry_client: FerryClient,
+    output_manager: OutputManager,
+    file_mgr: FileManager
+) -> None:
+    """Generate full-screen ferry map with all vessel positions."""
+    try:
+        from src.renderers.ferry_map_renderer import FerryMapRenderer
+        
+        logger.info("Generating ferry map...")
+        
+        # Fetch all vessel locations
+        ferry_map_data = ferry_client.get_all_vessel_locations()
+        
+        if not ferry_map_data or not ferry_map_data.vessels:
+            logger.warning("No ferry vessel data available for map")
+            return
+        
+        # Render full-screen map
+        map_renderer = FerryMapRenderer()
+        ferry_map_img = map_renderer.render_full_map(ferry_map_data.vessels)
+        
+        # Save using OutputManager
+        timestamp = Config.get_current_time()
+        timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
+        filename = f"ferry_map_{timestamp_str}.png"
+        
+        paths = output_manager.save_image(ferry_map_img, filename, source="ferry_map")
+        
+        # Cleanup old files
+        file_mgr.cleanup_old_files("ferry_map")
+        
+        logger.info(f"✓ Ferry map complete: {len(paths)} profile(s)")
+        logger.info(f"  Vessels: {len(ferry_map_data.vessels)}")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate ferry map: {e}")
+        raise
 
 
 def generate_whales(
@@ -317,12 +359,8 @@ def generate_whales(
         # Convert to signage content
         content = whale_data.to_signage()
         
-        # Get output path and timestamp
-        timestamp = Config.get_current_time()
-        output_path = file_mgr.get_file_path("whales", timestamp)
-        
         # Render
-        renderer.render(content, output_path, timestamp)
+        _render_and_save(renderer, content, "whales")
         
         # Cleanup
         file_mgr.cleanup_old_files("whales")
@@ -352,10 +390,7 @@ def generate_sports(
                 
                 if sports_data:
                     content = sports_data.to_signage()
-                    timestamp = Config.get_current_time()
-                    output_path = file_mgr.get_file_path("nfl_seahawks", timestamp)
-                    
-                    renderer.render(content, output_path, timestamp)
+                    _render_and_save(renderer, content, "nfl_seahawks")
                     file_mgr.cleanup_old_files("nfl_seahawks")
                     generated += 1
             
@@ -373,6 +408,43 @@ def generate_sports(
         logger.error(f"Failed to generate sports signage: {e}")
 
 
+
+
+def generate_marine(
+    marine_client: MarineTrafficClient,
+    output_manager: OutputManager,
+    file_mgr: FileManager
+) -> None:
+    """Generate marine traffic signage via screenshot."""
+    try:
+        logger.info("Generating marine traffic signage...")
+        
+        # Capture marine traffic map
+        marine_data = marine_client.capture_map()
+        
+        if not marine_data or not marine_data.screenshot_path:
+            logger.warning("No marine traffic data available")
+            return
+        
+        # Load screenshot and save via OutputManager
+        from PIL import Image
+        marine_img = Image.open(marine_data.screenshot_path)
+        
+        timestamp = Config.get_current_time()
+        timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
+        filename = f"marine_{timestamp_str}.png"
+        
+        paths = output_manager.save_image(marine_img, filename, source="marine")
+        
+        # Cleanup old files
+        file_mgr.cleanup_old_files("marine")
+        
+        logger.info(f"✓ Marine traffic complete: {len(paths)} profile(s)")
+        logger.info(f"   Timestamp: {timestamp.strftime('%I:%M %p')}")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate marine traffic signage: {e}")
+
 # === MAIN ===
 
 def main():
@@ -382,7 +454,7 @@ def main():
     )
     parser.add_argument(
         "--source",
-        choices=["all", "tesla", "weather", "ambient", "sensors", "speedtest", "stock", "ferry", "whales", "sports", "nfl"],
+        choices=["all", "tesla", "weather", "ambient", "sensors", "speedtest", "stock", "ferry", "ferry_map", "marine", "whales", "sports", "nfl"],
         default="all",
         help="Which signage to generate"
     )
@@ -390,6 +462,11 @@ def main():
         "--daemon",
         action="store_true",
         help="Run in daemon mode with scheduler"
+    )
+    parser.add_argument(
+        "--html",
+        action="store_true",
+        help="Use HTML rendering instead of PIL"
     )
     
     args = parser.parse_args()
@@ -401,9 +478,12 @@ def main():
         logger.error(f"Configuration error: {e}")
         sys.exit(1)
     
-    # Initialize renderer and file manager
-    renderer = SignageRenderer()
+    # Initialize output manager and renderer
+    output_manager = OutputManager()
+    renderer = SignageRenderer(use_html=args.html, output_manager=output_manager)
     file_mgr = FileManager()
+    
+    logger.info(f"Rendering mode: {'HTML' if args.html else 'PIL (legacy)'}")
     
     # Run generators based on source selection
     if args.daemon:
@@ -443,10 +523,18 @@ def main():
         if args.source in ["all", "ferry"]:
             with FerryClient() as ferry_client:
                 generate_ferry(renderer, ferry_client, file_mgr)
+
+        if args.source == "ferry_map":
+            with FerryClient() as ferry_client:
+                generate_ferry_map(ferry_client, output_manager, file_mgr)
         
         if args.source in ["all", "whales"]:
             with WhaleTrackerClient() as whale_client:
                 generate_whales(renderer, whale_client, file_mgr)
+        
+        if args.source in ["all", "marine"]:
+            marine_client = MarineTrafficClient()
+            generate_marine(marine_client, output_manager, file_mgr)
         
         if args.source in ["all", "sports", "nfl"]:
             generate_sports(renderer, file_mgr, sport_type=args.source)
@@ -456,3 +544,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

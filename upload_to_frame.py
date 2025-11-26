@@ -18,7 +18,7 @@ load_dotenv()
 TV_IP = os.getenv("TV_IP")
 TV_PORT = int(os.getenv("TV_PORT", "8002"))  # HTTPS default
 TOKEN_FILE = os.getenv("TOKEN_FILE", "tv-token.txt")  # Relative to script
-ART_FOLDER = os.getenv("ART_FOLDER", "art_folder")
+ART_FOLDER = os.getenv("ART_FOLDER", "art_folder/frame")  # Primary output for TV
 UPLOADED_LOG = os.getenv("UPLOADED_LOG", "uploaded.json")
 
 # === VALIDATE REQUIRED VARS ===
