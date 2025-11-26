@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=3840, height=2160">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 3840px;
+            height: 2160px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 3400px;
+            padding: 100px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+        
+        .live-badge {
+            display: inline-block;
+            background: #ff0000;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 60px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            animation: pulse 2s infinite;
+            position: absolute;
+            top: 80px;
+            right: 80px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+        
+        .section {
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(40px);
+            border-radius: 40px;
+            padding: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+        
+        .section-title {
+            font-size: 70px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            letter-spacing: 2px;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 15px;
+        }
+        
+        .match-result {
+            font-size: 65px;
+            font-weight: 600;
+            text-align: center;
+            margin: 20px 0;
+            line-height: 1.3;
+        }
+        
+        .match-date {
+            font-size: 48px;
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+        
+        .match-teams {
+            font-size: 85px;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+        
+        .fixture-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .fixture-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 20px;
+            border-left: 5px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .fixture-info {
+            flex: 1;
+        }
+        
+        .fixture-date {
+            font-size: 43px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+        
+        .fixture-teams {
+            font-size: 57px;
+            font-weight: 600;
+        }
+        
+        .fixture-competition {
+            font-size: 45px;
+            opacity: 0.65;
+            font-style: italic;
+            padding-left: 30px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        .standings {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .standings-row {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 30px;
+            align-items: center;
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            font-size: 55px;
+        }
+        
+        .standings-row.highlight {
+            background: rgba(239, 1, 7, 0.4);
+            border: 2px solid rgba(239, 1, 7, 0.7);
+        }
+        
+        .pos {
+            font-weight: 700;
+            font-size: 60px;
+        }
+        
+        .team {
+            font-weight: 600;
+        }
+        
+        .stats {
+            opacity: 0.8;
+            font-size: 50px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    {% if is_live %}
+    <div class="live-badge">🔴 LIVE</div>
+    {% endif %}
+    
+    <div class="container">
+        <div class="content-grid">
+            <!-- Last Result -->
+            <div class="section">
+                <div class="section-title">Last Match</div>
+                {% if last_result %}
+                <div class="match-date">{{ last_result.date }}</div>
+                <div class="match-result">
+                    <div class="match-teams">
+                        {{ last_result.home_team }} {{ last_result.home_score }}<br>
+                        {{ last_result.away_team }} {{ last_result.away_score }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="match-result">No recent matches</div>
+                {% endif %}
+            </div>
+            
+            <!-- Next Fixtures -->
+            <div class="section">
+                <div class="section-title">Upcoming Fixtures</div>
+                {% if next_fixtures %}
+                <div class="fixture-list">
+                    {% for fixture in next_fixtures[:3] %}
+                    <div class="fixture-item">
+                        <div class="fixture-info">
+                            <div class="fixture-date">{{ fixture.date }}</div>
+                            <div class="fixture-teams">{{ fixture.home_team }} vs {{ fixture.away_team }}</div>
+                        </div>
+                        <div class="fixture-competition">{{ fixture.competition }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="match-result">No upcoming fixtures</div>
+                {% endif %}
+            </div>
+            
+            <!-- League Table -->
+            <div class="section full-width">
+                <div class="section-title">Premier League Standings</div>
+                {% if league_table %}
+                <div class="standings">
+                    {% for row in league_table[:6] %}
+                    <div class="standings-row {% if row.team == team_name %}highlight{% endif %}">
+                        <span class="pos">{{ row.position }}</span>
+                        <span class="team">{{ row.team }}</span>
+                        <span class="stats">{{ row.points }}pts ({{ row.played }}P {{ row.won }}W {{ row.drawn }}D {{ row.lost }}L)</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="match-result">No standings available</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

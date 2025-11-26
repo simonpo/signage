@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Ambient Weather Dashboard{% endblock %}
+
+{% block styles %}
+/* Modern ambient weather dashboard with data cards */
+.ambient-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto auto;
+    gap: 45px;
+    padding: 80px 120px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+/* Station header spans full width */
+.station-header {
+    grid-column: 1 / -1;
+    font-size: 75px;
+    font-weight: 300;
+    opacity: 0.85;
+    text-align: center;
+    padding-bottom: 30px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Main temperature - left side, large */
+.main-temp-card {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 35px;
+    padding: 70px 60px;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.temp-value {
+    font-size: 280px;
+    font-weight: 200;
+    letter-spacing: -10px;
+    line-height: 0.9;
+}
+
+.temp-label {
+    font-size: 70px;
+    font-weight: 300;
+    opacity: 0.7;
+    margin-top: 40px;
+}
+
+/* Data cards grid - right side */
+.data-cards {
+    grid-column: 2;
+    grid-row: 2 / 4;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.data-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 25px;
+    padding: 45px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    min-height: 220px;
+}
+
+.data-card-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.data-card-label {
+    font-size: 45px;
+    font-weight: 300;
+    opacity: 0.65;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.data-card-value {
+    font-size: 100px;
+    font-weight: 300;
+    line-height: 1.1;
+}
+
+.data-card-unit {
+    font-size: 55px;
+    opacity: 0.7;
+    margin-left: 10px;
+}
+
+.data-card-sub {
+    font-size: 40px;
+    font-weight: 300;
+    opacity: 0.5;
+    margin-top: 10px;
+}
+
+/* Bottom row - additional metrics */
+.bottom-metrics {
+    grid-column: 1;
+    grid-row: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.metric-item {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 25px;
+    padding: 40px 40px;
+    text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Indoor metrics section */
+.indoor-section {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+}
+
+.indoor-card {
+    background: rgba(100, 200, 255, 0.08);
+    border-radius: 25px;
+    padding: 40px 35px;
+    text-align: center;
+    border: 2px solid rgba(100, 200, 255, 0.15);
+}
+
+.indoor-label {
+    font-size: 40px;
+    font-weight: 300;
+    opacity: 0.65;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.indoor-value {
+    font-size: 85px;
+    font-weight: 300;
+}
+
+.indoor-sub {
+    font-size: 35px;
+    font-weight: 300;
+    opacity: 0.5;
+    margin-top: 10px;
+}
+
+.metric-label {
+    font-size: 45px;
+    font-weight: 300;
+    opacity: 0.6;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.metric-value {
+    font-size: 85px;
+    font-weight: 300;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="ambient-dashboard">
+        {# Station name header #}
+        <div class="station-header">{{ station_name }}</div>
+        
+        {# Main temperature card #}
+        <div class="main-temp-card">
+            <div class="temp-value">{{ tempf|int }}°</div>
+            <div class="temp-label">Temperature</div>
+        </div>
+        
+        {# Data cards grid #}
+        <div class="data-cards">
+            {# Humidity card #}
+            <div class="data-card">
+                <div class="data-card-icon">💧</div>
+                <div class="data-card-label">Humidity</div>
+                <div class="data-card-value">{{ humidity }}<span class="data-card-unit">%</span></div>
+            </div>
+            
+            {# UV Index card #}
+            <div class="data-card">
+                <div class="data-card-icon">☀️</div>
+                <div class="data-card-label">UV Index</div>
+                <div class="data-card-value">{{ uv }}</div>
+                {% if solarradiation %}
+                <div class="data-card-sub">{{ solarradiation|int }} W/m²</div>
+                {% endif %}
+            </div>
+            
+            {# Rain card #}
+            <div class="data-card">
+                <div class="data-card-icon">🌧️</div>
+                <div class="data-card-label">Rain Today</div>
+                <div class="data-card-value">{{ dailyrainin }}<span class="data-card-unit">in</span></div>
+            </div>
+            
+            {# Wind card #}
+            <div class="data-card">
+                <div class="data-card-icon">💨</div>
+                <div class="data-card-label">Wind</div>
+                <div class="data-card-value">{{ windspeedmph|int }}<span class="data-card-unit">mph</span></div>
+                {% if winddir is defined %}
+                <div class="data-card-sub">{{ winddir|compass }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {# Bottom metrics #}
+        <div class="bottom-metrics">
+            <div class="metric-item">
+                <div class="metric-label">Pressure</div>
+                <div class="metric-value">{{ baromrelin }} inHg</div>
+            </div>
+            
+            {% if feels_like %}
+            <div class="metric-item">
+                <div class="metric-label">Feels Like</div>
+                <div class="metric-value">{{ feels_like|int }}°F</div>
+            </div>
+            {% endif %}
+            
+            {% if dew_point %}
+            <div class="metric-item">
+                <div class="metric-label">Dew Point</div>
+                <div class="metric-value">{{ dew_point|int }}°F</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {# Indoor air quality section #}
+        {% if tempinf or co2_in or pm25_in %}
+        <div class="indoor-section">
+            {% if tempinf %}
+            <div class="indoor-card">
+                <div class="indoor-label">🏠 Indoor Temp</div>
+                <div class="indoor-value">{{ tempinf|int }}°F</div>
+                {% if humidityin %}
+                <div class="indoor-sub">{{ humidityin }}% humidity</div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if co2_in %}
+            <div class="indoor-card">
+                <div class="indoor-label">💨 CO₂</div>
+                <div class="indoor-value">{{ co2_in }}</div>
+                <div class="indoor-sub">ppm</div>
+            </div>
+            {% endif %}
+            
+            {% if pm25_in %}
+            <div class="indoor-card">
+                <div class="indoor-label">🌫️ PM2.5</div>
+                <div class="indoor-value">{{ pm25_in|int }}</div>
+                <div class="indoor-sub">
+                    {% if aqi_pm25_in %}AQI: {{ aqi_pm25_in }}{% else %}µg/m³{% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

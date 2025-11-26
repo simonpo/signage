@@ -62,16 +62,16 @@
 {% block content %}
 <div class="safe-zone">
     <div class="weather-layout">
-        {% for i, line in enumerate(lines) %}
+        {% for line in lines %}
             {% if line.strip() %}
-                {% if i == 0 %}
+                {% if loop.index0 == 0 %}
                 <div class="city-name">{{ line }}</div>
-                {% elif i == 1 %}
+                {% elif loop.index0 == 1 %}
                 <div class="temperature">{{ line }}</div>
-                {% elif i == 2 %}
+                {% elif loop.index0 == 2 %}
                 <div class="description">{{ line }}</div>
                 {% else %}
-                    {% if i == 3 %}<div class="details">{% endif %}
+                    {% if loop.index0 == 3 %}<div class="details">{% endif %}
                     <div class="line">{{ line }}</div>
                     {% if loop.last %}</div>{% endif %}
                 {% endif %}

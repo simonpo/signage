@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Ferry Schedule{% endblock %}
+
+{% block styles %}
+/* Modern ferry schedule with two-column departure times */
+.ferry-container {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 35px;
+    padding: 60px 100px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+/* Header with route name and status */
+.ferry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 35px 50px;
+    margin-bottom: 35px;
+    background: rgba(0, 0, 0, 0.75);
+    border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.route-name {
+    font-size: 90px;
+    font-weight: 300;
+    letter-spacing: -1px;
+}
+
+.status-badge {
+    font-size: 60px;
+    font-weight: 500;
+    padding: 20px 50px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.status-normal {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 2px solid rgba(34, 197, 94, 0.4);
+}
+
+.status-delayed {
+    background: rgba(251, 146, 60, 0.2);
+    color: #fb923c;
+    border: 2px solid rgba(251, 146, 60, 0.4);
+}
+
+.status-cancelled {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 2px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Alert banner */
+.alert-banner {
+    background: rgba(251, 146, 60, 0.15);
+    border: 2px solid rgba(251, 146, 60, 0.3);
+    border-radius: 20px;
+    padding: 35px 50px;
+    font-size: 55px;
+    font-weight: 400;
+}
+
+.alert-icon {
+    font-size: 70px;
+    margin-right: 20px;
+}
+
+/* Two-column departures grid */
+.departures-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+}
+
+.departure-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.departure-header {
+    font-size: 60px;
+    font-weight: 500;
+    margin-bottom: 25px;
+    padding: 25px 35px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.departure-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.departure-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 18px;
+    padding: 25px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.departure-item:first-child {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    transform: scale(1.02);
+}
+
+.departure-time {
+    font-size: 65px;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.departure-vessel {
+    font-size: 48px;
+    font-weight: 300;
+    opacity: 0.85;
+}
+
+.no-departures {
+    font-size: 55px;
+    font-weight: 300;
+    opacity: 0.5;
+    text-align: center;
+    padding: 60px 20px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="ferry-container">
+        {# Header with route and status #}
+        <div class="ferry-header">
+            <div class="route-name">{{ route }}</div>
+            <div class="status-badge status-{{ status }}">
+                {% if status == 'cancelled' %}
+                    ⚠️ Service Cancelled
+                {% elif status == 'delayed' %}
+                    ⏱️ Delayed {{ delay_minutes }} min
+                {% else %}
+                    ✓ On Time
+                {% endif %}
+            </div>
+        </div>
+        
+        {# Alert banner if present #}
+        {% if alerts and alerts|length > 0 %}
+        <div class="alert-banner">
+            <span class="alert-icon">⚠️</span>
+            {{ alerts[0] }}
+        </div>
+        {% endif %}
+        
+        {# Two-column departures #}
+        <div class="departures-grid">
+            {# Southworth departures #}
+            <div class="departure-column">
+                <div class="departure-header">From Southworth</div>
+                <div class="departure-list">
+                    {% if southworth_departures and southworth_departures|length > 0 %}
+                        {% for departure in southworth_departures[:7] %}
+                        <div class="departure-item">
+                            <div class="departure-time">{{ departure.departure_time }}</div>
+                            <div class="departure-vessel">{{ departure.vessel_name }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-departures">No departures scheduled</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {# Fauntleroy departures #}
+            <div class="departure-column">
+                <div class="departure-header">From Fauntleroy</div>
+                <div class="departure-list">
+                    {% if fauntleroy_departures and fauntleroy_departures|length > 0 %}
+                        {% for departure in fauntleroy_departures[:7] %}
+                        <div class="departure-item">
+                            <div class="departure-time">{{ departure.departure_time }}</div>
+                            <div class="departure-vessel">{{ departure.vessel_name }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-departures">No departures scheduled</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

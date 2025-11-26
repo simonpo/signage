@@ -7,7 +7,7 @@ Supports both PIL and HTML rendering modes.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -136,7 +136,12 @@ class SignageRenderer:
         content: SignageContent,
         filename: Optional[str] = None,
         timestamp: Optional[datetime] = None,
-        weather_data: Optional[AmbientWeatherData] = None
+        weather_data: Optional[AmbientWeatherData] = None,
+        ferry_data: Optional[Any] = None,
+        stock_data: Optional[Any] = None,
+        speedtest_data: Optional[Any] = None,
+        sensors_data: Optional[Any] = None,
+        sports_data: Optional[Any] = None
     ) -> List[Path]:
         """
         Render signage content to image file(s).
@@ -146,6 +151,11 @@ class SignageRenderer:
             filename: Output filename (defaults to content.filename_prefix + timestamp)
             timestamp: Timestamp for footer (defaults to content.timestamp or now)
             weather_data: Optional weather data for card-based rendering
+            ferry_data: Optional ferry data for schedule rendering
+            stock_data: Optional stock data for quote rendering
+            speedtest_data: Optional speedtest data for results rendering
+            sensors_data: Optional sensor data for sensors display
+            sports_data: Optional sports data for football/sports display
         
         Returns:
             List of paths where image was saved (one per output profile)
@@ -163,7 +173,7 @@ class SignageRenderer:
         
         # Choose rendering path
         if self.use_html:
-            return self._render_html(content, filename, timestamp, weather_data)
+            return self._render_html(content, filename, timestamp, weather_data, ferry_data, stock_data, speedtest_data, sensors_data, sports_data)
         else:
             return self._render_pil(content, filename, timestamp, weather_data)
     
@@ -252,7 +262,12 @@ class SignageRenderer:
         content: SignageContent,
         filename: str,
         timestamp: datetime,
-        weather_data: Optional[AmbientWeatherData] = None
+        weather_data: Optional[AmbientWeatherData] = None,
+        ferry_data: Optional[Any] = None,
+        stock_data: Optional[Any] = None,
+        speedtest_data: Optional[Any] = None,
+        sensors_data: Optional[Any] = None,
+        sports_data: Optional[Any] = None
     ) -> List[Path]:
         """
         Render using HTML templates (modern mode).
@@ -274,6 +289,20 @@ class SignageRenderer:
         # Step 2: Check if we should use weather cards template
         if content.layout_type == "weather_cards" and weather_data:
             html = self.template_renderer.render_weather_cards(weather_data)
+        elif content.layout_type == "modern_ambient" and weather_data:
+            html = self.template_renderer.render_ambient_dashboard(weather_data)
+        elif content.layout_type == "modern_ferry" and ferry_data:
+            html = self.template_renderer.render_ferry_schedule(ferry_data)
+        elif content.layout_type == "modern_stock" and stock_data:
+            html = self.template_renderer.render_stock_quote(stock_data)
+        elif content.layout_type == "modern_speedtest" and speedtest_data:
+            html = self.template_renderer.render_speedtest_results(speedtest_data)
+        elif content.layout_type == "modern_sensors" and sensors_data:
+            html = self.template_renderer.render_sensors_display(sensors_data)
+        elif content.layout_type == "modern_football" and sports_data:
+            html = self.template_renderer.render_football_display(sports_data)
+        elif content.layout_type == "modern_rugby" and sports_data:
+            html = self.template_renderer.render_rugby_display(sports_data)
         else:
             # Render text layout template
             html = self.template_renderer.render_layout(

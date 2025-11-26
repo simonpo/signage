@@ -4,19 +4,26 @@ test_tesla.py
 tv-token.txt
 uploaded.json
 
-# === OUTPUT DIRECTORY (placeholder only) ===
-# Keep folder, block all contents except .gitkeep
-art_folder/
-art_folder/*
-!art_folder/
-!art_folder/.gitkeep
-
 # === Python & Dev ===
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.log
+
+# === OUTPUT DIRECTORY (placeholder only) ===
+# Keep folder, block all contents except .gitkeep and specific sample files
+art_folder/
+art_folder/*
+!art_folder/
+!art_folder/.gitkeep
+!art_folder/ferry.png
+!art_folder/weather.png
+!art_folder/speedtest.png
+!art_folder/sensors.png
+!art_folder/archive/
+art_folder/archive/*
+!art_folder/archive/.gitkeep
 
 # === Virtual Environments ===
 signage-env/

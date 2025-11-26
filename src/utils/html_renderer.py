@@ -86,7 +86,7 @@ class HTMLRenderer:
             screenshot_bytes = await page.screenshot(
                 type='png',
                 full_page=False,
-                omit_background=False
+                omit_background=True  # Preserve transparent background
             )
             
             # Convert to PIL Image

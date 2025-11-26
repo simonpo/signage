@@ -48,13 +48,10 @@ class TemplateRenderer:
     def _register_filters(self):
         """Register custom Jinja2 filters."""
         
-        @self.env.filter('enumerate')
         def do_enumerate(iterable, start=0):
             """Enumerate filter for Jinja2."""
             return enumerate(iterable, start)
         
-        # Add wind direction compass filter
-        @self.env.filter('compass')
         def wind_direction_compass(degrees):
             """Convert wind direction degrees to compass direction."""
             if degrees is None:
@@ -64,6 +61,10 @@ class TemplateRenderer:
                          "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
             index = round(degrees / 22.5) % 16
             return directions[index]
+        
+        # Register filters
+        self.env.filters['enumerate'] = do_enumerate
+        self.env.filters['compass'] = wind_direction_compass
     
     def render(self, template_name: str, context: Dict[str, Any]) -> str:
         """
@@ -135,6 +136,188 @@ class TemplateRenderer:
         }
         
         return self.render('weather_cards.html', context)
+    
+    def render_ambient_dashboard(self, weather_data: Any) -> str:
+        """
+        Render modern ambient weather dashboard.
+        
+        Args:
+            weather_data: AmbientWeatherData object
+        
+        Returns:
+            Rendered HTML string
+        """
+        context = {
+            'station_name': weather_data.station_name,
+            'tempf': weather_data.tempf,
+            'humidity': weather_data.humidity,
+            'windspeedmph': weather_data.windspeedmph,
+            'winddir': weather_data.winddir,
+            'dailyrainin': weather_data.dailyrainin,
+            'uv': weather_data.uv,
+            'solarradiation': weather_data.solarradiation,
+            'baromrelin': weather_data.baromrelin,
+            'feels_like': weather_data.feels_like,
+            'dew_point': weather_data.dew_point,
+            'hourlyrainin': weather_data.hourlyrainin,
+            'temp_high': weather_data.temp_high,
+            'temp_low': weather_data.temp_low,
+            'tempinf': weather_data.tempinf,
+            'humidityin': weather_data.humidityin,
+            'pm25_in': weather_data.pm25_in,
+            'aqi_pm25_in': weather_data.aqi_pm25_in,
+            'co2_in': weather_data.co2_in,
+        }
+        
+        return self.render('modern_ambient_layout.html', context)
+    
+    def render_ferry_schedule(self, ferry_data: Any) -> str:
+        """
+        Render modern ferry schedule.
+        
+        Args:
+            ferry_data: FerryData object
+        
+        Returns:
+            Rendered HTML string
+        """
+        context = {
+            'route': ferry_data.route,
+            'status': ferry_data.status,
+            'delay_minutes': ferry_data.delay_minutes,
+            'southworth_departures': ferry_data.southworth_departures,
+            'fauntleroy_departures': ferry_data.fauntleroy_departures,
+            'alerts': ferry_data.alerts,
+            'wait_time_minutes': ferry_data.wait_time_minutes,
+        }
+        
+        return self.render('modern_ferry_layout.html', context)
+    
+    def render_stock_quote(self, stock_data: Any) -> str:
+        """
+        Render modern stock quote.
+        
+        Args:
+            stock_data: StockData object
+        
+        Returns:
+            Rendered HTML string
+        """
+        # Parse change percent to determine positive/negative
+        change_str = stock_data.change_percent
+        is_positive = not change_str.startswith('-')
+        
+        context = {
+            'symbol': stock_data.symbol,
+            'price': stock_data.price,
+            'change_percent': stock_data.change_percent,
+            'is_positive': is_positive,
+        }
+        
+        return self.render('modern_stock_layout.html', context)
+    
+    def render_speedtest_results(self, speedtest_data: Any) -> str:
+        """
+        Render modern speedtest results.
+        
+        Args:
+            speedtest_data: SpeedtestData object
+        
+        Returns:
+            Rendered HTML string
+        """
+        context = {
+            'download_mbps': speedtest_data.download,
+            'upload_mbps': speedtest_data.upload,
+            'ping_ms': speedtest_data.ping,
+            'jitter_ms': 0,  # Not available in current data
+            'server_location': speedtest_data.server_name,
+        }
+        
+        return self.render('modern_speedtest_layout.html', context)
+    
+    def render_sensors_display(self, sensors_data: Any) -> str:
+        """
+        Render modern sensors display.
+        
+        Args:
+            sensors_data: AmbientMultiSensorData object
+        
+        Returns:
+            Rendered HTML string
+        """
+        from datetime import datetime
+        
+        # Find greenhouse and chickens sensors
+        greenhouse_temp = None
+        greenhouse_humidity = None
+        chickens_temp = None
+        chickens_humidity = None
+        
+        for sensor in sensors_data.sensors:
+            if sensor.name == "Greenhouse":
+                greenhouse_temp = sensor.temperature
+                greenhouse_humidity = sensor.humidity
+            elif sensor.name == "Chickens":
+                chickens_temp = sensor.temperature
+                chickens_humidity = sensor.humidity
+        
+        # Format current time
+        now = datetime.now()
+        formatted_datetime = now.strftime("%B %d, %Y at %I:%M %p").replace(" 0", " ")
+        
+        context = {
+            'date_time': formatted_datetime,
+            'outdoor_temp': sensors_data.outdoor_temp,
+            'outdoor_humidity': sensors_data.outdoor_humidity,
+            'greenhouse_temp': greenhouse_temp,
+            'greenhouse_humidity': greenhouse_humidity,
+            'chickens_temp': chickens_temp,
+            'chickens_humidity': chickens_humidity,
+        }
+        
+        return self.render('modern_sensors_layout.html', context)
+    
+    def render_football_display(self, sports_data: Any) -> str:
+        """
+        Render modern football (soccer) display.
+        
+        Args:
+            sports_data: SportsData object
+        
+        Returns:
+            Rendered HTML string
+        """
+        context = {
+            'team_name': sports_data.team_name,
+            'is_live': sports_data.is_live,
+            'live_score': sports_data.live_score,
+            'last_result': sports_data.last_result,
+            'next_fixtures': sports_data.next_fixtures,
+            'league_table': sports_data.league_table,
+        }
+        
+        return self.render('modern_football_layout.html', context)
+    
+    def render_rugby_display(self, sports_data: Any) -> str:
+        """  
+        Render modern rugby display.
+        
+        Args:
+            sports_data: SportsData object
+        
+        Returns:
+            Rendered HTML string
+        """
+        context = {
+            'team_name': sports_data.team_name,
+            'is_live': sports_data.is_live,
+            'live_score': sports_data.live_score,
+            'last_result': sports_data.last_result,
+            'next_fixtures': sports_data.next_fixtures,
+        }
+        
+        return self.render('modern_rugby_layout.html', context)
     
     def _wind_direction_to_compass(self, degrees: Optional[int]) -> str:
         """Convert wind direction degrees to compass direction."""

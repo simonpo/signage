@@ -58,9 +58,9 @@ def _render_and_save(
     # Render to all output profiles
     paths = renderer.render(content, filename=filename, timestamp=timestamp)
     
-    logger.info(f\"✓ Saved to {len(paths)} output profile(s)")
+    logger.info(f"✓ Saved to {len(paths)} output profile(s)")
     for path in paths:
-        logger.debug(f\"  - {path}\")
+        logger.debug(f"  - {path}")
 
 
 def generate_tesla(
@@ -118,11 +118,12 @@ def generate_weather(
         # Convert to signage content
         content = weather_data.to_signage()
         
-        # Render
-        _render_and_save(renderer, content, "weather")
+        # Render with simple filename
+        timestamp = Config.get_current_time()
+        filename = "weather.png"
+        renderer.render(content, filename=filename, timestamp=timestamp, weather_data=weather_data)
         
-        # Cleanup
-        file_mgr.cleanup_old_files("weather")
+        # No cleanup - always overwrite same file
         
         logger.info("✓ Weather signage complete")
     
@@ -151,14 +152,12 @@ def generate_ambient_weather(
         
         # Get timestamp
         timestamp = Config.get_current_time()
-        timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
-        filename = f"ambient_{timestamp_str}.png"
+        filename = "ambient.png"
         
         # Render with weather data for card-based layout
         renderer.render(content, filename=filename, timestamp=timestamp, weather_data=ambient_data)
         
-        # Cleanup
-        file_mgr.cleanup_old_files("ambient")
+        # No cleanup - always overwrite same file
         
         logger.info("✓ Ambient Weather signage complete")
     
@@ -182,14 +181,17 @@ def generate_ambient_sensors(
             logger.warning("No Ambient Weather sensor data available")
             return
         
+        logger.info(f"Ambient Sensors: Outdoor {sensor_data.outdoor_temp:.1f}°F, {len(sensor_data.sensors)} additional sensors")
+        
         # Convert to signage content
         content = sensor_data.to_signage()
         
-        # Render
-        _render_and_save(renderer, content, "sensors")
+        # Render with simple filename
+        timestamp = Config.get_current_time()
+        filename = "sensors.png"
+        renderer.render(content, filename=filename, timestamp=timestamp, sensors_data=sensor_data)
         
-        # Cleanup
-        file_mgr.cleanup_old_files("sensors")
+        # No cleanup - always overwrite same file
         
         logger.info(f"✓ Multi-sensor display complete ({len(sensor_data.sensors)} sensors)")
     
@@ -216,11 +218,12 @@ def generate_speedtest(
         # Convert to signage content
         content = speedtest_data.to_signage()
         
-        # Render
-        _render_and_save(renderer, content, "speedtest")
+        # Render with simple filename
+        timestamp = Config.get_current_time()
+        filename = "speedtest.png"
+        renderer.render(content, filename=filename, timestamp=timestamp, speedtest_data=speedtest_data)
         
-        # Cleanup
-        file_mgr.cleanup_old_files("speedtest")
+        # No cleanup - always overwrite same file
         
         logger.info(f"✓ Speedtest signage complete: {speedtest_data.download:.1f} Mbps down")
     
@@ -247,11 +250,12 @@ def generate_stock(
         # Convert to signage content
         content = stock_data.to_signage()
         
-        # Render
-        _render_and_save(renderer, content, "stock")
+        # Render with simple filename
+        timestamp = Config.get_current_time()
+        filename = "stock.png"
+        renderer.render(content, filename=filename, timestamp=timestamp, stock_data=stock_data)
         
-        # Cleanup
-        file_mgr.cleanup_old_files("stock")
+        # No cleanup - always overwrite same file
         
         logger.info("✓ Stock signage complete")
     
@@ -288,11 +292,14 @@ def generate_ferry(
         # Convert to signage content
         content = ferry_data.to_signage(map_path)
         
-        # Render
-        _render_and_save(renderer, content, "ferry")
+        # Get timestamp
+        timestamp = Config.get_current_time()
+        filename = "ferry.png"
         
-        # Cleanup
-        file_mgr.cleanup_old_files("ferry")
+        # Render with ferry data for modern HTML layout
+        renderer.render(content, filename=filename, timestamp=timestamp, ferry_data=ferry_data)
+        
+        # No cleanup - always overwrite same file
         
         logger.info("✓ Ferry signage complete")
     
@@ -397,7 +404,43 @@ def generate_sports(
             except Exception as e:
                 logger.error(f"Failed to generate NFL signage: {e}")
         
-        # TODO: Add Arsenal (football), Rugby, Cricket when implemented
+        # Arsenal (Football)
+        if (sport_type in ["all", "football", "arsenal"]) and Config.ARSENAL_ENABLED:
+            try:
+                from src.clients.sports.football import FootballClient
+                
+                football_client = FootballClient()
+                sports_data = football_client.get_team_data(Config.ARSENAL_TEAM_ID)
+                
+                if sports_data:
+                    content = sports_data.to_signage()
+                    timestamp = Config.get_current_time()
+                    filename = "arsenal.png"
+                    renderer.render(content, filename=filename, timestamp=timestamp, sports_data=sports_data)
+                    generated += 1
+            
+            except Exception as e:
+                logger.error(f"Failed to generate Arsenal signage: {e}")
+        
+        # England Rugby
+        if (sport_type in ["all", "rugby"]) and Config.ENGLAND_RUGBY_ENABLED:
+            try:
+                from src.clients.sports.rugby import RugbyClient
+                
+                rugby_client = RugbyClient()
+                sports_data = rugby_client.get_team_data()  # No team ID needed (mock data)
+                
+                if sports_data:
+                    content = sports_data.to_signage()
+                    timestamp = Config.get_current_time()
+                    filename = "england_rugby.png"
+                    renderer.render(content, filename=filename, timestamp=timestamp, sports_data=sports_data)
+                    generated += 1
+            
+            except Exception as e:
+                logger.error(f"Failed to generate England Rugby signage: {e}")
+        
+        # TODO: Add Cricket when implemented
         
         if generated > 0:
             logger.info(f"✓ Sports signage complete ({generated} generated)")
@@ -454,7 +497,7 @@ def main():
     )
     parser.add_argument(
         "--source",
-        choices=["all", "tesla", "weather", "ambient", "sensors", "speedtest", "stock", "ferry", "ferry_map", "marine", "whales", "sports", "nfl"],
+        choices=["all", "tesla", "weather", "ambient", "sensors", "speedtest", "stock", "ferry", "ferry_map", "marine", "whales", "sports", "nfl", "arsenal", "football", "rugby"],
         default="all",
         help="Which signage to generate"
     )
@@ -538,6 +581,12 @@ def main():
         
         if args.source in ["all", "sports", "nfl"]:
             generate_sports(renderer, file_mgr, sport_type=args.source)
+        
+        if args.source in ["arsenal", "football"]:
+            generate_sports(renderer, file_mgr, sport_type="arsenal")
+        
+        if args.source == "rugby":
+            generate_sports(renderer, file_mgr, sport_type="rugby")
         
         logger.info(f"All signage generation complete. Files in: {Config.OUTPUT_PATH}")
 

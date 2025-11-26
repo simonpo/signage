@@ -85,12 +85,13 @@ class Config:
     # ===== Sports =====
     ARSENAL_ENABLED = os.getenv("ARSENAL_ENABLED", "false").lower() == "true"
     SEAHAWKS_ENABLED = os.getenv("SEAHAWKS_ENABLED", "false").lower() == "true"
-    ENGLAND_RUGBY_ENABLED = os.getenv("ENGLAND_RUGBY_ENABLED", "false").lower() == "true"
+    ENGLAND_RUGBY_ENABLED = os.getenv("ENGLAND_RUGBY_ENABLED", "false").lower() == "true"  # Mock data
     BATH_RUGBY_ENABLED = os.getenv("BATH_RUGBY_ENABLED", "false").lower() == "true"
     ENGLAND_CRICKET_ENABLED = os.getenv("ENGLAND_CRICKET_ENABLED", "false").lower() == "true"
     
     SEAHAWKS_TEAM_ID = os.getenv("SEAHAWKS_TEAM_ID", "26")  # Seattle Seahawks
     ARSENAL_TEAM_ID = os.getenv("ARSENAL_TEAM_ID", "57")    # Arsenal FC
+    # Note: England Rugby uses mock data (no team ID needed)
     
     # ===== API Keys =====
     SPORTS_API_KEY = os.getenv("SPORTS_API_KEY")

@@ -36,9 +36,12 @@ class AmbientWeatherClient(APIClient):
         self.api_key = Config.AMBIENT_API_KEY
         self.app_key = Config.AMBIENT_APP_KEY
     
-    def get_weather(self) -> Optional[AmbientWeatherData]:
+    def get_weather(self, include_trend: bool = True) -> Optional[AmbientWeatherData]:
         """
         Fetch current weather from user's Ambient Weather station.
+        
+        Args:
+            include_trend: If True, calculates pressure trend from recent history
         
         Returns:
             AmbientWeatherData object or None on failure

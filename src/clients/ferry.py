@@ -87,8 +87,8 @@ class FerryClient(APIClient):
                 route=self.route,
                 status=status,
                 delay_minutes=delay_minutes,
-                southworth_departures=southworth_departures[:5],  # Next 5 sailings
-                fauntleroy_departures=fauntleroy_departures[:5],
+                southworth_departures=southworth_departures[:7],  # Next 7 sailings
+                fauntleroy_departures=fauntleroy_departures[:7],
                 vessels=vessels,
                 alerts=alerts,
                 wait_time_minutes=wait_time
@@ -160,7 +160,7 @@ class FerryClient(APIClient):
                     
                     schedules.append(FerrySchedule(
                         departure_time=departure_time,
-                        arrival_time="",  # Not provided by API
+                        arrival_time="",  # Not reliably calculable
                         vessel_name=sailing.get("VesselName", ""),
                         departing_terminal=departing_terminal
                     ))

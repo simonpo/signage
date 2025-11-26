@@ -1,88 +1,216 @@
 # Samsung Frame TV Signage
 
-Generates data-driven images for display on Samsung Frame TVs in Art Mode. Still very much a work in progress.
+Generate data-driven images for Samsung Frame TVs in Art Mode. Fetch live data from weather APIs, ferry schedules, sports scores, and more, then render them as beautiful 4K images to display on your TV.
 
 ## What it does
 
-Fetches data from various sources (weather APIs, personal weather stations, ferry schedules, speedtest trackers, etc.) and renders them as 4K images with configurable backgrounds. These can be uploaded to a Samsung Frame TV to display alongside regular artwork.
+This system pulls data from various sources and creates custom signage images. Each image combines your data with a background (local photos, gradient, or API-sourced) and renders it at 3840×2160 for Samsung Frame TVs.
 
-The layout engine needs significant work and many planned topics haven't been implemented yet. See `ROADMAP.md` for what's planned.
+### Weather Display
 
-## Available topics
+Shows current conditions, temperature, and forecast from OpenWeatherMap.
 
-- `weather` - OpenWeatherMap data with expanded conditions
-- `ambient` - Personal Ambient Weather station data
-- `sensors` - Multi-sensor view from Ambient Weather (greenhouse, chicken coop, etc.)
-- `ferry` - WSDOT ferry schedules (Fauntleroy/Southworth route)
-- `speedtest` - Local speedtest tracker results
-- `tesla` - Home Assistant integration (battery, range)
-- `stock` - Stock quotes
-- `whales` - Marine traffic (when implemented)
-- `sports` - Sports scores (partially implemented)
+![Weather display showing current conditions and 5-day forecast](art_folder/weather.png)
 
-Run `python generate_signage.py --source <topic>` to generate an image, or `--source all` for everything.
+### Ferry Schedule
 
-## Setup
+Live departure times for Washington State Ferries (currently Fauntleroy-Southworth route).
 
-1. Clone and create a virtual environment:
-   ```bash
-   git clone https://github.com/simonpo/signage.git
-   cd signage
-   ./scripts/setup.sh
-   ```
+![Ferry schedule showing next 7 departures](art_folder/ferry.png)
 
-2. Configure your environment:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your API keys, URLs, and tokens
-   ```
+### Internet Speed
 
-3. Generate an image:
-   ```bash
-   source signage-env/bin/activate
-   python generate_signage.py --source weather
-   ```
+Results from your local Speedtest tracker showing download, upload, and ping.
 
-4. Upload to your TV (optional):
-   ```bash
-   python upload_to_frame.py
-   ```
+![Speedtest results with gauge-style display](art_folder/speedtest.png)
+
+### Sensor Monitoring
+
+Multi-location temperature and humidity from Ambient Weather stations (outdoor, greenhouse, chicken coop).
+
+![Sensor data grid showing multiple locations](art_folder/sensors.png)
+
+### Other Data Sources
+
+- **Stock quotes** with daily change indicators
+- **Ambient weather** dashboard with 11 metrics
+- **Sports scores** (Arsenal FC via football-data.org, more coming)
+- **Marine traffic** (planned)
+
+## Installation
+
+Clone the repository and run the setup script:
+
+```bash
+git clone https://github.com/simonpo/signage.git
+cd signage
+./scripts/setup.sh
+```
+
+This creates a Python virtual environment and installs all dependencies, including Playwright for HTML rendering.
 
 ## Configuration
 
-All configuration is done via environment variables in `.env`. See `.env.example` for the full list of options. Key settings:
+Copy the example environment file and edit it with your details:
 
-- API keys for OpenWeatherMap, Ambient Weather, etc.
-- Background mode (`local`, `pexels`, `unsplash`, or `gradient`)
-- Topic-specific settings (sensor names, ferry routes, etc.)
+```bash
+cp .env.example .env
+nano .env  # or use your preferred editor
+```
 
-Don't commit your `.env` file.
+The `.env` file stores all your API keys, credentials, and settings. It's excluded from git to keep your secrets safe. Key settings include:
 
-## Project structure
+### Required for basic weather
+```bash
+OPENWEATHER_API_KEY=your_key_here
+OPENWEATHER_LOCATION=Seattle,US
+```
+
+### Optional data sources
+```bash
+# Ambient Weather personal station
+AMBIENT_WEATHER_API_KEY=your_key
+AMBIENT_WEATHER_APP_KEY=your_app_key
+AMBIENT_WEATHER_MAC_ADDRESS=your_device_mac
+
+# Sports (football-data.org)
+FOOTBALL_API_KEY=your_key
+ARSENAL_ENABLED=true
+
+# Ferry schedules (no key needed)
+FERRY_TERMINAL_ID=3
+FERRY_ROUTE_ID=7
+
+# Stock quotes (Alpha Vantage)
+ALPHA_VANTAGE_API_KEY=your_key
+STOCK_SYMBOL=MSFT
+```
+
+### Background options
+
+Choose how backgrounds are selected:
+
+```bash
+BACKGROUND_MODE=local  # or: pexels, unsplash, gradient
+```
+
+- `local`: Use images from `backgrounds/` directories (organised by topic)
+- `pexels`: Fetch from Pexels API (requires `PEXELS_API_KEY`)
+- `unsplash`: Fetch from Unsplash API (requires `UNSPLASH_ACCESS_KEY`)
+- `gradient`: Generate simple gradients
+
+### Rendering mode
+
+```bash
+USE_HTML_RENDERER=true  # Modern HTML/CSS layouts (recommended)
+```
+
+Set to `false` to use legacy PIL-based rendering. The HTML renderer produces better typography and layouts.
+
+## Usage
+
+Activate the virtual environment:
+
+```bash
+source signage-env/bin/activate
+```
+
+Generate an image for a specific topic:
+
+```bash
+python generate_signage.py --source weather
+python generate_signage.py --source ferry
+python generate_signage.py --source speedtest
+python generate_signage.py --source sensors
+python generate_signage.py --source stock
+python generate_signage.py --source arsenal
+```
+
+Use `--html` flag to force HTML rendering (or `--pil` for legacy mode):
+
+```bash
+python generate_signage.py --source weather --html
+```
+
+Generate all enabled topics:
+
+```bash
+python generate_signage.py --source all
+```
+
+Images are saved to `art_folder/` with simple filenames like `weather.png`, `ferry.png`, etc. Each generation overwrites the previous version.
+
+## Uploading to your TV
+
+The `upload_to_frame.py` script uploads new images to your Samsung Frame TV via the SmartThings API.
+
+Configure your TV details in `.env`:
+
+```bash
+TV_IP=192.168.1.100
+TV_PORT=8002
+```
+
+Run the upload script:
+
+```bash
+python upload_to_frame.py
+```
+
+The script tracks which files have been uploaded in `uploaded.json` and only sends new images. It automatically cleans up old artworks, keeping the last 100.
+
+First run will prompt you to accept the connection on your TV.
+
+## Automation
+
+Set up cron jobs to generate images automatically:
+
+```bash
+./scripts/setup_cron.sh
+```
+
+Edit the script first to choose which topics to generate and how often. The default updates weather every 30 minutes and ferry schedules every 15 minutes.
+
+## Project Structure
 
 ```
 src/
-  clients/        - API clients for data sources
-  models/         - Data models and signage content
-  renderers/      - Image rendering and layouts
-  backgrounds/    - Background providers
-  utils/          - File management, caching
-backgrounds/      - Local background images organised by topic
-art_folder/       - Generated images (gitignored)
+  clients/        API clients for external data sources
+  models/         Data models and signage content definitions
+  renderers/      HTML and PIL rendering engines
+  backgrounds/    Background image providers
+  utils/          File management, caching, image utilities
+  templates/      Jinja2 templates for HTML layouts
+
+backgrounds/      Local background images organised by topic
+art_folder/       Generated output images (gitignored except samples)
+scripts/          Setup and automation scripts
+tests/            Test suite
 ```
 
-## Scheduling
+## How it Works
 
-Run `./scripts/setup_cron.sh` to configure automated generation. Edit the script first to set which topics you want and how often.
+1. **Data collection**: Clients fetch data from APIs or local sources
+2. **Model conversion**: Raw data becomes structured SignageContent objects
+3. **Background selection**: Provider chooses or generates a background image
+4. **Rendering**: Template engine (HTML/CSS or PIL) combines data with background
+5. **Output**: 3840×2160 PNG saved to `art_folder/`
 
-## Known issues
+The HTML rendering path uses Playwright to render Jinja2 templates with CSS styling, then captures them as high-resolution screenshots. This produces better text quality and more flexible layouts than the legacy PIL approach.
 
-- Layout engine uses fixed spacing that doesn't adapt well to content length
-- Some topics (whales, sports) are partially implemented
-- Ferry layout could be improved
-- No support for multiple weather locations yet
-- Background image selection is basic
+## Requirements
+
+- Python 3.9+
+- Playwright (installed automatically via setup script)
+- Samsung Frame TV (2024+ models tested)
+- API keys for your chosen data sources
 
 ## Credits
 
 Uses [Nick Waterton's samsung-tv-ws-api fork](https://github.com/NickWaterton/samsung-tv-ws-api) for uploads to 2024+ Frame TVs.
+
+Weather data from [OpenWeatherMap](https://openweathermap.org/).
+
+Ferry data from [Washington State Department of Transportation](https://www.wsdot.wa.gov/ferries/).
+
+Football data from [football-data.org](https://www.football-data.org/).

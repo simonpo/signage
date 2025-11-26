@@ -17,7 +17,7 @@ class SignageContent:
     """
     lines: List[str]
     filename_prefix: str
-    layout_type: Literal["centered", "left", "grid", "split", "map", "weather"] = "centered"
+    layout_type: Literal["centered", "left", "grid", "split", "map", "weather", "modern_weather", "modern_stock", "modern_ambient", "modern_ferry", "modern_speedtest", "modern_sensors", "modern_football", "modern_rugby"] = "centered"
     background_mode: str = "gradient"
     background_query: Optional[str] = None
     timestamp: Optional[datetime] = None
@@ -110,7 +110,7 @@ class WeatherData:
         return SignageContent(
             lines=lines,
             filename_prefix="weather",
-            layout_type="weather",
+            layout_type="modern_weather",
             background_mode="local",
             background_query=f"weather/{self.condition}",
         )
@@ -163,7 +163,7 @@ class AmbientWeatherData:
         return SignageContent(
             lines=[],  # Empty - we'll use custom card renderer
             filename_prefix="ambient",
-            layout_type="weather_cards",  # New layout type
+            layout_type="modern_ambient",  # Modern dashboard layout
             background_mode="local",
             background_query=f"weather/{condition}",
         )
@@ -219,7 +219,7 @@ class SpeedtestData:
     url: Optional[str] = None
     
     def to_signage(self) -> SignageContent:
-        """Convert to signage with centered layout."""
+        """Convert to signage with modern HTML layout."""
         lines = [
             "INTERNET SPEED",
             "",
@@ -236,9 +236,9 @@ class SpeedtestData:
         return SignageContent(
             lines=lines,
             filename_prefix="speedtest",
-            layout_type="centered",
+            layout_type="modern_speedtest",
             background_mode="local",
-            background_query="tech/internet",
+            background_query="speedtest",
         )
 
 
@@ -308,9 +308,9 @@ class AmbientMultiSensorData:
         return SignageContent(
             lines=lines,
             filename_prefix="sensors",
-            layout_type="grid",
+            layout_type="modern_sensors",
             background_mode="local",
-            background_query="weather/sunny",
+            background_query="sensors",
         )
 
 
@@ -330,8 +330,9 @@ class StockData:
                 self.change_percent,
             ],
             filename_prefix="stock",
-            layout_type="centered",
-            background_mode="gradient",
+            layout_type="modern_stock",
+            background_mode="local",
+            background_query="stock",
         )
 
 
@@ -427,9 +428,9 @@ class SportsData:
         return SignageContent(
             lines=lines,
             filename_prefix=f"{self.sport}_{self.team_name.lower().replace(' ', '_')}",
-            layout_type="left",
+            layout_type=f"modern_{self.sport}",
             background_mode="local",
-            background_query=f"sports/{self.team_name.lower().replace(' ', '_')}",
+            background_query=f"sports/{self.sport}",
         )
 
 
@@ -490,7 +491,7 @@ class FerryData:
         
         # Southworth departures (left column)
         if self.southworth_departures:
-            for dep in self.southworth_departures[:5]:
+            for dep in self.southworth_departures[:7]:
                 left_col.append(f"{dep.departure_time}")
                 left_col.append(f"  {dep.vessel_name}")
         else:
@@ -498,7 +499,7 @@ class FerryData:
         
         # Fauntleroy departures (right column)
         if self.fauntleroy_departures:
-            for dep in self.fauntleroy_departures[:5]:
+            for dep in self.fauntleroy_departures[:7]:
                 right_col.append(f"{dep.departure_time}")
                 right_col.append(f"  {dep.vessel_name}")
         else:
@@ -519,16 +520,7 @@ class FerryData:
         return SignageContent(
             lines=lines,
             filename_prefix="ferry",
-            layout_type="grid",  # Use grid for compact spacing and smaller font
-            background_mode="local",
-            background_query="ferry",
-            map_image=map_path,
-        )
-        
-        return SignageContent(
-            lines=lines,
-            filename_prefix="ferry",
-            layout_type="split",
+            layout_type="modern_ferry",  # Modern HTML schedule layout
             background_mode="local",
             background_query="ferry",
             map_image=map_path,

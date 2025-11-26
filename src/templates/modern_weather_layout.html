@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Modern Weather{% endblock %}
+
+{% block styles %}
+/* Modern weather layout inspired by contemporary weather apps */
+.modern-weather {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 120px 180px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+/* Top row: icon + temperature */
+.top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+/* Weather icon area - top left */
+.weather-icon {
+    font-size: 220px;
+    line-height: 1;
+    margin-right: 120px;
+}
+
+/* Main temperature - large and bold */
+.main-temp {
+    font-size: 380px;
+    font-weight: 200;
+    letter-spacing: -12px;
+    line-height: 0.85;
+    margin-top: -20px;
+}
+
+/* Condition text */
+.condition {
+    font-size: 100px;
+    font-weight: 300;
+    margin-bottom: 120px;
+    padding-left: 10px;
+}
+
+/* Feels like temperature */
+.feels-like {
+    font-size: 90px;
+    font-weight: 300;
+    margin-bottom: 140px;
+    padding-left: 10px;
+}
+
+.feels-like-label {
+    font-weight: 300;
+    opacity: 0.75;
+}
+
+/* Stats grid - two columns */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 200px;
+    margin-bottom: 120px;
+    width: 100%;
+    max-width: 1800px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 55px;
+    font-weight: 300;
+    opacity: 0.65;
+    margin-bottom: 25px;
+    text-transform: capitalize;
+}
+
+.stat-value {
+    font-size: 110px;
+    font-weight: 300;
+}
+
+/* Additional details */
+.details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 100px;
+    font-size: 65px;
+    font-weight: 300;
+    opacity: 0.85;
+    padding-left: 10px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.detail-label {
+    opacity: 0.75;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="modern-weather">
+        {# Use namespace to allow variable assignment in loops #}
+        {% set weather = namespace(
+            location='',
+            temp='',
+            condition='',
+            feels_like='',
+            humidity='',
+            wind='',
+            high='',
+            low='',
+            visibility=''
+        ) %}
+        
+        {# Parse weather data #}
+        {% for line in lines %}
+            {% if line.strip() %}
+                {% if loop.index0 == 0 %}
+                    {% set weather.location = line.strip() %}
+                {% elif loop.index0 == 2 and '°F' in line %}
+                    {% set weather.temp = line.replace('°F', '°').strip() %}
+                {% elif loop.index0 == 3 %}
+                    {% set weather.condition = line.strip() %}
+                {% elif 'High:' in line and 'Humidity:' in line %}
+                    {% set parts = line.split('Humidity:') %}
+                    {% set weather.high = parts[0].replace('High:', '').strip() %}
+                    {% set weather.humidity = parts[1].strip() %}
+                {% elif 'Low:' in line and 'Wind:' in line %}
+                    {% set parts = line.split('Wind:') %}
+                    {% set weather.low = parts[0].replace('Low:', '').strip() %}
+                    {% set weather.wind = parts[1].strip() %}
+                {% elif 'Feels:' in line %}
+                    {% if 'Visibility:' in line %}
+                        {% set parts = line.split('Visibility:') %}
+                        {% set weather.feels_like = parts[0].replace('Feels:', '').strip() %}
+                        {% set weather.visibility = parts[1].strip() %}
+                    {% else %}
+                        {% set weather.feels_like = line.replace('Feels:', '').strip() %}
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        {# Top row: icon + temperature #}
+        <div class="top-row">
+            <div class="weather-icon">
+                {% if 'rain' in weather.condition.lower() %}
+                    🌧️
+                {% elif 'cloud' in weather.condition.lower() %}
+                    ☁️
+                {% elif 'sun' in weather.condition.lower() or 'clear' in weather.condition.lower() %}
+                    ☀️
+                {% elif 'snow' in weather.condition.lower() %}
+                    ❄️
+                {% else %}
+                    🌤️
+                {% endif %}
+            </div>
+            <div class="main-temp">{{ weather.temp }}</div>
+        </div>
+        
+        {# Condition #}
+        {% if weather.condition %}
+        <div class="condition">{{ weather.condition }}</div>
+        {% endif %}
+        
+        {# Feels like #}
+        {% if weather.feels_like %}
+        <div class="feels-like">
+            <span class="feels-like-label">Feels Like</span> {{ weather.feels_like }}
+        </div>
+        {% endif %}
+        
+        {# Stats grid #}
+        <div class="stats-grid">
+            {% if weather.humidity %}
+            <div class="stat">
+                <div class="stat-label">Humidity</div>
+                <div class="stat-value">{{ weather.humidity }}</div>
+            </div>
+            {% endif %}
+            
+            {% if weather.high %}
+            <div class="stat">
+                <div class="stat-label">High / Low</div>
+                <div class="stat-value">{{ weather.high }} / {{ weather.low }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {# Additional details #}
+        <div class="details">
+            {% if weather.wind %}
+            <div class="detail-item">
+                <span class="detail-label">Wind:</span>
+                <span>{{ weather.wind }}</span>
+            </div>
+            {% endif %}
+            
+            {% if weather.visibility %}
+            <div class="detail-item">
+                <span class="detail-label">Visibility:</span>
+                <span>{{ weather.visibility }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

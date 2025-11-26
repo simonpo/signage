@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=3840, height=2160">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 3840px;
+            height: 2160px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 3400px;
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 100px;
+        }
+        
+        .header {
+            text-align: center;
+            text-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            margin-bottom: 40px;
+        }
+        
+        .header-title {
+            font-size: 120px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .header-date {
+            font-size: 65px;
+            font-weight: 400;
+            opacity: 0.85;
+            letter-spacing: 1px;
+        }
+        
+        .sensors-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 60px;
+            padding: 0 40px;
+        }
+        
+        .sensor-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(40px);
+            border-radius: 40px;
+            padding: 80px 60px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: transform 0.3s ease;
+            min-height: 600px;
+        }
+        
+        .sensor-label {
+            font-size: 65px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            letter-spacing: 2px;
+        }
+        
+        .sensor-value {
+            font-size: 180px;
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+        }
+        
+        .sensor-unit {
+            font-size: 85px;
+            opacity: 0.85;
+            margin-left: 15px;
+        }
+        
+        .sensor-humidity {
+            font-size: 55px;
+            margin-top: 30px;
+            opacity: 0.75;
+            font-weight: 500;
+        }
+        
+        .no-data {
+            font-size: 180px;
+            opacity: 0.4;
+            font-weight: 300;
+        }
+        
+        /* Outdoor sensor - slightly larger emphasis */
+        .sensor-card.outdoor {
+            grid-column: 1;
+        }
+        
+        .sensor-card.greenhouse {
+            grid-column: 2;
+        }
+        
+        .sensor-card.chickens {
+            grid-column: 3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">Temperature Sensors</div>
+            <div class="header-date">{{ date_time }}</div>
+        </div>
+        
+        <div class="sensors-grid">
+            <!-- Outdoor Temperature -->
+            <div class="sensor-card outdoor">
+                <div class="sensor-label">Outdoor</div>
+                <div class="sensor-value">
+                    {% if outdoor_temp is not none %}
+                        {{ "%.1f"|format(outdoor_temp) }}<span class="sensor-unit">°F</span>
+                    {% else %}
+                        <span class="no-data">-</span>
+                    {% endif %}
+                </div>
+                {% if outdoor_humidity is not none %}
+                <div class="sensor-humidity">{{ outdoor_humidity }}% humidity</div>
+                {% endif %}
+            </div>
+            
+            <!-- Greenhouse (Sensor 2) -->
+            <div class="sensor-card greenhouse">
+                <div class="sensor-label">Greenhouse</div>
+                <div class="sensor-value">
+                    {% if greenhouse_temp is not none %}
+                        {{ "%.1f"|format(greenhouse_temp) }}<span class="sensor-unit">°F</span>
+                    {% else %}
+                        <span class="no-data">-</span>
+                    {% endif %}
+                </div>
+                {% if greenhouse_humidity is not none %}
+                <div class="sensor-humidity">{{ greenhouse_humidity }}% humidity</div>
+                {% endif %}
+            </div>
+            
+            <!-- Chickens (Sensor 1) -->
+            <div class="sensor-card chickens">
+                <div class="sensor-label">Chicken Coop</div>
+                <div class="sensor-value">
+                    {% if chickens_temp is not none %}
+                        {{ "%.1f"|format(chickens_temp) }}<span class="sensor-unit">°F</span>
+                    {% else %}
+                        <span class="no-data">-</span>
+                    {% endif %}
+                </div>
+                {% if chickens_humidity is not none %}
+                <div class="sensor-humidity">{{ chickens_humidity }}% humidity</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

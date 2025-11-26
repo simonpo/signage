@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Internet Speed Test{% endblock %}
+
+{% block styles %}
+/* Modern speedtest layout with gauge-style design */
+.speedtest-container {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 60px;
+    padding: 80px 120px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+/* Header */
+.speedtest-header {
+    text-align: center;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.speedtest-title {
+    font-size: 85px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    opacity: 0.9;
+}
+
+/* Main speed cards */
+.speed-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+}
+
+.speed-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    padding: 80px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.speed-card.download {
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+.speed-card.upload {
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.speed-label {
+    font-size: 65px;
+    font-weight: 400;
+    margin-bottom: 40px;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.speed-icon {
+    font-size: 100px;
+    margin-bottom: 30px;
+}
+
+.speed-card.download .speed-icon {
+    color: #22c55e;
+}
+
+.speed-card.upload .speed-icon {
+    color: #3b82f6;
+}
+
+.speed-value {
+    font-size: 200px;
+    font-weight: 200;
+    letter-spacing: -5px;
+    line-height: 1;
+}
+
+.speed-unit {
+    font-size: 90px;
+    font-weight: 300;
+    margin-top: 20px;
+    opacity: 0.8;
+}
+
+/* Bottom stats */
+.bottom-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 40px 35px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 50px;
+    font-weight: 300;
+    opacity: 0.6;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.stat-value {
+    font-size: 80px;
+    font-weight: 400;
+}
+
+.stat-unit {
+    font-size: 45px;
+    opacity: 0.7;
+    margin-left: 8px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="speedtest-container">
+        {# Header #}
+        <div class="speedtest-header">
+            <div class="speedtest-title">⚡ Internet Speed</div>
+        </div>
+        
+        {# Main speed cards #}
+        <div class="speed-cards">
+            {# Download speed #}
+            <div class="speed-card download">
+                <div class="speed-icon">↓</div>
+                <div class="speed-label">Download</div>
+                <div class="speed-value">{{ download_mbps|round(1) }}</div>
+                <div class="speed-unit">Mbps</div>
+            </div>
+            
+            {# Upload speed #}
+            <div class="speed-card upload">
+                <div class="speed-icon">↑</div>
+                <div class="speed-label">Upload</div>
+                <div class="speed-value">{{ upload_mbps|round(1) }}</div>
+                <div class="speed-unit">Mbps</div>
+            </div>
+        </div>
+        
+        {# Bottom stats #}
+        <div class="bottom-stats">
+            <div class="stat-card">
+                <div class="stat-label">Ping</div>
+                <div class="stat-value">{{ ping_ms|round(1) }}<span class="stat-unit">ms</span></div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Jitter</div>
+                <div class="stat-value">{{ jitter_ms|round(1) }}<span class="stat-unit">ms</span></div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Server</div>
+                <div class="stat-value" style="font-size: 55px;">{{ server_location }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
