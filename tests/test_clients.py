@@ -2,7 +2,6 @@
 Tests for API clients.
 """
 
-
 from src.clients.base import APIClient
 from src.clients.homeassistant import HomeAssistantClient
 from src.clients.weather import WeatherClient
