@@ -6,6 +6,12 @@ Generate data-driven images for Samsung Frame TVs in Art Mode. Fetch live data f
 
 This system pulls data from various sources and creates custom signage images. Each image combines your data with a background (local photos, gradient, or API-sourced) and renders it at 3840×2160 for Samsung Frame TVs.
 
+### Sports Scores
+
+Live scores and fixtures for your favourite teams. Currently supports Premier League football via football-data.org.
+
+![Arsenal FC fixtures and league standings](art_folder/arsenal.png)
+
 ### Weather Display
 
 Shows current conditions, temperature, and forecast from OpenWeatherMap.
@@ -34,7 +40,6 @@ Multi-location temperature and humidity from Ambient Weather stations (outdoor, 
 
 - **Stock quotes** with daily change indicators
 - **Ambient weather** dashboard with 11 metrics
-- **Sports scores** (Arsenal FC via football-data.org, more coming)
 - **Marine traffic** (planned)
 
 ## Installation

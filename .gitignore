@@ -21,6 +21,7 @@ art_folder/*
 !art_folder/weather.png
 !art_folder/speedtest.png
 !art_folder/sensors.png
+!art_folder/arsenal.png
 !art_folder/archive/
 art_folder/archive/*
 !art_folder/archive/.gitkeep
