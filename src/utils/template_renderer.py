@@ -376,6 +376,26 @@ class TemplateRenderer:
 
         return self.render("modern_weather_layout.html", context)
 
+    def render_tesla_display(self, tesla_data: Any) -> str:
+        """
+        Render modern Tesla vehicle display.
+
+        Args:
+            tesla_data: TeslaData object
+
+        Returns:
+            Rendered HTML string
+        """
+        context = {
+            "vehicle_name": "Tesla Model Y",
+            "battery_level": tesla_data.battery_level,
+            "battery_unit": tesla_data.battery_unit,
+            "range": tesla_data.range,
+            "range_unit": tesla_data.range_unit,
+        }
+
+        return self.render("modern_tesla_layout.html", context)
+
     def _wind_direction_to_compass(self, degrees: Optional[int]) -> str:
         """Convert wind direction degrees to compass direction."""
         if degrees is None:

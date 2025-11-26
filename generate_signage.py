@@ -83,7 +83,7 @@ def generate_tesla(
         # Render with simple filename
         timestamp = Config.get_current_time()
         filename = "tesla.png"
-        renderer.render(content, filename=filename, timestamp=timestamp)
+        renderer.render(content, filename=filename, timestamp=timestamp, tesla_data=tesla_data)
 
         # No cleanup - always overwrite same file
 

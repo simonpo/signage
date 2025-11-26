@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Tesla{% endblock %}
+
+{% block styles %}
+/* Modern Tesla layout with clean electric vehicle aesthetic */
+.modern-tesla {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    padding: 120px;
+}
+
+.vehicle-name {
+    font-size: 140px;
+    font-weight: 300;
+    letter-spacing: 12px;
+    margin-bottom: 200px;
+    opacity: 0.9;
+    text-transform: uppercase;
+}
+
+.vehicle-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 200px;
+    width: 100%;
+    max-width: 2400px;
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    border-radius: 40px;
+    padding: 100px 120px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-icon {
+    font-size: 160px;
+    margin-bottom: 50px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+}
+
+.stat-label {
+    font-size: 70px;
+    font-weight: 300;
+    opacity: 0.65;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+.stat-value {
+    font-size: 220px;
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: -4px;
+}
+
+.stat-unit {
+    font-size: 100px;
+    font-weight: 300;
+    opacity: 0.8;
+    margin-left: 20px;
+}
+
+/* Battery level color coding */
+.battery-high {
+    color: #22c55e;
+}
+
+.battery-medium {
+    color: #f59e0b;
+}
+
+.battery-low {
+    color: #ef4444;
+}
+
+/* Charging animation pulse */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.charging {
+    animation: pulse 2s ease-in-out infinite;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="modern-tesla">
+        {# Vehicle name #}
+        <div class="vehicle-name">{{ vehicle_name }}</div>
+        
+        {# Stats grid #}
+        <div class="vehicle-stats">
+            {# Battery card #}
+            <div class="stat-card">
+                <div class="stat-icon">🔋</div>
+                <div class="stat-label">Battery</div>
+                <div class="stat-value {% if battery_level|int >= 80 %}battery-high{% elif battery_level|int >= 30 %}battery-medium{% else %}battery-low{% endif %}">
+                    {{ battery_level }}<span class="stat-unit">{{ battery_unit }}</span>
+                </div>
+            </div>
+            
+            {# Range card #}
+            <div class="stat-card">
+                <div class="stat-icon">🛣️</div>
+                <div class="stat-label">Range</div>
+                <div class="stat-value">
+                    {{ range }}<span class="stat-unit">{{ range_unit }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

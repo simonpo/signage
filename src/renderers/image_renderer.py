@@ -131,6 +131,7 @@ class SignageRenderer:
         speedtest_data: Optional[Any] = None,
         sensors_data: Optional[Any] = None,
         sports_data: Optional[Any] = None,
+        tesla_data: Optional[Any] = None,
     ) -> list[Path]:
         """
         Render signage content to image file(s).
@@ -145,6 +146,7 @@ class SignageRenderer:
             speedtest_data: Optional speedtest data for results rendering
             sensors_data: Optional sensor data for sensors display
             sports_data: Optional sports data for football/sports display
+            tesla_data: Optional Tesla data for vehicle display
 
         Returns:
             List of paths where image was saved (one per output profile)
@@ -172,6 +174,7 @@ class SignageRenderer:
                 speedtest_data,
                 sensors_data,
                 sports_data,
+                tesla_data,
             )
         else:
             return self._render_pil(content, filename, timestamp, weather_data)
@@ -254,6 +257,7 @@ class SignageRenderer:
         speedtest_data: Optional[Any] = None,
         sensors_data: Optional[Any] = None,
         sports_data: Optional[Any] = None,
+        tesla_data: Optional[Any] = None,
     ) -> list[Path]:
         """
         Render using HTML templates (modern mode).
@@ -289,6 +293,9 @@ class SignageRenderer:
         elif content.layout_type == "modern_weather" and weather_data:
             # Render comprehensive weather display with all API data
             html = self.template_renderer.render_weather_display(weather_data)
+        elif content.layout_type == "modern_tesla" and tesla_data:
+            # Render modern Tesla vehicle display
+            html = self.template_renderer.render_tesla_display(tesla_data)
         else:
             # Render text layout template
             html = self.template_renderer.render_layout(

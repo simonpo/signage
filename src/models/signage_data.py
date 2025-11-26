@@ -55,17 +55,13 @@ class TeslaData:
     range_unit: str
 
     def to_signage(self) -> SignageContent:
-        """Convert to signage content with clean, readable layout."""
+        """Convert to signage content with modern HTML layout."""
         return SignageContent(
-            lines=[
-                "Tesla Model Y",
-                f"Battery: {self.battery_level}{self.battery_unit}",
-                f"Range: {self.range}{self.range_unit}",
-            ],
+            lines=[],  # Empty - using modern HTML template
             filename_prefix="tesla",
-            layout_type="centered",
+            layout_type="modern_tesla",
             background_mode="local",
-            background_query="tesla",
+            background_query="modelY",
         )
 
 
