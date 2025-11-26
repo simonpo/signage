@@ -104,6 +104,14 @@ class Config:
     ENABLE_DAEMON_MODE = os.getenv("ENABLE_DAEMON_MODE", "false").lower() == "true"
     LIVE_UPDATE_INTERVAL = int(os.getenv("LIVE_UPDATE_INTERVAL", "120"))
     
+    # ===== Output Management =====
+    OUTPUT_PROFILES = os.getenv("OUTPUT_PROFILES", "")
+    ARCHIVE_KEEP_COUNT = int(os.getenv("ARCHIVE_KEEP_COUNT", "5"))
+    
+    # ===== Logging =====
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    LOG_FILE = os.getenv("LOG_FILE", "")
+    
     @classmethod
     def validate(cls) -> None:
         """
@@ -159,3 +167,6 @@ class Config:
         """Get the current time in the configured timezone."""
         tz = cls.get_timezone()
         return datetime.now(tz)
+    
+    # ===== Google Maps (for ferry map satellite imagery) =====
+    GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
