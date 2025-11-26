@@ -80,11 +80,12 @@ def generate_tesla(
         # Convert to signage content
         content = tesla_data.to_signage()
 
-        # Render
-        _render_and_save(renderer, content, "tesla")
+        # Render with simple filename
+        timestamp = Config.get_current_time()
+        filename = "tesla.png"
+        renderer.render(content, filename=filename, timestamp=timestamp)
 
-        # Cleanup old files
-        file_mgr.cleanup_old_files("tesla")
+        # No cleanup - always overwrite same file
 
         logger.info("✓ Tesla signage complete")
 
