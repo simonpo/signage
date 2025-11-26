@@ -5,9 +5,10 @@ shows artwork content_id, image_date, and highlights any older than 25 hours.
 """
 
 import os
+from datetime import datetime, timedelta
+
 from dotenv import load_dotenv
 from samsungtvws import SamsungTVWS
-from datetime import datetime, timedelta
 
 # --- Load .env variables ---
 load_dotenv()
@@ -17,11 +18,13 @@ TOKEN_FILE = os.getenv("TOKEN_FILE", "tv-token.txt")
 
 CUTOFF = timedelta(hours=25)
 
+
 def parse_date(s):
     try:
         return datetime.strptime(s, "%Y:%m:%d %H:%M:%S")
     except Exception:
         return None
+
 
 def main():
     tv = SamsungTVWS(host=TV_IP, port=TV_PORT, token_file=TOKEN_FILE)
@@ -45,7 +48,9 @@ def main():
         for item in user_arts:
             dt = parse_date(item.get("image_date", ""))
             arts_with_date.append((dt, item))
-        arts_with_date.sort(key=lambda tup: tup[0] if tup[0] is not None else datetime.min, reverse=True)
+        arts_with_date.sort(
+            key=lambda tup: tup[0] if tup[0] is not None else datetime.min, reverse=True
+        )
 
         for dt, item in arts_with_date:
             cid = item.get("content_id", "<no id>")
@@ -62,6 +67,7 @@ def main():
             print(f"ID: {cid} | Date: {date_str} | {age_str}")
 
     tv.close()
+
 
 if __name__ == "__main__":
     main()

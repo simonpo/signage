@@ -6,6 +6,7 @@ Requires .env configuration: TV_IP, TV_PORT (optional), TOKEN_FILE (optional)
 """
 
 import os
+
 from dotenv import load_dotenv
 from samsungtvws import SamsungTVWS
 
@@ -17,6 +18,7 @@ TOKEN_FILE = os.getenv("TOKEN_FILE", "tv-token.txt")
 
 if not TV_IP:
     raise RuntimeError("TV_IP missing from .env")
+
 
 def main():
     print("Connecting to TV...")
@@ -51,6 +53,7 @@ def main():
         print("No artworks returned")
 
     tv.close()
+
 
 if __name__ == "__main__":
     main()

@@ -6,7 +6,7 @@ All data classes follow a clean pattern: fetch → model → SignageContent → 
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 
 @dataclass
@@ -15,14 +15,30 @@ class SignageContent:
     Base signage content model.
     This is what gets passed to the renderer.
     """
-    lines: List[str]
+
+    lines: list[str]
     filename_prefix: str
-    layout_type: Literal["centered", "left", "grid", "split", "map", "weather", "modern_weather", "modern_stock", "modern_ambient", "modern_ferry", "modern_speedtest", "modern_sensors", "modern_football", "modern_rugby"] = "centered"
+    layout_type: Literal[
+        "centered",
+        "left",
+        "grid",
+        "split",
+        "map",
+        "weather",
+        "modern_weather",
+        "modern_stock",
+        "modern_ambient",
+        "modern_ferry",
+        "modern_speedtest",
+        "modern_sensors",
+        "modern_football",
+        "modern_rugby",
+    ] = "centered"
     background_mode: str = "gradient"
     background_query: Optional[str] = None
     timestamp: Optional[datetime] = None
     map_image: Optional[Path] = None  # For ferry map composite
-    
+
     def generate_filename(self, date: datetime) -> str:
         """Generate date-based filename: prefix_YYYY-MM-DD.jpg"""
         date_str = date.strftime("%Y-%m-%d")
@@ -32,11 +48,12 @@ class SignageContent:
 @dataclass
 class TeslaData:
     """Tesla vehicle data from Home Assistant."""
+
     battery_level: str
     battery_unit: str
     range: str
     range_unit: str
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage content with clean, readable layout."""
         return SignageContent(
@@ -55,10 +72,13 @@ class TeslaData:
 @dataclass
 class WeatherData:
     """Weather information from OpenWeatherMap."""
+
     city: str
     temperature: float
     description: str
-    condition: Literal["sunny", "rainy", "cloudy", "foggy", "snowy", "windy", "thunderstorm", "default"]
+    condition: Literal[
+        "sunny", "rainy", "cloudy", "foggy", "snowy", "windy", "thunderstorm", "default"
+    ]
     feels_like: float
     temp_high: float
     temp_low: float
@@ -66,47 +86,47 @@ class WeatherData:
     wind_speed: float
     wind_direction: int
     visibility: Optional[int] = None  # meters
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage with beautiful multi-section layout."""
         lines = []
-        
+
         # Title with city
         lines.append(self.city.upper())
         lines.append("")
-        
+
         # Main temperature - large and centered
         lines.append(f"{self.temperature:.0f}°F")
         lines.append(self.description.title())
         lines.append("")
-        
+
         # Two-column layout for details
         # Left column: Temperature details
         left_col = [
             f"High: {self.temp_high:.0f}°",
             f"Low: {self.temp_low:.0f}°",
-            f"Feels: {self.feels_like:.0f}°"
+            f"Feels: {self.feels_like:.0f}°",
         ]
-        
+
         # Right column: Conditions
         wind_dir = self._wind_direction_to_compass(self.wind_direction)
         visibility_mi = self.visibility / 1609.34 if self.visibility else None
-        
+
         right_col = [
             f"Humidity: {self.humidity}%",
             f"Wind: {self.wind_speed:.0f} mph {wind_dir}",
         ]
-        
+
         if visibility_mi is not None and visibility_mi < 6:  # Only show if reduced visibility
             right_col.append(f"Visibility: {visibility_mi:.1f} mi")
-        
+
         # Combine columns
         max_rows = max(len(left_col), len(right_col))
         for i in range(max_rows):
             left = left_col[i] if i < len(left_col) else ""
             right = right_col[i] if i < len(right_col) else ""
             lines.append(f"{left:<20}   {right}")
-        
+
         return SignageContent(
             lines=lines,
             filename_prefix="weather",
@@ -114,14 +134,30 @@ class WeatherData:
             background_mode="local",
             background_query=f"weather/{self.condition}",
         )
-    
+
     def _wind_direction_to_compass(self, degrees: int) -> str:
         """Convert wind direction degrees to compass direction."""
         if degrees is None:
             return ""
-        
-        directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                     "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+
+        directions = [
+            "N",
+            "NNE",
+            "NE",
+            "ENE",
+            "E",
+            "ESE",
+            "SE",
+            "SSE",
+            "S",
+            "SSW",
+            "SW",
+            "WSW",
+            "W",
+            "WNW",
+            "NW",
+            "NNW",
+        ]
         index = round(degrees / 22.5) % 16
         return directions[index]
 
@@ -129,6 +165,7 @@ class WeatherData:
 @dataclass
 class AmbientWeatherData:
     """Hyper-local weather from personal Ambient Weather station."""
+
     station_name: str
     tempf: float
     humidity: int
@@ -149,7 +186,7 @@ class AmbientWeatherData:
     co2_in: Optional[int] = None  # Indoor CO2 ppm
     tempinf: Optional[float] = None  # Indoor temperature
     humidityin: Optional[int] = None  # Indoor humidity
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage with modern card layout."""
         # Determine weather condition for background
@@ -159,7 +196,7 @@ class AmbientWeatherData:
             condition = "cloudy"
         else:
             condition = "sunny"
-        
+
         return SignageContent(
             lines=[],  # Empty - we'll use custom card renderer
             filename_prefix="ambient",
@@ -167,7 +204,7 @@ class AmbientWeatherData:
             background_mode="local",
             background_query=f"weather/{condition}",
         )
-    
+
     def _aqi_quality(self, aqi: int) -> str:
         """Convert AQI value to quality description."""
         if aqi <= 50:
@@ -182,7 +219,7 @@ class AmbientWeatherData:
             return "Very Unhealthy"
         else:
             return "Hazardous"
-    
+
     def _co2_quality(self, co2: int) -> str:
         """Convert CO2 ppm to quality description."""
         if co2 < 400:
@@ -195,14 +232,30 @@ class AmbientWeatherData:
             return "Poor"
         else:
             return "Very Poor"
-    
+
     def _wind_direction_to_compass(self, degrees: int) -> str:
         """Convert wind direction degrees to compass direction."""
         if degrees is None:
             return ""
-        
-        directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                     "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+
+        directions = [
+            "N",
+            "NNE",
+            "NE",
+            "ENE",
+            "E",
+            "ESE",
+            "SE",
+            "SSE",
+            "S",
+            "SSW",
+            "SW",
+            "WSW",
+            "W",
+            "WNW",
+            "NW",
+            "NNW",
+        ]
         index = round(degrees / 22.5) % 16
         return directions[index]
 
@@ -210,14 +263,15 @@ class AmbientWeatherData:
 @dataclass
 class SpeedtestData:
     """Internet speed test results."""
+
     download: float  # Mbps
-    upload: float    # Mbps
-    ping: float      # ms
+    upload: float  # Mbps
+    ping: float  # ms
     server_name: str
     server_host: str
     timestamp: str
     url: Optional[str] = None
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage with modern HTML layout."""
         lines = [
@@ -232,7 +286,7 @@ class SpeedtestData:
             "",
             f"Tested: {self.timestamp}",
         ]
-        
+
         return SignageContent(
             lines=lines,
             filename_prefix="speedtest",
@@ -245,6 +299,7 @@ class SpeedtestData:
 @dataclass
 class AmbientSensorData:
     """Individual sensor reading from Ambient Weather station."""
+
     name: str
     temperature: Optional[float] = None
     humidity: Optional[int] = None
@@ -254,57 +309,55 @@ class AmbientSensorData:
 @dataclass
 class AmbientMultiSensorData:
     """Collection of all sensors from Ambient Weather station."""
+
     station_name: str
     outdoor_temp: float
     outdoor_humidity: int
-    sensors: List[AmbientSensorData] = field(default_factory=list)
+    sensors: list[AmbientSensorData] = field(default_factory=list)
     last_updated: Optional[str] = None
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage with compact grid layout showing all sensors."""
         lines = []
-        
+
         # Title
         lines.append(f"{self.station_name.upper()} - SENSORS")
         lines.append("")
-        
+
         # Main outdoor conditions
         lines.append(f"Outdoor: {self.outdoor_temp:.1f}°F  {self.outdoor_humidity}%")
         lines.append("")
-        
+
         # Sensor readings in compact format
         if self.sensors:
             lines.append("SENSOR          TEMP      HUMIDITY")
             lines.append("─" * 50)
-            
+
             for sensor in self.sensors:
                 # Format sensor name (truncate if needed)
                 name = sensor.name[:14].ljust(14)
-                
+
                 # Format temperature
                 if sensor.temperature is not None:
                     temp_str = f"{sensor.temperature:5.1f}°F"
                 else:
                     temp_str = "  ---  "
-                
+
                 # Format humidity
-                if sensor.humidity is not None:
-                    hum_str = f"{sensor.humidity:3d}%"
-                else:
-                    hum_str = " -- "
-                
+                hum_str = f"{sensor.humidity:3d}%" if sensor.humidity is not None else " -- "
+
                 # Battery indicator
                 batt_icon = "" if sensor.battery_ok else " ⚠"
-                
+
                 lines.append(f"{name}  {temp_str}    {hum_str}{batt_icon}")
         else:
             lines.append("No additional sensors found")
-        
+
         # Timestamp if available
         if self.last_updated:
             lines.append("")
             lines.append(f"Updated: {self.last_updated}")
-        
+
         return SignageContent(
             lines=lines,
             filename_prefix="sensors",
@@ -317,10 +370,11 @@ class AmbientMultiSensorData:
 @dataclass
 class StockData:
     """Stock quote from Alpha Vantage."""
+
     symbol: str
     price: str
     change_percent: str
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage content with symbol and price."""
         return SignageContent(
@@ -339,6 +393,7 @@ class StockData:
 @dataclass
 class SportsFixture:
     """Upcoming sports match/game."""
+
     date: str
     home_team: str
     away_team: str
@@ -350,6 +405,7 @@ class SportsFixture:
 @dataclass
 class SportsResult:
     """Completed sports match result."""
+
     date: str
     home_team: str
     away_team: str
@@ -361,6 +417,7 @@ class SportsResult:
 @dataclass
 class LeagueTableRow:
     """League/standings table row."""
+
     position: int
     team: str
     played: int
@@ -377,26 +434,27 @@ class SportsData:
     Sports team information with fixtures, results, and standings.
     Designed for left-aligned layout with team branding.
     """
+
     team_name: str
     sport: Literal["nfl", "football", "rugby", "cricket"]
     last_result: Optional[SportsResult] = None
-    next_fixtures: List[SportsFixture] = field(default_factory=list)
-    league_table: List[LeagueTableRow] = field(default_factory=list)
+    next_fixtures: list[SportsFixture] = field(default_factory=list)
+    league_table: list[LeagueTableRow] = field(default_factory=list)
     is_live: bool = False
     live_score: Optional[str] = None
     team_logo_url: Optional[str] = None
     primary_color: str = "#003366"
     secondary_color: str = "#69BE28"
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage with left-aligned layout and team colors."""
         lines = [self.team_name]
-        
+
         # Live score gets priority
         if self.is_live and self.live_score:
             lines.append("🔴 LIVE")
             lines.append(self.live_score)
-        
+
         # Last result
         if self.last_result:
             result = self.last_result
@@ -406,7 +464,7 @@ class SportsData:
                 f"{result.home_team} {result.home_score} - "
                 f"{result.away_score} {result.away_team}"
             )
-        
+
         # Next fixtures
         if self.next_fixtures:
             lines.append("")
@@ -414,17 +472,16 @@ class SportsData:
             for fixture in self.next_fixtures[:3]:
                 match_line = f"{fixture.home_team} vs {fixture.away_team}"
                 lines.append(f"{fixture.date} - {match_line}")
-        
+
         # League position (top 5)
         if self.league_table:
             lines.append("")
             lines.append("Standings")
             for row in self.league_table[:5]:
                 lines.append(
-                    f"{row.position}. {row.team} - {row.points}pts "
-                    f"({row.played}P {row.won}W)"
+                    f"{row.position}. {row.team} - {row.points}pts " f"({row.played}P {row.won}W)"
                 )
-        
+
         return SignageContent(
             lines=lines,
             filename_prefix=f"{self.sport}_{self.team_name.lower().replace(' ', '_')}",
@@ -437,6 +494,7 @@ class SportsData:
 @dataclass
 class FerrySchedule:
     """Ferry departure schedule."""
+
     departure_time: str
     arrival_time: str
     vessel_name: str
@@ -446,6 +504,7 @@ class FerrySchedule:
 @dataclass
 class FerryVessel:
     """Real-time ferry vessel position."""
+
     name: str
     latitude: float
     longitude: float
@@ -459,22 +518,23 @@ class FerryData:
     Ferry route information with schedule, vessels, and alerts.
     Uses split layout: text on left, map on right.
     """
+
     route: str
     status: Literal["normal", "delayed", "cancelled"]
     delay_minutes: int = 0
-    southworth_departures: List[FerrySchedule] = field(default_factory=list)
-    fauntleroy_departures: List[FerrySchedule] = field(default_factory=list)
-    vessels: List[FerryVessel] = field(default_factory=list)
-    alerts: List[str] = field(default_factory=list)
+    southworth_departures: list[FerrySchedule] = field(default_factory=list)
+    fauntleroy_departures: list[FerrySchedule] = field(default_factory=list)
+    vessels: list[FerryVessel] = field(default_factory=list)
+    alerts: list[str] = field(default_factory=list)
     wait_time_minutes: Optional[int] = None
-    
+
     def to_signage(self, map_path: Optional[Path] = None) -> SignageContent:
         """
         Convert to signage with grid layout.
         Two columns: Southworth departures | Fauntleroy departures
         """
         lines = []
-        
+
         # Title and status on first row
         if self.status == "cancelled":
             status_text = "SERVICE CANCELLED"
@@ -482,13 +542,13 @@ class FerryData:
             status_text = f"DELAYED {self.delay_minutes} min"
         else:
             status_text = "On Time"
-        
+
         lines.append(f"{self.route} - {status_text}")
-        
+
         # Two-column layout: build both columns to same length
         left_col = ["FROM SOUTHWORTH"]
         right_col = ["FROM FAUNTLEROY"]
-        
+
         # Southworth departures (left column)
         if self.southworth_departures:
             for dep in self.southworth_departures[:7]:
@@ -496,7 +556,7 @@ class FerryData:
                 left_col.append(f"  {dep.vessel_name}")
         else:
             left_col.append("No departures")
-        
+
         # Fauntleroy departures (right column)
         if self.fauntleroy_departures:
             for dep in self.fauntleroy_departures[:7]:
@@ -504,19 +564,19 @@ class FerryData:
                 right_col.append(f"  {dep.vessel_name}")
         else:
             right_col.append("No departures")
-        
+
         # Combine columns with spacing
         max_rows = max(len(left_col), len(right_col))
         for i in range(max_rows):
             left = left_col[i] if i < len(left_col) else ""
             right = right_col[i] if i < len(right_col) else ""
             lines.append(f"{left:<45} {right}")
-        
+
         # Alerts at bottom if present
         if self.alerts:
             lines.append("")
             lines.append("ALERTS: " + self.alerts[0][:60])
-        
+
         return SignageContent(
             lines=lines,
             filename_prefix="ferry",
@@ -525,7 +585,7 @@ class FerryData:
             background_query="ferry",
             map_image=map_path,
         )
-        
+
         return SignageContent(
             lines=lines,
             filename_prefix="ferry",
@@ -539,10 +599,11 @@ class FerryData:
 @dataclass
 class MarineTrafficData:
     """Marine traffic screenshot data."""
+
     screenshot_path: Path
     vessel_count: int
     timestamp: datetime
-    
+
     def to_signage(self) -> SignageContent:
         """
         Marine traffic uses the screenshot as background.
@@ -563,13 +624,14 @@ class MarineTrafficData:
 @dataclass
 class WhaleData:
     """Whale sighting information."""
-    sightings: List[dict]  # List of recent sightings
+
+    sightings: list[dict]  # List of recent sightings
     last_sighting_date: Optional[str] = None
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage with left-aligned sighting list."""
         lines = ["Recent Whale Sightings"]
-        
+
         if not self.sightings:
             lines.append("")
             lines.append("No recent sightings")
@@ -584,7 +646,7 @@ class WhaleData:
                 lines.append(f"{date} - {species}")
                 if location:
                     lines.append(f"  {location}")
-        
+
         return SignageContent(
             lines=lines,
             filename_prefix="whales",
@@ -597,9 +659,10 @@ class WhaleData:
 @dataclass
 class FerryMapData:
     """Ferry vessel positions for full-screen map view."""
-    vessels: List[FerryVessel] = field(default_factory=list)
+
+    vessels: list[FerryVessel] = field(default_factory=list)
     timestamp: Optional[str] = None
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage - map rendered separately, no text overlay."""
         return SignageContent(

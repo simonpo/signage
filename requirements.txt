@@ -3,6 +3,8 @@ requests>=2.31.0
 python-dotenv>=1.0.0
 pytz>=2023.3
 Jinja2>=3.1.2
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
 
 # Web scraping and automation
 playwright>=1.40.0
@@ -12,6 +14,14 @@ undetected-chromedriver>=3.5.0
 
 # HTTP client with retry support
 urllib3>=2.0.0
+
+# Development tools
+black>=24.0.0
+ruff>=0.1.0
+mypy>=1.7.0
+pytest>=7.4.0
+pytest-cov>=4.1.0
+responses>=0.24.0
 
 # Samsung TV integration (from existing requirements)
 aiohappyeyeballs==2.6.1
