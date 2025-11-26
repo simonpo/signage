@@ -14,9 +14,9 @@ Live scores and fixtures for your favourite teams. Currently supports Premier Le
 
 ### Weather Display
 
-Shows current conditions, temperature, and forecast from OpenWeatherMap.
+Comprehensive weather dashboard showing current conditions, temperature, feels-like, high/low, humidity, pressure, wind, cloudiness, visibility, and sunrise/sunset times from OpenWeatherMap.
 
-![Weather display showing current conditions and 5-day forecast](art_folder/weather.png)
+![Weather display with modern two-column dashboard layout](art_folder/weather.png)
 
 ### Ferry Schedule
 
@@ -39,8 +39,7 @@ Multi-location temperature and humidity from Ambient Weather stations (outdoor, 
 ### Other Data Sources
 
 - **Stock quotes** with daily change indicators
-- **Ambient weather** dashboard with 11 metrics
-- **Marine traffic** (planned)
+- **Ambient weather** personal station dashboard with outdoor conditions, barometric pressure, UV index, solar radiation, wind, and rain data
 
 ## Installation
 
@@ -197,11 +196,17 @@ tests/            Test suite
 
 1. **Data collection**: Clients fetch data from APIs or local sources
 2. **Model conversion**: Raw data becomes structured SignageContent objects
-3. **Background selection**: Provider chooses or generates a background image
+3. **Background selection**: Provider chooses or generates a background image (weather-aware for conditions)
 4. **Rendering**: Template engine (HTML/CSS or PIL) combines data with background
 5. **Output**: 3840×2160 PNG saved to `art_folder/`
 
 The HTML rendering path uses Playwright to render Jinja2 templates with CSS styling, then captures them as high-resolution screenshots. This produces better text quality and more flexible layouts than the legacy PIL approach.
+
+### Intelligent Features
+
+- **Weather-aware backgrounds**: Automatically selects appropriate backgrounds based on conditions (sunny, rainy, cloudy, etc.)
+- **Nighttime detection**: Ambient weather uses solar radiation data to switch to night backgrounds
+- **Smart caching**: Reduces API calls while keeping data fresh
 
 ## Requirements
 
