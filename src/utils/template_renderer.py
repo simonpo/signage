@@ -5,7 +5,7 @@ Provides utilities for rendering HTML templates to images via headless browser.
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -82,7 +82,7 @@ class TemplateRenderer:
         self.env.filters["enumerate"] = do_enumerate
         self.env.filters["compass"] = wind_direction_compass
 
-    def render(self, template_name: str, context: Dict[str, Any]) -> str:
+    def render(self, template_name: str, context: dict[str, Any]) -> str:
         """
         Render template with context data.
 

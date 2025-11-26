@@ -3,7 +3,7 @@ Background factory for managing providers.
 """
 
 import logging
-from typing import Dict, Optional, Type
+from typing import Optional
 
 from PIL import Image
 
@@ -21,14 +21,14 @@ class BackgroundFactory:
     Factory for background providers with fallback support.
     """
 
-    _providers: Dict[str, Type[BackgroundProvider]] = {
+    _providers: dict[str, type[BackgroundProvider]] = {
         "gradient": GradientProvider,
         "local": LocalProvider,
         "unsplash": UnsplashProvider,
         "pexels": PexelsProvider,
     }
 
-    _instances: Dict[str, BackgroundProvider] = {}
+    _instances: dict[str, BackgroundProvider] = {}
 
     @classmethod
     def get_provider(cls, mode: str) -> BackgroundProvider:

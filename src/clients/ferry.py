@@ -6,7 +6,7 @@ Fetches real-time data from WSDOT Ferries API.
 import logging
 import re
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from src.clients.base import APIClient
 from src.config import Config
@@ -112,7 +112,7 @@ class FerryClient(APIClient):
             wait_time_minutes=None,
         )
 
-    def _get_schedule(self, trip_date: str) -> List[FerrySchedule]:
+    def _get_schedule(self, trip_date: str) -> list[FerrySchedule]:
         """
         Fetch ferry schedule for route.
 
@@ -141,7 +141,7 @@ class FerryClient(APIClient):
 
             for combo in terminal_combos:
                 departing_terminal = combo.get("DepartingTerminalName", "")
-                arriving_terminal = combo.get("ArrivingTerminalName", "")
+                combo.get("ArrivingTerminalName", "")
 
                 # Get all sailing times for this terminal pair
                 times = combo.get("Times", [])
@@ -210,7 +210,7 @@ class FerryClient(APIClient):
         id_to_name = {v: k for k, v in TERMINAL_IDS.items()}
         return id_to_name.get(terminal_id, f"Terminal {terminal_id}")
 
-    def _get_vessel_locations(self) -> List[FerryVessel]:
+    def _get_vessel_locations(self) -> list[FerryVessel]:
         """
         Fetch real-time vessel positions for all active vessels.
 
@@ -265,7 +265,7 @@ class FerryClient(APIClient):
             logger.error(f"Failed to fetch vessel locations: {e}")
             return []
 
-    def _get_alerts(self) -> List[str]:
+    def _get_alerts(self) -> list[str]:
         """
         Fetch service alerts for the ferry system.
 
@@ -316,7 +316,7 @@ class FerryClient(APIClient):
         # Not available via REST API
         return None
 
-    def _parse_status_from_alerts(self, alerts: List[str]) -> tuple[str, int]:
+    def _parse_status_from_alerts(self, alerts: list[str]) -> tuple[str, int]:
         """
         Determine service status from alert text.
 
@@ -345,9 +345,10 @@ class FerryClient(APIClient):
 
         return status, delay_minutes
 
-    def get_all_vessel_locations(self) -> Optional["FerryMapData"]:
+    def get_all_vessel_locations(self):
         """
         Fetch all ferry vessel positions across the entire WSF system.
+        Note: FerryMapData import would create circular dependency - returns dict instead.
 
         Returns:
             FerryMapData with all active vessels

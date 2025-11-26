@@ -8,7 +8,7 @@ import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from PIL import Image
 
@@ -65,7 +65,7 @@ class OutputManager:
         for profile in self.profiles:
             logger.info(f"  - {profile}")
 
-    def _parse_profiles(self) -> List[OutputProfile]:
+    def _parse_profiles(self) -> list[OutputProfile]:
         """
         Parse OUTPUT_PROFILES from environment.
 
@@ -126,7 +126,7 @@ class OutputManager:
 
     def save_image(
         self, image: Image.Image, filename: str, source: Optional[str] = None
-    ) -> List[Path]:
+    ) -> list[Path]:
         """
         Save image to all configured output profiles.
 
@@ -240,7 +240,7 @@ class OutputManager:
         """
         return self.profiles[0].output_dir
 
-    def get_all_output_dirs(self) -> List[Path]:
+    def get_all_output_dirs(self) -> list[Path]:
         """
         Get all output directories.
 

@@ -344,10 +344,7 @@ class WeatherCardRenderer:
         )
 
         # Rain amount or N/A
-        if weather.dailyrainin > 0:
-            rain_text = f'{weather.dailyrainin:.2f}"'
-        else:
-            rain_text = "NONE"
+        rain_text = f'{weather.dailyrainin:.2f}"' if weather.dailyrainin > 0 else "NONE"
 
         draw.text(
             (x + width // 2, y + height // 2 + 20),
@@ -481,10 +478,7 @@ class WeatherCardRenderer:
 
         # Calculate current position on bar
         temp_range = high - low
-        if temp_range > 0:
-            current_pos = (current - low) / temp_range
-        else:
-            current_pos = 0.5
+        current_pos = (current - low) / temp_range if temp_range > 0 else 0.5
 
         # Draw bar background (gradient from blue to red)
         draw.rounded_rectangle(

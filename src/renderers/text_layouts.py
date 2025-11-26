@@ -5,7 +5,6 @@ Each layout creates a unique visual aesthetic for optimal readability.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import List
 
 from PIL import ImageDraw, ImageFont
 
@@ -47,7 +46,7 @@ class TextLayout(ABC):
         self.safe_height = self.safe_bottom - self.safe_top
 
     @abstractmethod
-    def draw_content(self, draw: ImageDraw.ImageDraw, lines: List[str]) -> None:
+    def draw_content(self, draw: ImageDraw.ImageDraw, lines: list[str]) -> None:
         """
         Draw text content using this layout style.
 
@@ -64,7 +63,7 @@ class CenteredLayout(TextLayout):
     Perfect for simple, impactful displays like weather and stock quotes.
     """
 
-    def draw_content(self, draw: ImageDraw.ImageDraw, lines: List[str]) -> None:
+    def draw_content(self, draw: ImageDraw.ImageDraw, lines: list[str]) -> None:
         """Draw centered text with 220px line spacing."""
         y = self.safe_top + 300  # Start below top margin
 
@@ -85,7 +84,7 @@ class LeftAlignedLayout(TextLayout):
     Ideal for lists, sports fixtures, and whale sightings.
     """
 
-    def draw_content(self, draw: ImageDraw.ImageDraw, lines: List[str]) -> None:
+    def draw_content(self, draw: ImageDraw.ImageDraw, lines: list[str]) -> None:
         """Draw left-aligned text with 150px line spacing and indentation support."""
         y = self.safe_top + 200
 
@@ -108,7 +107,7 @@ class GridLayout(TextLayout):
     Perfect for league tables and dense information.
     """
 
-    def draw_content(self, draw: ImageDraw.ImageDraw, lines: List[str]) -> None:
+    def draw_content(self, draw: ImageDraw.ImageDraw, lines: list[str]) -> None:
         """Draw compact grid layout with 100px spacing."""
         y = self.safe_top + 150
 
@@ -126,12 +125,12 @@ class SplitLayout(TextLayout):
     Used for ferry schedules with vessel map overlay.
     """
 
-    def draw_content(self, draw: ImageDraw.ImageDraw, lines: List[str]) -> None:
+    def draw_content(self, draw: ImageDraw.ImageDraw, lines: list[str]) -> None:
         """Draw text confined to left half of image."""
         y = self.safe_top + 200
 
         # Constrain text to left half
-        max_x = Config.IMAGE_WIDTH // 2 - Config.SAFE_MARGIN_H
+        # max_x = Config.IMAGE_WIDTH // 2 - Config.SAFE_MARGIN_H  # Reserved for text wrapping
 
         for line in lines:
             x = self.safe_left
@@ -147,7 +146,7 @@ class WeatherLayout(TextLayout):
     Title (small) -> Temp (huge) -> Description (medium) -> Details table (small).
     """
 
-    def draw_content(self, draw: ImageDraw.ImageDraw, lines: List[str]) -> None:
+    def draw_content(self, draw: ImageDraw.ImageDraw, lines: list[str]) -> None:
         """Draw weather with custom spacing and font sizes."""
         y = self.safe_top + 250
 

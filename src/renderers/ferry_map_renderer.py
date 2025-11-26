@@ -6,7 +6,7 @@ Renders real-time ferry locations across Puget Sound with satellite imagery.
 import logging
 from datetime import datetime, timedelta
 from io import BytesIO
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
@@ -140,7 +140,7 @@ class FerryMapRenderer:
             logger.warning(f"Error fetching satellite map: {e}")
             return None
 
-    def _latlon_to_pixel_mercator(self, lat: float, lon: float, zoom: int = 11) -> Tuple[int, int]:
+    def _latlon_to_pixel_mercator(self, lat: float, lon: float, zoom: int = 11) -> tuple[int, int]:
         """
         Convert lat/lon to pixel coordinates using Web Mercator projection (EPSG:3857).
         This matches Google Maps' projection.
@@ -189,7 +189,7 @@ class FerryMapRenderer:
 
         return (x, y)
 
-    def render_full_map(self, vessels: List[FerryVessel]) -> Image.Image:
+    def render_full_map(self, vessels: list[FerryVessel]) -> Image.Image:
         """
         Render full-screen ferry map with vessel positions.
 
@@ -268,7 +268,7 @@ class FerryMapRenderer:
         logger.info(f"Rendered ferry map with {len(vessels)} vessel(s)")
         return img
 
-    def _latlon_to_pixel(self, lat: float, lon: float) -> Tuple[int, int]:
+    def _latlon_to_pixel(self, lat: float, lon: float) -> tuple[int, int]:
         """
         Convert lat/lon to pixel coordinates.
 
@@ -291,7 +291,7 @@ class FerryMapRenderer:
 
         return (x, y)
 
-    def _is_valid_position(self, pos: Tuple[int, int]) -> bool:
+    def _is_valid_position(self, pos: tuple[int, int]) -> bool:
         """Check if position is within drawable area."""
         x, y = pos
         return (
@@ -301,9 +301,9 @@ class FerryMapRenderer:
     def _draw_vessel(
         self,
         draw: ImageDraw.ImageDraw,
-        pos: Tuple[int, int],
+        pos: tuple[int, int],
         vessel: FerryVessel,
-        drawn_positions: List[Tuple[int, int]] = None,
+        drawn_positions: list[tuple[int, int]] = None,
     ) -> None:
         """
         Draw vessel marker with heading indicator.
@@ -362,7 +362,7 @@ class FerryMapRenderer:
 
         bbox = draw.textbbox((0, 0), info_text, font=self.small_font)
         text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
+        # text_height = bbox[3] - bbox[1]  # Reserved for future label positioning
 
         # Check if label would overlap with nearby vessels
         # Count how many vessels are within proximity (for cascading offsets)

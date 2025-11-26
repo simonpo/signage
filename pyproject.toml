@@ -34,6 +34,19 @@ extend-exclude = '''
 line-length = 100
 target-version = "py39"
 
+# Exclude a variety of commonly ignored directories
+exclude = [
+    ".eggs",
+    ".git",
+    ".venv",
+    "venv",
+    "signage-env",
+    "build",
+    "dist",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default
 select = [
     "E",  # pycodestyle errors
@@ -51,21 +64,11 @@ ignore = [
     "E501",  # line too long (handled by black)
     "B008",  # do not perform function calls in argument defaults
     "SIM117", # use contextlib.suppress
+    "SIM102", # use single if statement instead of nested (can reduce readability)
+    "N812",  # allow common abbreviations like EC for expected_conditions
 ]
 
-# Exclude a variety of commonly ignored directories
-exclude = [
-    ".eggs",
-    ".git",
-    ".venv",
-    "venv",
-    "signage-env",
-    "build",
-    "dist",
-    "__pycache__",
-]
-
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py
 
 [tool.mypy]

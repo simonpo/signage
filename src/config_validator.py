@@ -119,7 +119,7 @@ class SignageConfig(BaseSettings):
             json.loads(v)
             return v
         except json.JSONDecodeError as e:
-            raise ValueError(f"AMBIENT_SENSOR_NAMES must be valid JSON: {e}")
+            raise ValueError(f"AMBIENT_SENSOR_NAMES must be valid JSON: {e}") from e
 
     @field_validator("FONT_PATH")
     @classmethod

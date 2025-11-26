@@ -4,7 +4,6 @@ Fetches entity states from Home Assistant.
 """
 
 import logging
-from typing import Dict, Tuple
 
 from src.clients.base import APIClient
 from src.config import Config
@@ -28,7 +27,7 @@ class HomeAssistantClient(APIClient):
             "Content-Type": "application/json",
         }
 
-    def get_entity_state(self, entity_id: str) -> Tuple[str, Dict]:
+    def get_entity_state(self, entity_id: str) -> tuple[str, dict]:
         """
         Get state and attributes for a Home Assistant entity.
 

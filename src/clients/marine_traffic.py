@@ -111,7 +111,7 @@ class MarineTrafficClient:
                         clicked = True
                         time.sleep(2)
                         break
-                    except:
+                    except Exception:
                         continue
 
                 # Fallback: try text-based button finding
@@ -128,7 +128,7 @@ class MarineTrafficClient:
                                 logger.info(f"Dismissed privacy popup: {button.text}")
                                 time.sleep(2)
                                 break
-                        except:
+                        except Exception:
                             continue
             except Exception as e:
                 logger.debug(f"Privacy popup handling: {e}")

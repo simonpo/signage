@@ -9,6 +9,7 @@ import logging
 import os
 from pathlib import Path
 
+import urllib3
 from dotenv import load_dotenv
 from samsungtvws import SamsungTVWS
 
@@ -40,8 +41,6 @@ logging.basicConfig(
 )
 
 # === Suppress SSL warnings (safe on LAN) ===
-import urllib3
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 

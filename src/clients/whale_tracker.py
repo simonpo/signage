@@ -43,7 +43,7 @@ class WhaleTrackerClient(APIClient):
         # 4. Return WhaleData with sightings list
 
         try:
-            from bs4 import BeautifulSoup
+            from bs4 import BeautifulSoup  # noqa: F401
         except ImportError:
             logger.error("BeautifulSoup not installed: pip install beautifulsoup4")
             return None

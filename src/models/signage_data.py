@@ -6,7 +6,7 @@ All data classes follow a clean pattern: fetch → model → SignageContent → 
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 
 @dataclass
@@ -16,7 +16,7 @@ class SignageContent:
     This is what gets passed to the renderer.
     """
 
-    lines: List[str]
+    lines: list[str]
     filename_prefix: str
     layout_type: Literal[
         "centered",
@@ -313,7 +313,7 @@ class AmbientMultiSensorData:
     station_name: str
     outdoor_temp: float
     outdoor_humidity: int
-    sensors: List[AmbientSensorData] = field(default_factory=list)
+    sensors: list[AmbientSensorData] = field(default_factory=list)
     last_updated: Optional[str] = None
 
     def to_signage(self) -> SignageContent:
@@ -344,10 +344,7 @@ class AmbientMultiSensorData:
                     temp_str = "  ---  "
 
                 # Format humidity
-                if sensor.humidity is not None:
-                    hum_str = f"{sensor.humidity:3d}%"
-                else:
-                    hum_str = " -- "
+                hum_str = f"{sensor.humidity:3d}%" if sensor.humidity is not None else " -- "
 
                 # Battery indicator
                 batt_icon = "" if sensor.battery_ok else " ⚠"
@@ -441,8 +438,8 @@ class SportsData:
     team_name: str
     sport: Literal["nfl", "football", "rugby", "cricket"]
     last_result: Optional[SportsResult] = None
-    next_fixtures: List[SportsFixture] = field(default_factory=list)
-    league_table: List[LeagueTableRow] = field(default_factory=list)
+    next_fixtures: list[SportsFixture] = field(default_factory=list)
+    league_table: list[LeagueTableRow] = field(default_factory=list)
     is_live: bool = False
     live_score: Optional[str] = None
     team_logo_url: Optional[str] = None
@@ -525,10 +522,10 @@ class FerryData:
     route: str
     status: Literal["normal", "delayed", "cancelled"]
     delay_minutes: int = 0
-    southworth_departures: List[FerrySchedule] = field(default_factory=list)
-    fauntleroy_departures: List[FerrySchedule] = field(default_factory=list)
-    vessels: List[FerryVessel] = field(default_factory=list)
-    alerts: List[str] = field(default_factory=list)
+    southworth_departures: list[FerrySchedule] = field(default_factory=list)
+    fauntleroy_departures: list[FerrySchedule] = field(default_factory=list)
+    vessels: list[FerryVessel] = field(default_factory=list)
+    alerts: list[str] = field(default_factory=list)
     wait_time_minutes: Optional[int] = None
 
     def to_signage(self, map_path: Optional[Path] = None) -> SignageContent:
@@ -628,7 +625,7 @@ class MarineTrafficData:
 class WhaleData:
     """Whale sighting information."""
 
-    sightings: List[dict]  # List of recent sightings
+    sightings: list[dict]  # List of recent sightings
     last_sighting_date: Optional[str] = None
 
     def to_signage(self) -> SignageContent:
@@ -663,7 +660,7 @@ class WhaleData:
 class FerryMapData:
     """Ferry vessel positions for full-screen map view."""
 
-    vessels: List[FerryVessel] = field(default_factory=list)
+    vessels: list[FerryVessel] = field(default_factory=list)
     timestamp: Optional[str] = None
 
     def to_signage(self) -> SignageContent:

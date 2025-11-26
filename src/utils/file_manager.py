@@ -7,7 +7,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from src.config import Config
 
@@ -112,7 +112,7 @@ class FileManager:
 
         return deleted_count
 
-    def list_files(self, prefix: Optional[str] = None) -> List[Path]:
+    def list_files(self, prefix: Optional[str] = None) -> list[Path]:
         """
         List signage files, sorted by date (newest first).
 

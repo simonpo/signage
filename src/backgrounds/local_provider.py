@@ -6,7 +6,7 @@ Loads and crops images from local filesystem.
 import logging
 import random
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from PIL import Image
 
@@ -74,7 +74,7 @@ class LocalProvider(BackgroundProvider):
             logger.error(f"Failed to load background {selected}: {e}")
             return None
 
-    def _find_images(self, directory: Path) -> List[Path]:
+    def _find_images(self, directory: Path) -> list[Path]:
         """
         Find all image files in directory (non-recursive).
 

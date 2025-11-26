@@ -5,7 +5,7 @@ Fetches Seahawks fixtures, results, and NFC West standings.
 
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from src.clients.sports.base_sports import BaseSportsClient
 from src.config import Config
@@ -92,7 +92,7 @@ class NFLClient(BaseSportsClient):
             secondary_color=team_info.get("alt_color", "#69BE28"),
         )
 
-    def _get_schedule(self, team_id: str) -> List[dict]:
+    def _get_schedule(self, team_id: str) -> list[dict]:
         """Fetch team schedule."""
         url = f"{self.ESPN_BASE}/teams/{team_id}/schedule"
 
@@ -110,7 +110,7 @@ class NFLClient(BaseSportsClient):
             logger.error(f"Failed to parse schedule: {e}")
             return []
 
-    def _get_standings(self) -> List[LeagueTableRow]:
+    def _get_standings(self) -> list[LeagueTableRow]:
         """Fetch NFC West standings."""
         url = f"{self.ESPN_BASE}/standings"
 

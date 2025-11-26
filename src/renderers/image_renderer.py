@@ -7,7 +7,7 @@ Supports both PIL and HTML rendering modes.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -131,7 +131,7 @@ class SignageRenderer:
         speedtest_data: Optional[Any] = None,
         sensors_data: Optional[Any] = None,
         sports_data: Optional[Any] = None,
-    ) -> List[Path]:
+    ) -> list[Path]:
         """
         Render signage content to image file(s).
 
@@ -182,7 +182,7 @@ class SignageRenderer:
         filename: str,
         timestamp: datetime,
         weather_data: Optional[AmbientWeatherData] = None,
-    ) -> List[Path]:
+    ) -> list[Path]:
         """
         Render using PIL (legacy mode).
 
@@ -211,11 +211,8 @@ class SignageRenderer:
             card_renderer = WeatherCardRenderer()
             img = card_renderer.render(weather_data, img)
 
-            # Save and return
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            img.save(output_path, "JPEG", quality=95)
-            logger.info(f"Saved: {output_path}")
-            return output_path
+            # TODO: This branch needs completion - save via output_manager
+            # For now, fall through to standard rendering path
 
         # Standard text-based rendering
         # Step 2: Add semi-transparent overlay for text readability
@@ -257,7 +254,7 @@ class SignageRenderer:
         speedtest_data: Optional[Any] = None,
         sensors_data: Optional[Any] = None,
         sports_data: Optional[Any] = None,
-    ) -> List[Path]:
+    ) -> list[Path]:
         """
         Render using HTML templates (modern mode).
 

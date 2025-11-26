@@ -5,7 +5,7 @@ Renders vessel locations on a simple map for split-layout ferry displays.
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -52,7 +52,7 @@ class MapRenderer:
             return ImageFont.load_default()
 
     def render_ferry_map(
-        self, vessels: List[FerryVessel], base_map_path: Optional[Path] = None
+        self, vessels: list[FerryVessel], base_map_path: Optional[Path] = None
     ) -> Image.Image:
         """
         Render ferry map with vessel positions.
@@ -92,7 +92,7 @@ class MapRenderer:
         logger.debug(f"Rendered ferry map with {len(vessels)} vessel(s)")
         return img
 
-    def _latlon_to_pixel(self, lat: float, lon: float) -> Tuple[int, int]:
+    def _latlon_to_pixel(self, lat: float, lon: float) -> tuple[int, int]:
         """
         Convert lat/lon to pixel coordinates using simple Mercator projection.
 
@@ -113,7 +113,7 @@ class MapRenderer:
 
         return (x, y)
 
-    def _draw_terminal(self, draw: ImageDraw.ImageDraw, pos: Tuple[int, int], name: str) -> None:
+    def _draw_terminal(self, draw: ImageDraw.ImageDraw, pos: tuple[int, int], name: str) -> None:
         """
         Draw terminal marker and label.
 
@@ -138,7 +138,7 @@ class MapRenderer:
         text_width = bbox[2] - bbox[0]
         draw.text((x - text_width // 2, y + radius + 5), name, fill=(255, 255, 255), font=self.font)
 
-    def _draw_vessel(self, draw: ImageDraw.ImageDraw, pos: Tuple[int, int], name: str) -> None:
+    def _draw_vessel(self, draw: ImageDraw.ImageDraw, pos: tuple[int, int], name: str) -> None:
         """
         Draw vessel marker and label.
 
