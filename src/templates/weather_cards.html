@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Weather Cards{% endblock %}
+
+{% block styles %}
+/* Weather cards layout: left side main weather, right side data cards */
+.weather-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50/50 split */
+    height: 100%;
+    gap: 50px;
+}
+
+/* Left side: Main weather info */
+.main-weather {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 200px;
+}
+
+.weather-icon {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 250px;
+    position: relative;
+}
+
+/* Simple weather icons */
+.weather-icon.sun {
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
+    border: 3px solid #ffffff;
+}
+
+.weather-icon.rain {
+    background: #b4b4c8;
+    border-radius: 50%;
+    position: relative;
+}
+
+.weather-icon.rain::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 40px;
+    background: linear-gradient(to bottom, 
+        rgba(100, 150, 255, 0) 0%,
+        rgba(100, 150, 255, 0.6) 50%,
+        rgba(100, 150, 255, 0) 100%);
+}
+
+.temperature-huge {
+    font-size: 280px;
+    font-weight: bold;
+    line-height: 1;
+    color: #ffffff;
+    margin-bottom: 200px;
+}
+
+.weather-description {
+    font-size: 90px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 180px;
+}
+
+.feels-like {
+    font-size: 70px;
+    color: #b4b4c8;
+    margin-bottom: 150px;
+}
+
+/* Temperature range bar */
+.temp-range-bar {
+    width: 600px;
+    margin-bottom: 150px;
+}
+
+.temp-range-track {
+    width: 100%;
+    height: 15px;
+    background: linear-gradient(to right, #6464aa 0%, #c864c8 100%);
+    border-radius: 8px;
+    position: relative;
+    margin-bottom: 50px;
+}
+
+.temp-range-indicator {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: #ffffff;
+    border: 3px solid #6496ff;
+    border-radius: 50%;
+}
+
+.temp-range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 50px;
+    color: #b4b4c8;
+}
+
+/* Bottom info */
+.bottom-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 200px;
+    margin-top: auto;
+    margin-bottom: 200px;
+}
+
+.info-item {
+    text-align: center;
+}
+
+.info-label {
+    font-size: 50px;
+    color: #b4b4c8;
+    margin-bottom: 20px;
+}
+
+.info-value {
+    font-size: 70px;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Right side: Data cards */
+.data-cards {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 50px;
+    padding: 100px 0;
+}
+
+.card {
+    background: rgba(40, 40, 55, 0.86); /* Semi-transparent dark purple */
+    border-radius: 20px;
+    padding: 30px;
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.station-name {
+    font-size: 40px;
+    color: #b4b4c8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card-label {
+    font-size: 50px;
+    color: #b4b4c8;
+    margin-bottom: 10px;
+}
+
+.card-main-value {
+    font-size: 140px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.card-unit {
+    font-size: 50px;
+    color: #b4b4c8;
+    align-self: center;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: auto;
+}
+
+.card-footer-label {
+    font-size: 40px;
+    color: #b4b4c8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.card-footer-value {
+    font-size: 50px;
+    color: #ffffff;
+}
+
+.card-trend {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    text-align: right;
+}
+
+.trend-label {
+    font-size: 40px;
+    color: #b4b4c8;
+    margin-bottom: 5px;
+}
+
+.trend-value {
+    font-size: 50px;
+    color: #ffffff;
+}
+
+/* UV Card specific styles */
+.uv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+    flex: 1;
+}
+
+.uv-value {
+    font-size: 140px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.uv-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 40px;
+}
+
+/* Wind Card compass */
+.wind-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 30px;
+    align-items: center;
+    flex: 1;
+}
+
+.compass-direction {
+    font-size: 140px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.wind-speed {
+    font-size: 140px;
+    font-weight: bold;
+    color: #ffffff;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="weather-cards">
+        <!-- Left: Main Weather -->
+        <div class="main-weather">
+            <!-- Weather Icon -->
+            <div class="weather-icon {{ 'rain' if weather.hourlyrainin > 0 else 'sun' }}"></div>
+            
+            <!-- Temperature -->
+            <div class="temperature-huge">{{ "%.0f"|format(weather.tempf) }}°</div>
+            
+            <!-- Description -->
+            <div class="weather-description">
+                {% if weather.hourlyrainin > 0 %}Rain Possible
+                {% elif weather.dailyrainin > 0 %}Rainy
+                {% else %}Clear{% endif %}
+            </div>
+            
+            <!-- Feels Like -->
+            <div class="feels-like">Feels Like {{ "%.0f"|format(weather.feels_like) }}°</div>
+            
+            <!-- Temperature Range Bar -->
+            {% if weather.temp_high and weather.temp_low %}
+            <div class="temp-range-bar">
+                <div class="temp-range-track">
+                    {% set temp_range = weather.temp_high - weather.temp_low %}
+                    {% if temp_range > 0 %}
+                        {% set current_pos = ((weather.tempf - weather.temp_low) / temp_range * 100)|int %}
+                    {% else %}
+                        {% set current_pos = 50 %}
+                    {% endif %}
+                    <div class="temp-range-indicator" style="left: {{ current_pos }}%;"></div>
+                </div>
+                <div class="temp-range-labels">
+                    <span>↓ {{ "%.0f"|format(weather.temp_low) }}°</span>
+                    <span>{{ "%.0f"|format(weather.temp_high) }}° ↑</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Bottom Info: Dew Point & Humidity -->
+            <div class="bottom-info">
+                <div class="info-item">
+                    <div class="info-label">Dew Point</div>
+                    <div class="info-value">{{ "%.0f"|format(weather.dew_point) }}°</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Humidity</div>
+                    <div class="info-value">{{ weather.humidity }}%</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right: Data Cards -->
+        <div class="data-cards">
+            <!-- Card 1: Barometric Pressure -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="station-name">{{ weather.station_name }}</div>
+                </div>
+                <div class="card-main-value">
+                    <span>{{ "%.1f"|format(weather.baromrelin) }}</span>
+                    <span class="card-unit">mb</span>
+                </div>
+                <div class="card-trend">
+                    <div class="trend-label">TREND</div>
+                    <div class="trend-value">STEADY</div>
+                </div>
+            </div>
+            
+            <!-- Card 2: UV Index -->
+            {% if weather.uv is not none or weather.solarradiation is not none %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="station-name">{{ weather.station_name }}</div>
+                </div>
+                <div class="card-label">UV</div>
+                <div class="uv-grid">
+                    <div class="uv-value">{{ "%.1f"|format(weather.uv) if weather.uv is not none else 'N/A' }}</div>
+                    {% if weather.solarradiation is not none %}
+                    <div class="uv-details">
+                        <div class="card-footer-label">BRIGHTNESS</div>
+                        <div class="card-footer-value">8867 lux</div>
+                        <div class="card-footer-label" style="margin-top: 15px;">SOLAR RADIATION</div>
+                        <div class="card-footer-value">{{ "%.0f"|format(weather.solarradiation) }} W/m²</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Card 3: Rain -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="station-name">{{ weather.station_name }}</div>
+                </div>
+                <div class="card-label">{{ 'last detected' if weather.dailyrainin == 0 else 'RAIN' }}</div>
+                <div class="card-main-value">
+                    {% if weather.dailyrainin > 0 %}
+                        {{ "%.2f"|format(weather.dailyrainin) }}"
+                    {% else %}
+                        NONE
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div>
+                        <div class="card-footer-label">RAIN (TODAY)</div>
+                        <div class="card-footer-value">{{ "%.2f"|format(weather.dailyrainin) }}"</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="card-footer-label">RAIN (YESTERDAY)</div>
+                        <div class="card-footer-value">0.00"</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card 4: Wind -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="station-name">{{ weather.station_name }}</div>
+                </div>
+                <div class="wind-grid">
+                    <div class="compass-direction">{{ wind_direction }}</div>
+                    <div class="wind-speed">{{ "%.1f"|format(weather.windspeedmph) }}</div>
+                    <div class="card-unit">mph</div>
+                </div>
+                <div class="card-footer">
+                    <div>
+                        <div class="card-footer-label">GUSTING</div>
+                        <div class="card-footer-value">2 - 5 mph</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

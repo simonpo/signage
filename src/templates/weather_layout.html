@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Weather Layout{% endblock %}
+
+{% block styles %}
+/* Weather layout: mixed fonts with custom spacing per line */
+.weather-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 250px;
+}
+
+/* Line 0: City name (title font, centered) */
+.weather-layout .city-name {
+    font-size: 200px;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 150px; /* Reduced spacing after title */
+}
+
+/* Line 1: Temperature (body font, centered) */
+.weather-layout .temperature {
+    font-size: 120px;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 200px; /* Normal spacing after temp */
+}
+
+/* Line 2: Description (body font, centered) */
+.weather-layout .description {
+    font-size: 120px;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 120px; /* Reduced spacing before details */
+}
+
+/* Lines 3+: Details table (small font, centered) */
+.weather-layout .details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Tight spacing for table rows */
+}
+
+.weather-layout .details .line {
+    font-size: 80px;
+    font-weight: bold;
+    line-height: 100px;
+    text-align: center;
+    color: #ffffff;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="weather-layout">
+        {% for i, line in enumerate(lines) %}
+            {% if line.strip() %}
+                {% if i == 0 %}
+                <div class="city-name">{{ line }}</div>
+                {% elif i == 1 %}
+                <div class="temperature">{{ line }}</div>
+                {% elif i == 2 %}
+                <div class="description">{{ line }}</div>
+                {% else %}
+                    {% if i == 3 %}<div class="details">{% endif %}
+                    <div class="line">{{ line }}</div>
+                    {% if loop.last %}</div>{% endif %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@
 requests>=2.31.0
 python-dotenv>=1.0.0
 pytz>=2023.3
+Jinja2>=3.1.2
 
 # Web scraping and automation
 playwright>=1.40.0

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Centered Layout{% endblock %}
+
+{% block styles %}
+/* Centered layout: generous 220px line spacing, centered text */
+.centered-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 300px;
+    gap: 100px; /* Additional gap between lines beyond line height */
+}
+
+.centered-layout .line {
+    font-size: 120px;
+    font-weight: bold;
+    line-height: 220px;
+    text-align: center;
+    color: #ffffff;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="centered-layout">
+        {% for line in lines %}
+        <div class="line">{{ line }}</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

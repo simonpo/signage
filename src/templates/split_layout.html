@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Split Layout{% endblock %}
+
+{% block styles %}
+/* Split layout: text on left half, space for map/image on right */
+.split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50/50 split */
+    height: 100%;
+}
+
+.split-layout .text-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding-top: 200px;
+    gap: 60px; /* Spacing to achieve 180px line height */
+    padding-right: 100px; /* Prevent text from bleeding into right half */
+}
+
+.split-layout .text-section .line {
+    font-size: 120px;
+    font-weight: bold;
+    line-height: 180px;
+    text-align: left;
+    color: #ffffff;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.split-layout .map-section {
+    /* Reserved for map/image overlay */
+    position: relative;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="split-layout">
+        <div class="text-section">
+            {% for line in lines %}
+            <div class="line">{{ line }}</div>
+            {% endfor %}
+        </div>
+        <div class="map-section">
+            <!-- Map or image will be overlaid here -->
+            {% if map_image %}
+            <img src="{{ map_image }}" alt="Map" style="width: 100%; height: 100%; object-fit: contain;">
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
