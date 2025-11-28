@@ -138,7 +138,7 @@ from src.clients.base import APIClient
 class MyClient(APIClient):
     def __init__(self):
         super().__init__()
-        
+
     def fetch_data(self) -> Optional[dict]:
         """Fetch data with automatic retries."""
         try:
@@ -181,7 +181,7 @@ from typing import Optional
 @dataclass
 class VehicleData:
     """Tesla vehicle data from Fleet API."""
-    
+
     battery_percent: float
     range_miles: float
     charging: bool
@@ -270,32 +270,32 @@ logger = logging.getLogger(__name__)
 
 class ServiceClient(APIClient):
     """Client for [Service] API."""
-    
+
     BASE_URL = "https://api.example.com"
-    
+
     def __init__(self):
         """Initialize client."""
         super().__init__()
-        
+
         if not Config.SERVICE_API_KEY:
             raise ValueError("SERVICE_API_KEY must be configured")
-        
+
         self.api_key = Config.SERVICE_API_KEY
-    
+
     def fetch_data(self) -> Optional[dict]:
         """Fetch data from service."""
         url = f"{self.BASE_URL}/endpoint"
         headers = {"Authorization": f"Bearer {self.api_key}"}
-        
+
         response = self._make_request(url, headers=headers)
-        
+
         if response and response.status_code == 200:
             data = response.json()
             logger.info("Successfully fetched data")
             return data
         elif response:
             logger.error(f"API error {response.status_code}: {response.text}")
-        
+
         return None
 ```
 
@@ -308,10 +308,10 @@ from src.models.signage_data import SignageContent
 @dataclass
 class MyData:
     """Raw data from API."""
-    
+
     value: float
     status: str
-    
+
     def to_signage(self) -> SignageContent:
         """Convert to signage format for rendering."""
         return SignageContent(
@@ -356,9 +356,31 @@ mypy src/ --ignore-missing-imports
 pytest tests/ -v
 ```
 
-## Pre-commit Hooks (TODO - Phase 1)
+## Pre-commit Hooks
 
-⚠️ Pre-commit hooks not yet configured. Until then, **manually run formatters before committing**.
+Pre-commit hooks are configured to run automatically before every commit:
+
+```bash
+# Install hooks (done once per clone)
+pre-commit install
+
+# Run manually on all files
+pre-commit run --all-files
+
+# Skip hooks for urgent commits (use sparingly)
+git commit --no-verify
+```
+
+**What runs before each commit:**
+- Black formatting
+- Ruff linting (with auto-fix)
+- MyPy type checking
+- Pytest test suite
+- Trailing whitespace removal
+- YAML validation
+- Merge conflict detection
+
+If any check fails, the commit is blocked. Fix the issues and commit again.
 
 ## References
 
