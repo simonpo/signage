@@ -1,5 +1,7 @@
 # Tesla Fleet API HTTPS Setup - Method Comparison
 
+⚠️ **IMPORTANT**: Tesla **prohibits** using "tesla" in your domain name per their [Brand Guidelines](https://www.tesla.com/brand-guidelines). Use generic subdomains like `api`, `fleet`, or `ev` instead.
+
 ## Why OAuth Callbacks Require Public Access
 
 Tesla's OAuth2 authentication flow has a critical requirement: **Tesla's servers must be able to redirect your browser to your callback URL**. This means:
@@ -41,7 +43,7 @@ Tesla's OAuth2 authentication flow has a critical requirement: **Tesla's servers
 **Why this is the best for your use case:**
 
 ✅ **You already have it working** - No need to change  
-✅ **Uses your own domain** - `tesla.powell.at`  
+✅ **Uses your own domain** - `api.powell.at` (⚠️ Tesla prohibits "tesla" in domain names)  
 ✅ **Full control** - All traffic stays in your network  
 ✅ **No third-party dependencies** - Doesn't rely on Cloudflare/ngrok  
 ✅ **Permanent setup** - Set it and forget it  
@@ -118,8 +120,8 @@ Without a service like ngrok, localhost isn't publicly routable.
 
 ### For OPNsense Setup (Recommended):
 - `TESLA_SETUP_OPNSENSE.md` - OPNsense port forwarding configuration
-- `TESLA_SETUP.md` - nginx and Let's Encrypt setup
-- `tesla-nginx-setup.sh` - Automated setup script
+- `TESLA_SETUP.md` - Caddy and automatic HTTPS setup
+- `tesla-caddy-setup.sh` - Automated setup script
 - `tesla_public_key.pem` - Your public key
 
 ### For Alternative Setups:

@@ -1,10 +1,10 @@
 #!/bin/bash
-# Tesla Fleet API nginx setup script
+# Tesla Fleet API Caddy setup script
 # Run this on your Proxmox server
 
 set -e
 
-echo "Tesla Fleet API nginx Setup"
+echo "Tesla Fleet API Caddy Setup"
 echo "============================"
 echo ""
 

@@ -1,11 +1,13 @@
 # Tesla Fleet API Setup with OPNsense (RECOMMENDED)
 
+⚠️ **DOMAIN NAME RESTRICTION**: Tesla **prohibits** using "tesla" in your domain name per their [Brand Guidelines](https://www.tesla.com/brand-guidelines). Use generic subdomains like `api`, `fleet`, or `ev` instead.
+
 This is the **recommended approach** for Tesla Fleet API OAuth2 authentication. It provides full control, uses your own domain, and is the most reliable solution for production use.
 
 ## Why OPNsense + Port Forwarding Works Best
 
 ✅ **OAuth2 Compatible** - Browsers can reach your callback URL  
-✅ **Your Own Domain** - Use `tesla.powell.at` instead of random URLs  
+✅ **Your Own Domain** - Use `api.powell.at` or similar (⚠️ do NOT use "tesla" - prohibited by Tesla)  
 ✅ **Full Control** - No third-party dependencies  
 ✅ **Reliable** - No tunneling services that can go down  
 ✅ **Permanent** - Set it once, works forever  
@@ -16,15 +18,14 @@ This is the **recommended approach** for Tesla Fleet API OAuth2 authentication. 
 - OPNsense firewall/router
 - Public static IP (or dynamic DNS)
 - Domain name (e.g., `powell.at`)
-- Proxmox server (or any Linux server) for nginx
+- Proxmox server (or any Linux server) for Caddy
 
 ## Overview
 
 1. Configure OPNsense to forward ports 80 & 443 to your Proxmox server
 2. Set up DNS A record pointing to your public IP
-3. Install nginx to serve the Tesla public key
-4. Get Let's Encrypt SSL certificate
-5. Test and register with Tesla
+3. Install Caddy to serve the Tesla public key (automatic HTTPS)
+4. Test and register with Tesla
 
 ## OPNsense Port Forwarding Configuration
 
@@ -50,7 +51,7 @@ Click **Add** (+ icon) and configure:
 - **Destination Port**: 80 (HTTP)
 - **Redirect target IP**: [Your Proxmox IP, e.g., 192.168.1.50]
 - **Redirect target port**: 80
-- **Description**: Tesla API - Let's Encrypt (HTTP)
+- **Description**: Tesla API - Caddy HTTP (ACME challenges)
 - **NAT reflection**: Enable
 - **Filter rule association**: Add associated filter rule
 
@@ -96,7 +97,7 @@ Both should be **enabled** (green checkmark)
 3. Go to DNS settings
 4. Add new A record:
    - **Type**: A
-   - **Name**: tesla
+   - **Name**: api (⚠️ do NOT use "tesla" - prohibited by Tesla)
    - **Value**: [Your public IP - get with `curl -4 ifconfig.me`]
    - **TTL**: 3600
 5. Save changes
@@ -120,18 +121,18 @@ telnet YOUR_PUBLIC_IP 443
 ### Test DNS Resolution
 
 ```bash
-dig tesla.powell.at
+dig api.powell.at
 # Should return your public IP
 
-nslookup tesla.powell.at
+nslookup api.powell.at
 # Should return your public IP
 ```
 
-## Continue with nginx Setup
+## Continue with Caddy Setup
 
 Once port forwarding and DNS are working, follow the main guide: `TESLA_SETUP.md`
 
-Starting from Step 6: "Start nginx (HTTP Only First)"
+Starting from the Caddy installation step.
 
 ## Troubleshooting OPNsense
 
@@ -164,10 +165,10 @@ Starting from Step 6: "Start nginx (HTTP Only First)"
 1. **Check DNS propagation**:
    ```bash
    # Use Google DNS
-   nslookup tesla.powell.at 8.8.8.8
+   nslookup api.powell.at 8.8.8.8
    
    # Use Cloudflare DNS
-   nslookup tesla.powell.at 1.1.1.1
+   nslookup api.powell.at 1.1.1.1
    ```
 
 2. **Clear local DNS cache** (on Mac):
@@ -183,7 +184,7 @@ This is NAT hairpinning/loopback issue. Enable **NAT reflection** in the port fo
 Or add a DNS override in OPNsense:
 - Go to **Services → Unbound DNS → Overrides**
 - Add Host Override:
-  - **Host**: tesla
+  - **Host**: api
   - **Domain**: powell.at
   - **IP**: [Proxmox internal IP, e.g., 192.168.1.50]
 
@@ -235,7 +236,7 @@ pfctl -s nat
 **Test from OPNsense**:
 ```bash
 # Test outbound (from OPNsense to internet)
-curl -I https://tesla.powell.at
+curl -I https://api.powell.at
 
 # Test port forward (from OPNsense to Proxmox)
 nc -zv [PROXMOX_IP] 443
