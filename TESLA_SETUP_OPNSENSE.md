@@ -1,6 +1,30 @@
-# Tesla Fleet API Setup with OPNsense
+# Tesla Fleet API Setup with OPNsense (RECOMMENDED)
 
-This guide covers setting up HTTPS with Let's Encrypt using OPNsense for routing.
+This is the **recommended approach** for Tesla Fleet API OAuth2 authentication. It provides full control, uses your own domain, and is the most reliable solution for production use.
+
+## Why OPNsense + Port Forwarding Works Best
+
+✅ **OAuth2 Compatible** - Browsers can reach your callback URL  
+✅ **Your Own Domain** - Use `tesla.powell.at` instead of random URLs  
+✅ **Full Control** - No third-party dependencies  
+✅ **Reliable** - No tunneling services that can go down  
+✅ **Permanent** - Set it once, works forever  
+✅ **Secure** - Enterprise-grade firewall protection  
+
+## Prerequisites
+
+- OPNsense firewall/router
+- Public static IP (or dynamic DNS)
+- Domain name (e.g., `powell.at`)
+- Proxmox server (or any Linux server) for nginx
+
+## Overview
+
+1. Configure OPNsense to forward ports 80 & 443 to your Proxmox server
+2. Set up DNS A record pointing to your public IP
+3. Install nginx to serve the Tesla public key
+4. Get Let's Encrypt SSL certificate
+5. Test and register with Tesla
 
 ## OPNsense Port Forwarding Configuration
 
