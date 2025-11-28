@@ -286,3 +286,317 @@ class TestTeslaFleetClient:
         client2 = TeslaFleetClient()
         assert client2.access_token == "test_token_123"
         assert client2.token_expires_at is not None
+
+    @responses.activate
+    def test_token_persistence_with_refresh(self, monkeypatch, temp_token_file):
+        """Test token saving and loading with refresh token."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        client = TeslaFleetClient()
+        client._save_tokens("access_token_123", 3600, "refresh_token_456")
+
+        # Verify both tokens saved
+        with open(temp_token_file, "r") as f:
+            data = json.load(f)
+        assert data["access_token"] == "access_token_123"
+        assert data["refresh_token"] == "refresh_token_456"
+        assert "expires_at" in data
+
+    @responses.activate
+    def test_client_credentials_grant(self, monkeypatch, temp_token_file):
+        """Test client_credentials grant type (no refresh token)."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        # Mock client_credentials token request
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json={
+                "access_token": "client_creds_token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            status=200,
+        )
+
+        # Mock vehicles request
+        responses.add(
+            responses.GET,
+            "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles",
+            json={"response": []},
+            status=200,
+        )
+
+        client = TeslaFleetClient()
+        vehicles = client.get_vehicles()
+
+        assert client.access_token == "client_creds_token"
+        assert vehicles == []
+
+    @responses.activate
+    def test_failed_token_load(self, monkeypatch, temp_token_file):
+        """Test handling of corrupted token file."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        # Write invalid JSON
+        with open(temp_token_file, "w") as f:
+            f.write("invalid json {")
+
+        # Mock client_credentials request (fallback)
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json={"access_token": "new_token", "expires_in": 3600},
+            status=200,
+        )
+
+        # Should not crash, should fall back to new token
+        client = TeslaFleetClient()
+        assert client.access_token is None  # Not loaded yet
+
+    @responses.activate
+    def test_get_energy_sites(self, monkeypatch, temp_token_file, mock_token_response):
+        """Test energy sites API call."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        # Mock token request
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json=mock_token_response,
+            status=200,
+        )
+
+        # Mock energy sites request
+        responses.add(
+            responses.GET,
+            "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/energy_sites",
+            json={"response": [{"id": 67890, "site_name": "My Powerwall"}]},
+            status=200,
+        )
+
+        client = TeslaFleetClient()
+        sites = client.get_energy_sites()
+
+        assert sites is not None
+        assert len(sites) == 1
+        assert sites[0]["site_name"] == "My Powerwall"
+
+    @responses.activate
+    def test_get_energy_site_data(
+        self, monkeypatch, temp_token_file, mock_token_response
+    ):
+        """Test energy site live status API call."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        # Mock token request
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json=mock_token_response,
+            status=200,
+        )
+
+        # Mock energy site data request
+        site_id = 67890
+        responses.add(
+            responses.GET,
+            f"https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/energy_sites/{site_id}/live_status",
+            json={
+                "response": {
+                    "solar_power": 5200,
+                    "battery_power": -1500,
+                    "grid_power": 0,
+                    "percentage_charged": 95.5,
+                }
+            },
+            status=200,
+        )
+
+        client = TeslaFleetClient()
+        data = client.get_energy_site_data(site_id)
+
+        assert data is not None
+        assert data["solar_power"] == 5200
+        assert data["percentage_charged"] == 95.5
+
+    @responses.activate
+    def test_api_error_with_status_code(
+        self, monkeypatch, temp_token_file, mock_token_response
+    ):
+        """Test API error handling with non-200 status."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        # Mock token request
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json=mock_token_response,
+            status=200,
+        )
+
+        # Mock 500 error
+        responses.add(
+            responses.GET,
+            "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles",
+            json={"error": "internal_error"},
+            status=500,
+        )
+
+        client = TeslaFleetClient()
+        vehicles = client.get_vehicles()
+
+        assert vehicles is None
+
+    @responses.activate
+    def test_failed_token_refresh_fallback(
+        self, monkeypatch, temp_token_file
+    ):
+        """Test fallback to client_credentials when refresh fails."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        # Save expired token with refresh token
+        expired_token = {
+            "access_token": "old_token",
+            "expires_at": (datetime.now() - timedelta(hours=1)).isoformat(),
+            "refresh_token": "bad_refresh_token",
+        }
+        with open(temp_token_file, "w") as f:
+            json.dump(expired_token, f)
+
+        # Mock failed refresh token request
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json={"error": "invalid_grant"},
+            status=400,
+        )
+
+        # Mock successful client_credentials request (fallback)
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json={"access_token": "fallback_token", "expires_in": 3600},
+            status=200,
+        )
+
+        # Mock vehicles request
+        responses.add(
+            responses.GET,
+            "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles",
+            json={"response": []},
+            status=200,
+        )
+
+        client = TeslaFleetClient()
+        vehicles = client.get_vehicles()
+
+        assert client.access_token == "fallback_token"
+        assert vehicles == []
+
+    def test_token_save_failure(self, monkeypatch, tmp_path):
+        """Test handling of token save failures."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        
+        # Use a read-only directory to trigger write failure
+        readonly_file = tmp_path / "readonly" / ".tesla_tokens.json"
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", readonly_file)
+
+        client = TeslaFleetClient()
+        # Should not crash, just log warning
+        client._save_tokens("test_token", 3600)
+        
+        # Token should still be in memory even if save failed
+        assert client.access_token == "test_token"
+
+    @responses.activate
+    def test_complete_token_failure(self, monkeypatch, temp_token_file):
+        """Test complete failure to obtain token raises exception."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        # Mock failed token request
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json={"error": "invalid_client"},
+            status=401,
+        )
+
+        # Mock vehicles request to trigger token fetch
+        responses.add(
+            responses.GET,
+            "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles",
+            json={"response": []},
+            status=200,
+        )
+
+        client = TeslaFleetClient()
+        
+        # Should raise exception when token fetch completely fails
+        with pytest.raises(Exception):
+            client.get_vehicles()
+
+    @responses.activate
+    def test_token_refresh_success(self, monkeypatch, temp_token_file):
+        """Test successful token refresh with new refresh token."""
+        monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
+        monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
+        monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", temp_token_file)
+
+        # Save expired token with refresh token
+        expired_token = {
+            "access_token": "old_token",
+            "expires_at": (datetime.now() - timedelta(hours=1)).isoformat(),
+            "refresh_token": "valid_refresh_token",
+        }
+        with open(temp_token_file, "w") as f:
+            json.dump(expired_token, f)
+
+        # Mock successful refresh with new refresh token
+        responses.add(
+            responses.POST,
+            "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+            json={
+                "access_token": "refreshed_token",
+                "expires_in": 3600,
+                "refresh_token": "new_refresh_token",
+            },
+            status=200,
+        )
+
+        # Mock vehicles request
+        responses.add(
+            responses.GET,
+            "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles",
+            json={"response": []},
+            status=200,
+        )
+
+        client = TeslaFleetClient()
+        vehicles = client.get_vehicles()
+
+        # Verify token was refreshed and new refresh token saved
+        assert client.access_token == "refreshed_token"
+        assert client.refresh_token == "new_refresh_token"
+        
+        # Check file has new refresh token
+        with open(temp_token_file, "r") as f:
+            data = json.load(f)
+        assert data["refresh_token"] == "new_refresh_token"

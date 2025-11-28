@@ -40,10 +40,18 @@ ENV/
 *.pyc
 .pytest_cache/
 
+# === Test Coverage Reports ===
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+
 # === IDE & Editor ===
 .vscode/
 .idea/
 *.code-workspace
+.github/copilot-instructions.md
 
 # === Secrets & Config ===
 .env
