@@ -37,7 +37,7 @@ class Config:
     # ===== Home Assistant =====
     HA_URL = os.getenv("HA_URL")
     HA_TOKEN = os.getenv("HA_TOKEN")
-    
+
     # ===== Tesla Fleet API =====
     TESLA_CLIENT_ID = os.getenv("TESLA_CLIENT_ID")
     TESLA_CLIENT_SECRET = os.getenv("TESLA_CLIENT_SECRET")

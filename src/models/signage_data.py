@@ -3,10 +3,12 @@ Data models for signage content.
 All data classes follow a clean pattern: fetch → model → SignageContent → render.
 """
 
-from typing import Optional, Literal
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from dataclasses import dataclass, field
+from typing import Literal, Optional
+
+
 @dataclass
 class SignageContent:
     """
@@ -48,6 +50,7 @@ class SignageContent:
 @dataclass
 class PowerwallData:
     """Tesla Powerwall and energy site data from Fleet API."""
+
     site_name: str
     battery_percent: float
     grid_status: str
@@ -72,13 +75,10 @@ class PowerwallData:
             background_mode="local",
             background_query="tesla/powerwall",
         )
-from datetime import datetime
-from pathlib import Path
-from typing import Literal, Optional
 
 
 @dataclass
-class SignageContent:
+class TeslaVehicleData:
     """
     Base signage content model.
     This is what gets passed to the renderer.
@@ -114,10 +114,10 @@ class SignageContent:
         return f"{self.filename_prefix}_{date_str}.jpg"
 
 
-
 @dataclass
 class TeslaData:
     """Tesla vehicle data from Fleet API."""
+
     vehicle_name: str = "Tesla"
     battery_level: str = ""
     battery_unit: str = "%"

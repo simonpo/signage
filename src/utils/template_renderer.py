@@ -14,7 +14,6 @@ from src.config import Config
 logger = logging.getLogger(__name__)
 
 
-
 class TemplateRenderer:
     """
     Renders Jinja2 HTML templates with context data.
@@ -369,9 +368,13 @@ class TemplateRenderer:
         sunrise_time = None
         sunset_time = None
         if weather_data.sunrise:
-            sunrise_time = datetime.fromtimestamp(weather_data.sunrise).strftime("%I:%M %p").lstrip("0")
+            sunrise_time = (
+                datetime.fromtimestamp(weather_data.sunrise).strftime("%I:%M %p").lstrip("0")
+            )
         if weather_data.sunset:
-            sunset_time = datetime.fromtimestamp(weather_data.sunset).strftime("%I:%M %p").lstrip("0")
+            sunset_time = (
+                datetime.fromtimestamp(weather_data.sunset).strftime("%I:%M %p").lstrip("0")
+            )
 
         # Convert visibility to miles
         visibility_mi = None
