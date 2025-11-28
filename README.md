@@ -236,3 +236,6 @@ Weather data from [OpenWeatherMap](https://openweathermap.org/).
 Ferry data from [Washington State Department of Transportation](https://www.wsdot.wa.gov/ferries/).
 
 Football data from [football-data.org](https://www.football-data.org/).
+
+# Branch Protection
+This repository has branch protection enabled on main.
