@@ -23,6 +23,7 @@ art_folder/*
 !art_folder/speedtest.png
 !art_folder/sensors.png
 !art_folder/arsenal.png
+!art_folder/tesla.png
 !art_folder/archive/
 art_folder/archive/*
 !art_folder/archive/.gitkeep
@@ -49,6 +50,8 @@ ENV/
 .envrc
 *.key
 *.pem
+TESLA_SETUP*.md
+tesla-*-setup.sh
 
 # === Generated / Runtime ===
 *.tmp

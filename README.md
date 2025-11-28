@@ -12,6 +12,12 @@ Live scores and fixtures for your favourite teams. Currently supports Premier Le
 
 ![Arsenal FC fixtures and league standings](art_folder/arsenal.png)
 
+### Tesla Vehicle Status
+
+Live data from your Tesla via Fleet API: battery level, range, charging status, climate control, locks, and more.
+
+![Tesla vehicle dashboard showing battery, range, and status](art_folder/tesla.png)
+
 ### Weather Display
 
 Comprehensive weather dashboard showing current conditions, temperature, feels-like, high/low, humidity, pressure, wind, cloudiness, visibility, and sunrise/sunset times from OpenWeatherMap.
@@ -88,6 +94,11 @@ FERRY_ROUTE_ID=7
 # Stock quotes (Alpha Vantage)
 ALPHA_VANTAGE_API_KEY=your_key
 STOCK_SYMBOL=MSFT
+
+# Tesla Fleet API
+TESLA_CLIENT_ID=your_client_id
+TESLA_CLIENT_SECRET=your_client_secret
+TESLA_REGION=na  # na, eu, or cn
 ```
 
 ### Background options
@@ -128,6 +139,7 @@ python generate_signage.py --source speedtest
 python generate_signage.py --source sensors
 python generate_signage.py --source stock
 python generate_signage.py --source arsenal
+python generate_signage.py --source tesla
 ```
 
 Use `--html` flag to force HTML rendering (or `--pil` for legacy mode):
