@@ -14,11 +14,40 @@ from src.config import Config
 logger = logging.getLogger(__name__)
 
 
+
 class TemplateRenderer:
     """
     Renders Jinja2 HTML templates with context data.
     Templates are located in src/templates/ directory.
     """
+
+    def render_powerwall_display(self, powerwall_data: Any) -> str:
+        """
+        Render modern Powerwall display.
+
+        Args:
+            powerwall_data: PowerwallData object
+
+        Returns:
+            Rendered HTML string
+        """
+        context = {
+            "site_name": powerwall_data.site_name,
+            "battery_percent": powerwall_data.battery_percent,
+            "grid_status": powerwall_data.grid_status,
+            "solar_power": powerwall_data.solar_power,
+            "home_power": powerwall_data.home_power,
+            "battery_power": powerwall_data.battery_power,
+            "backup_reserve_percent": powerwall_data.backup_reserve_percent,
+            "storm_mode_active": powerwall_data.storm_mode_active,
+            "site_status": powerwall_data.site_status,
+            "grid_import": powerwall_data.grid_import,
+            "grid_export": powerwall_data.grid_export,
+            "time_to_full": powerwall_data.time_to_full,
+            "time_to_empty": powerwall_data.time_to_empty,
+            "alerts": powerwall_data.alerts,
+        }
+        return self.render("modern_powerwall_layout.html", context)
 
     def __init__(self, templates_dir: Optional[Path] = None):
         """

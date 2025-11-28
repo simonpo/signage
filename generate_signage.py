@@ -12,11 +12,12 @@ from src.clients.ambient_weather import AmbientWeatherClient
 from src.clients.ferry import FerryClient
 from src.clients.homeassistant import HomeAssistantClient
 from src.clients.speedtest import SpeedtestClient
+from src.clients.tesla_fleet import TeslaFleetClient
 from src.clients.sports.nfl import NFLClient
 from src.clients.stock import StockClient
 from src.clients.weather import WeatherClient
 from src.config import Config
-from src.models.signage_data import TeslaData
+from src.models.signage_data import TeslaData, PowerwallData
 from src.renderers.image_renderer import SignageRenderer
 from src.renderers.map_renderer import MapRenderer
 from src.utils.file_manager import FileManager
@@ -27,6 +28,80 @@ from src.utils.output_manager import OutputManager
 # Use new logging setup from utils
 setup_logging()
 logger = logging.getLogger(__name__)
+
+
+
+# === GENERATOR FUNCTIONS ===
+
+def generate_powerwall(renderer: SignageRenderer, tesla_client: TeslaFleetClient, file_mgr: FileManager) -> None:
+    """Generate Powerwall signage."""
+    try:
+        logger.info("Generating Powerwall signage...")
+
+        # Get energy sites (Powerwalls, solar, etc.)
+        sites = tesla_client.get_energy_sites()
+        if not sites or len(sites) == 0:
+            logger.warning("No energy sites found")
+            return
+
+        # Use first site (most users have one)
+        site = sites[0]
+        site_id = str(site["id"])
+        site_name = site.get("site_name", "Powerwall")
+
+        logger.info(f"Fetching data for {site_name} (ID: {site_id})")
+
+        # Get live status
+        data = tesla_client.get_energy_site_data(site_id)
+        if not data:
+            logger.warning("Failed to fetch Powerwall data")
+            return
+
+        # Extract fields
+        battery_percent = data.get("percentage_charged", 0.0)
+        grid_status = data.get("grid_status", "Unknown")
+        solar_power = data.get("solar_power", 0.0)
+        home_power = data.get("load_power", 0.0)
+        battery_power = data.get("battery_power", 0.0)
+        backup_reserve_percent = data.get("backup_reserve_percent", 0.0)
+        storm_mode_active = data.get("storm_mode_active", False)
+        site_status = data.get("site_status", "Unknown")
+        grid_import = data.get("grid_import", 0.0)
+        grid_export = data.get("grid_export", 0.0)
+        time_to_full = data.get("time_to_full_charge")
+        time_to_empty = data.get("time_to_empty")
+        alerts = data.get("alerts", [])
+
+        # Create data model
+        powerwall_data = PowerwallData(
+            site_name=site_name,
+            battery_percent=battery_percent,
+            grid_status=grid_status,
+            solar_power=solar_power,
+            home_power=home_power,
+            battery_power=battery_power,
+            backup_reserve_percent=backup_reserve_percent,
+            storm_mode_active=storm_mode_active,
+            site_status=site_status,
+            grid_import=grid_import,
+            grid_export=grid_export,
+            time_to_full=time_to_full,
+            time_to_empty=time_to_empty,
+            alerts=alerts,
+        )
+
+        # Convert to signage content
+        content = powerwall_data.to_signage()
+
+        # Render with simple filename
+        timestamp = Config.get_current_time()
+        filename = "powerwall.png"
+        renderer.render(content, filename=filename, timestamp=timestamp, powerwall_data=powerwall_data)
+
+        logger.info("✓ Powerwall signage complete")
+
+    except Exception as e:
+        logger.error(f"Failed to generate Powerwall signage: {e}")
 
 
 # === GENERATOR FUNCTIONS ===
@@ -58,36 +133,123 @@ def _render_and_save(
         logger.debug(f"  - {path}")
 
 
-def generate_tesla(
-    renderer: SignageRenderer, ha_client: HomeAssistantClient, file_mgr: FileManager
-) -> None:
-    """Generate Tesla signage."""
+def generate_tesla(renderer: SignageRenderer, tesla_client: TeslaFleetClient, file_mgr: FileManager) -> None:
+
     try:
-        logger.info("Generating Tesla signage...")
+        logger.info("[TESLA] Generating Tesla signage...")
 
-        # Fetch data from Home Assistant
-        batt, battr = ha_client.get_entity_state(Config.TESLA_BATTERY)
-        rng, rattr = ha_client.get_entity_state(Config.TESLA_RANGE)
+        # Get vehicles from Fleet API
+        vehicles = tesla_client.get_vehicles()
+        logger.info(f"[TESLA] Vehicles returned: {vehicles}")
+        if not vehicles or len(vehicles) == 0:
+            logger.warning("[TESLA] No vehicles found")
+            return
 
-        # Create data model
+        # Use first vehicle (most users have one)
+        vehicle = vehicles[0]
+        vehicle_id = vehicle["id"]
+        vehicle_name = vehicle.get("display_name", "Tesla")
+        logger.info(f"[TESLA] Using vehicle: {vehicle_name} (ID: {vehicle_id})")
+        logger.info(f"[TESLA] Vehicle dict: {vehicle}")
+
+        # Get vehicle data
+        vehicle_data = tesla_client.get_vehicle_data(str(vehicle_id))
+        logger.info(f"[TESLA] vehicle_data: {vehicle_data}")
+        if not vehicle_data:
+            logger.warning("[TESLA] Failed to fetch vehicle data")
+            return
+
+        # Extract all relevant fields
+        charge_state = vehicle_data.get("charge_state", {})
+        climate_state = vehicle_data.get("climate_state", {})
+        vehicle_state = vehicle_data.get("vehicle_state", {})
+        drive_state = vehicle_data.get("drive_state", {})
+        gui_settings = vehicle_data.get("gui_settings", {})
+        tire_pressure = vehicle_data.get("vehicle_config", {}).get("tpms_pressure", {})
+        logger.info(f"[TESLA] charge_state: {charge_state}")
+        logger.info(f"[TESLA] climate_state: {climate_state}")
+        logger.info(f"[TESLA] vehicle_state: {vehicle_state}")
+        logger.info(f"[TESLA] drive_state: {drive_state}")
+        logger.info(f"[TESLA] gui_settings: {gui_settings}")
+        logger.info(f"[TESLA] tire_pressure: {tire_pressure}")
+
+        battery_level = charge_state.get("battery_level")
+        battery_range = charge_state.get("battery_range")
+        charging_state = charge_state.get("charging_state", "")
+        charge_limit_soc = charge_state.get("charge_limit_soc", 0)
+        time_to_full = charge_state.get("time_to_full_charge", "")
+        charger_power = charge_state.get("charger_power", 0.0)
+        conn_charge_cable = charge_state.get("conn_charge_cable", "")
+        logger.info(f"[TESLA] battery_level: {battery_level}, battery_range: {battery_range}, charging_state: {charging_state}, charge_limit_soc: {charge_limit_soc}, time_to_full: {time_to_full}, charger_power: {charger_power}, conn_charge_cable: {conn_charge_cable}")
+
+        # Improved plugged_in and charging logic
+        plugged_in = conn_charge_cable not in (None, "", "Disconnected")
+        is_charging = charging_state.lower() in ("charging", "starting") or (charger_power and charger_power > 0)
+        logger.info(f"[TESLA] plugged_in: {plugged_in}, is_charging: {is_charging}")
+
+        odometer = vehicle_state.get("odometer", 0.0)
+        inside_temp = climate_state.get("inside_temp", 0.0)
+        outside_temp = climate_state.get("outside_temp", 0.0)
+        climate_on = climate_state.get("is_climate_on", False)
+        defrost_on = climate_state.get("defrost_mode", 0) == 1
+        software_version = vehicle_state.get("software_version", "")
+        locked = vehicle_state.get("locked", False)
+        sentry_mode = vehicle_state.get("sentry_mode", False)
+        latitude = drive_state.get("latitude", 0.0)
+        longitude = drive_state.get("longitude", 0.0)
+        heading = drive_state.get("heading", 0)
+        shift_state = drive_state.get("shift_state", "")
+        speed = drive_state.get("speed", 0.0)
+        # Tire pressure: not always available, so fallback to empty dict
+        tire_pressure = vehicle_state.get("tpms_pressure", {}) or {}
+        last_seen = vehicle.get("last_seen", "")
+        online = vehicle.get("state", "online") == "online"
+        location_display = drive_state.get("native_location", "") or ""
+        logger.info(f"[TESLA] odometer: {odometer}, inside_temp: {inside_temp}, outside_temp: {outside_temp}, climate_on: {climate_on}, defrost_on: {defrost_on}, software_version: {software_version}, locked: {locked}, sentry_mode: {sentry_mode}, latitude: {latitude}, longitude: {longitude}, heading: {heading}, shift_state: {shift_state}, speed: {speed}, tire_pressure: {tire_pressure}, last_seen: {last_seen}, online: {online}, location_display: {location_display}")
+
         tesla_data = TeslaData(
-            battery_level=batt,
-            battery_unit=battr.get("unit_of_measurement", "%"),
-            range=rng,
-            range_unit=rattr.get("unit_of_measurement", " mi"),
+            vehicle_name=vehicle_name,
+            battery_level=str(battery_level) if battery_level is not None else "",
+            battery_unit="%",
+            range=str(int(battery_range)) if battery_range is not None else "",
+            range_unit=" mi",
+            charging_state=charging_state,
+            charge_limit_soc=charge_limit_soc,
+            time_to_full=str(time_to_full) if time_to_full is not None else "",
+            charger_power=charger_power,
+            plugged_in=plugged_in,
+            odometer=odometer,
+            inside_temp=inside_temp,
+            outside_temp=outside_temp,
+            climate_on=climate_on,
+            defrost_on=defrost_on,
+            software_version=software_version,
+            locked=locked,
+            sentry_mode=sentry_mode,
+            latitude=latitude,
+            longitude=longitude,
+            heading=heading,
+            shift_state=shift_state,
+            speed=speed,
+            tire_pressure=tire_pressure,
+            last_seen=last_seen,
+            online=online,
+            location_display=location_display,
         )
+
+        logger.info(f"[TESLA] tesla_data: {tesla_data}")
 
         # Convert to signage content
         content = tesla_data.to_signage()
+        logger.info(f"[TESLA] signage content: {content}")
 
         # Render with simple filename
         timestamp = Config.get_current_time()
         filename = "tesla.png"
+        logger.info(f"[TESLA] Rendering to file: {filename} at {timestamp}")
         renderer.render(content, filename=filename, timestamp=timestamp, tesla_data=tesla_data)
 
-        # No cleanup - always overwrite same file
-
-        logger.info("✓ Tesla signage complete")
+        logger.info("[TESLA] ✓ Tesla signage complete")
 
     except Exception as e:
         logger.error(f"Failed to generate Tesla signage: {e}")
@@ -415,6 +577,7 @@ def main():
         choices=[
             "all",
             "tesla",
+            "powerwall",
             "weather",
             "ambient",
             "sensors",
@@ -462,8 +625,12 @@ def main():
     else:
         # One-time generation
         if args.source in ["all", "tesla"]:
-            with HomeAssistantClient() as ha_client:
-                generate_tesla(renderer, ha_client, file_mgr)
+            with TeslaFleetClient() as tesla_client:
+                generate_tesla(renderer, tesla_client, file_mgr)
+
+        if args.source in ["all", "powerwall"]:
+            with TeslaFleetClient() as tesla_client:
+                generate_powerwall(renderer, tesla_client, file_mgr)
 
         if args.source in ["all", "weather"]:
             with WeatherClient() as weather_client:

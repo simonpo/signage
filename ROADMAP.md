@@ -55,6 +55,16 @@
 - [ ] Create troubleshooting guide
 - [ ] Add examples for each signage type
 
+### Deployment & Production
+- [ ] Move log files to system location for daemon mode
+  - Current: `signage.log` in project root (fine for development)
+  - Production: `/var/log/signage/signage.log` (standard for system services)
+  - Setup: `sudo mkdir -p /var/log/signage && sudo chown $USER:$USER /var/log/signage`
+  - Update `.env`: `LOG_FILE=/var/log/signage/signage.log`
+  - Configure logrotate for automatic log rotation
+- [ ] Create systemd service file for daemon mode
+- [ ] Add installation/setup documentation for production deployment
+
 ## Completed
 - ✅ Modular architecture refactoring (12 phases)
 - ✅ WSDOT Ferry API integration (schedule endpoint)

@@ -296,6 +296,9 @@ class SignageRenderer:
         elif content.layout_type == "modern_tesla" and tesla_data:
             # Render modern Tesla vehicle display
             html = self.template_renderer.render_tesla_display(tesla_data)
+        elif content.layout_type == "modern_powerwall" and 'powerwall_data' in locals() and powerwall_data is not None:
+            # Render modern Powerwall display
+            html = self.template_renderer.render_powerwall_display(powerwall_data)
         else:
             # Render text layout template
             html = self.template_renderer.render_layout(

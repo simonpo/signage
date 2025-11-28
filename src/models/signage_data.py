@@ -3,7 +3,75 @@ Data models for signage content.
 All data classes follow a clean pattern: fetch → model → SignageContent → render.
 """
 
+from typing import Optional, Literal
+from datetime import datetime
+from pathlib import Path
 from dataclasses import dataclass, field
+@dataclass
+class SignageContent:
+    """
+    Base signage content model.
+    This is what gets passed to the renderer.
+    """
+
+    lines: list[str]
+    filename_prefix: str
+    layout_type: Literal[
+        "centered",
+        "left",
+        "grid",
+        "split",
+        "map",
+        "weather",
+        "modern_weather",
+        "modern_stock",
+        "modern_ambient",
+        "modern_ferry",
+        "modern_speedtest",
+        "modern_sensors",
+        "modern_football",
+        "modern_rugby",
+        "modern_tesla",
+        "modern_powerwall",
+    ] = "centered"
+    background_mode: str = "gradient"
+    background_query: Optional[str] = None
+    timestamp: Optional[datetime] = None
+    map_image: Optional[Path] = None  # For ferry map composite
+
+    def generate_filename(self, date: datetime) -> str:
+        """Generate date-based filename: prefix_YYYY-MM-DD.jpg"""
+        date_str = date.strftime("%Y-%m-%d")
+        return f"{self.filename_prefix}_{date_str}.jpg"
+
+
+@dataclass
+class PowerwallData:
+    """Tesla Powerwall and energy site data from Fleet API."""
+    site_name: str
+    battery_percent: float
+    grid_status: str
+    solar_power: float  # kW
+    home_power: float  # kW
+    battery_power: float  # kW (positive=discharging, negative=charging)
+    backup_reserve_percent: float
+    storm_mode_active: bool
+    site_status: str
+    grid_import: float  # kW
+    grid_export: float  # kW
+    time_to_full: Optional[str] = None
+    time_to_empty: Optional[str] = None
+    alerts: list[str] = field(default_factory=list)
+
+    def to_signage(self) -> SignageContent:
+        """Convert to signage content with modern Powerwall layout."""
+        return SignageContent(
+            lines=[],  # Use custom HTML template
+            filename_prefix="powerwall",
+            layout_type="modern_powerwall",
+            background_mode="local",
+            background_query="tesla/powerwall",
+        )
 from datetime import datetime
 from pathlib import Path
 from typing import Literal, Optional
@@ -33,6 +101,7 @@ class SignageContent:
         "modern_sensors",
         "modern_football",
         "modern_rugby",
+        "modern_tesla",
     ] = "centered"
     background_mode: str = "gradient"
     background_query: Optional[str] = None
@@ -45,14 +114,37 @@ class SignageContent:
         return f"{self.filename_prefix}_{date_str}.jpg"
 
 
+
 @dataclass
 class TeslaData:
-    """Tesla vehicle data from Home Assistant."""
-
-    battery_level: str
-    battery_unit: str
-    range: str
-    range_unit: str
+    """Tesla vehicle data from Fleet API."""
+    vehicle_name: str = "Tesla"
+    battery_level: str = ""
+    battery_unit: str = "%"
+    range: str = ""
+    range_unit: str = " mi"
+    charging_state: str = ""
+    charge_limit_soc: int = 0
+    time_to_full: str = ""
+    charger_power: float = 0.0
+    plugged_in: bool = False
+    odometer: float = 0.0
+    inside_temp: float = 0.0
+    outside_temp: float = 0.0
+    climate_on: bool = False
+    defrost_on: bool = False
+    software_version: str = ""
+    locked: bool = False
+    sentry_mode: bool = False
+    latitude: float = 0.0
+    longitude: float = 0.0
+    heading: int = 0
+    shift_state: str = ""
+    speed: float = 0.0
+    tire_pressure: dict = field(default_factory=dict)
+    last_seen: str = ""
+    online: bool = True
+    location_display: str = ""
 
     def to_signage(self) -> SignageContent:
         """Convert to signage content with modern HTML layout."""
@@ -61,7 +153,7 @@ class TeslaData:
             filename_prefix="tesla",
             layout_type="modern_tesla",
             background_mode="local",
-            background_query="modelY",
+            background_query="tesla/modelY",
         )
 
 

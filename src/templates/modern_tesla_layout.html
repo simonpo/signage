@@ -98,26 +98,108 @@
 {% block content %}
 <div class="safe-zone">
     <div class="modern-tesla">
-        {# Vehicle name #}
+        <!-- Vehicle Name -->
         <div class="vehicle-name">{{ vehicle_name }}</div>
-        
-        {# Stats grid #}
-        <div class="vehicle-stats">
-            {# Battery card #}
-            <div class="stat-card">
-                <div class="stat-icon">🔋</div>
+
+        <!-- Multi-section grid for all stats -->
+        <div class="vehicle-stats" style="grid-template-columns: repeat(4, 1fr); gap: 60px;">
+            <!-- Battery -->
+            <div class="stat-card" style="padding: 60px 40px; min-width: 0;">
                 <div class="stat-label">Battery</div>
-                <div class="stat-value {% if battery_level|int >= 80 %}battery-high{% elif battery_level|int >= 30 %}battery-medium{% else %}battery-low{% endif %}">
+                <div class="stat-value {% if battery_level|int >= 80 %}battery-high{% elif battery_level|int >= 30 %}battery-medium{% else %}battery-low{% endif %} {% if charging_state == 'Charging' %}charging{% endif %}">
                     {{ battery_level }}<span class="stat-unit">{{ battery_unit }}</span>
                 </div>
+                <div class="stat-label" style="font-size:40px; margin-top:30px; opacity:0.7;">
+                    {% if charging_state|lower == 'charging' or (charger_power is defined and charger_power|float > 0) %}
+                        Charging ({{ charger_power }} kW)
+                        {% if time_to_full %}<br>Full in {{ time_to_full }}h{% endif %}
+                    {% elif plugged_in %}
+                        Plugged In
+                    {% else %}
+                        Not Charging
+                    {% endif %}
+                </div>
             </div>
-            
-            {# Range card #}
+
+            <!-- Range -->
             <div class="stat-card">
-                <div class="stat-icon">🛣️</div>
                 <div class="stat-label">Range</div>
                 <div class="stat-value">
                     {{ range }}<span class="stat-unit">{{ range_unit }}</span>
+                </div>
+                <div class="stat-label" style="font-size:40px; margin-top:30px; opacity:0.7;">
+                    Charge Limit: {{ charge_limit_soc }}%
+                </div>
+            </div>
+
+                        <!-- Odometer -->
+            <div class="stat-card" style="padding: 60px 40px; min-width: 0;">
+                                <div class="stat-label">Odometer</div>
+                                <div class="stat-value">
+                                    {% if odometer is defined and odometer is not none %}{{ odometer|round|int }}<span class="stat-unit"> mi</span>{% else %}N/A{% endif %}
+                                </div>
+                                <div class="stat-label" style="font-size:40px; margin-top:30px; opacity:0.7;">Software: {{ software_version or 'N/A' }}</div>
+                        </div>
+
+                        <!-- Climate -->
+            <div class="stat-card" style="padding: 60px 40px; min-width: 0;">
+                                <div class="stat-label">Climate</div>
+                                <div class="stat-value">
+                                    {% if inside_temp is defined and inside_temp is not none %}{{ inside_temp|round(1) }}<span class="stat-unit">°C</span>{% else %}N/A{% endif %}
+                                </div>
+                                <div class="stat-label" style="font-size:40px; margin-top:30px; opacity:0.7;">
+                                        Outside: {% if outside_temp is defined and outside_temp is not none %}{{ outside_temp|round(1) }}°C{% else %}N/A{% endif %}<br>
+                                        {% if climate_on %}Climate On{% else %}Climate Off{% endif %}
+                                        {% if defrost_on %}<br>Defrost On{% endif %}
+                                </div>
+                        </div>
+
+            <!-- Lock/Security -->
+            <div class="stat-card" style="padding: 60px 40px; min-width: 0;">
+                <div class="stat-label">Security</div>
+                <div class="stat-value" style="font-size:120px;">
+                    {% if locked %}Locked{% else %}Unlocked{% endif %}
+                </div>
+                <div class="stat-label" style="font-size:40px; margin-top:30px; opacity:0.7;">
+                    Sentry: {% if sentry_mode %}On{% else %}Off{% endif %}
+                </div>
+            </div>
+
+            <!-- Location/Status -->
+            <div class="stat-card" style="padding: 60px 40px; min-width: 0;">
+                <div class="stat-label">Location</div>
+                <div class="stat-value" style="font-size:90px;">
+                    {% if location_display %}{{ location_display }}{% elif latitude is defined and longitude is defined and latitude is not none and longitude is not none %}{{ latitude|round(4) }}, {{ longitude|round(4) }}{% else %}N/A{% endif %}
+                </div>
+                <div class="stat-label" style="font-size:40px; margin-top:30px; opacity:0.7;">
+                    {% if online %}<span style="color:#22c55e;">Online</span>{% else %}<span style="color:#ef4444;">Offline</span>{% endif %}
+                    {% if last_seen %}<br>Last seen: {{ last_seen }}{% endif %}
+                </div>
+            </div>
+
+            <!-- Tire Pressure (if available) -->
+            <div class="stat-card" style="padding: 60px 40px; min-width: 0;">
+                <div class="stat-label">Tire Pressure</div>
+                <div class="stat-value" style="font-size:90px;">
+                    {% if tire_pressure and tire_pressure|length > 0 %}
+                        {% for k, v in tire_pressure.items() %}
+                            {{ k|replace('_', ' ')|capitalize }}: {{ v }} psi<br>
+                        {% endfor %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Drive State -->
+            <div class="stat-card" style="padding: 60px 40px; min-width: 0;">
+                <div class="stat-label">Drive</div>
+                <div class="stat-value" style="font-size:90px;">
+                    {% if shift_state %}{{ shift_state }}{% else %}Parked{% endif %}
+                </div>
+                <div class="stat-label" style="font-size:40px; margin-top:30px; opacity:0.7;">
+                    Speed: {% if speed is defined and speed is not none %}{{ speed }} mph{% else %}0 mph{% endif %}<br>
+                    Heading: {% if heading is defined and heading is not none %}{{ heading }}°{% else %}N/A{% endif %}
                 </div>
             </div>
         </div>

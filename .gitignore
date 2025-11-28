@@ -55,3 +55,4 @@ ENV/
 *.bak
 *.swp
 REFACTORING_COMPLETE.md
+.tesla_tokens.json

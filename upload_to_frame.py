@@ -4,9 +4,11 @@ Upload new images to Samsung Frame TV Art Mode.
 All configuration is loaded from .env (never committed).
 """
 
+
 import json
 import logging
 import os
+import hashlib
 from pathlib import Path
 
 import urllib3
@@ -67,13 +69,17 @@ def main():
         tv.close()
         return
 
-    # === STEP 3: Load uploaded log ===
-    uploaded = set()
+
+    # === STEP 3: Load uploaded log (filename -> sha256 hash) ===
+    uploaded = {}
     if LOG_PATH.exists():
         try:
             with open(LOG_PATH) as f:
-                uploaded = set(json.load(f))
-            logging.info(f"Loaded {len(uploaded)} previously uploaded files")
+                uploaded = json.load(f)
+            if not isinstance(uploaded, dict):
+                logging.warning(f"Uploaded log format invalid, resetting.")
+                uploaded = {}
+            logging.info(f"Loaded {len(uploaded)} previously uploaded file hashes")
         except Exception as e:
             logging.warning(f"Could not read {LOG_PATH}: {e}")
 
@@ -89,25 +95,35 @@ def main():
             continue
         if not file_path.name.lower().endswith((".jpg", ".jpeg", ".png")):
             continue
-        if file_path.name in uploaded:
-            continue
 
+        # Compute SHA256 hash of file contents
         try:
             with open(file_path, "rb") as f:
                 data = f.read()
+            file_hash = hashlib.sha256(data).hexdigest()
+        except Exception as e:
+            logging.error(f"Failed to read {file_path.name} for hashing: {e}")
+            continue
 
+        # Check if file with same name and hash was already uploaded
+        prev_hash = uploaded.get(file_path.name)
+        if prev_hash == file_hash:
+            continue  # Already uploaded this version
+
+        try:
             file_type = "JPEG" if file_path.suffix.lower() in {".jpg", ".jpeg"} else "PNG"
             art_id = art.upload(data, file_type=file_type)
-            uploaded.add(file_path.name)
+            uploaded[file_path.name] = file_hash
             new_uploads += 1
             logging.info(f"Uploaded: {file_path.name} → {art_id}")
         except Exception as e:
             logging.error(f"Upload failed {file_path.name}: {e}")
 
     # === STEP 5: Save updated log ===
+
     try:
         with open(LOG_PATH, "w") as f:
-            json.dump(sorted(uploaded), f, indent=2)
+            json.dump(uploaded, f, indent=2)
     except Exception as e:
         logging.error(f"Failed to save {LOG_PATH}: {e}")
 

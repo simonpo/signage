@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Powerwall{% endblock %}
+
+{% block styles %}
+/* Modern Powerwall layout with clean energy dashboard aesthetic */
+.modern-powerwall {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    padding: 120px;
+}
+
+.site-name {
+    font-size: 120px;
+    font-weight: 300;
+    letter-spacing: 10px;
+    margin-bottom: 120px;
+    opacity: 0.9;
+    text-transform: uppercase;
+}
+
+.powerwall-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 120px;
+    width: 100%;
+    max-width: 3200px;
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    border-radius: 40px;
+    padding: 80px 60px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 600px;
+}
+
+.stat-icon {
+    font-size: 120px;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+}
+
+.stat-label {
+    font-size: 55px;
+    font-weight: 300;
+    opacity: 0.65;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.stat-value {
+    font-size: 140px;
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+.stat-unit {
+    font-size: 60px;
+    font-weight: 300;
+    opacity: 0.8;
+    margin-left: 10px;
+}
+
+/* Battery level color coding */
+.battery-high {
+    color: #22c55e;
+}
+.battery-medium {
+    color: #f59e0b;
+}
+.battery-low {
+    color: #ef4444;
+}
+
+.status-row {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    margin-top: 80px;
+}
+
+.status-card {
+    background: rgba(255,255,255,0.06);
+    border-radius: 30px;
+    padding: 40px 60px;
+    font-size: 55px;
+    font-weight: 300;
+    margin: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.alert {
+    color: #ef4444;
+    font-size: 48px;
+    margin-top: 40px;
+    text-align: center;
+}
+{% endblock %}
+
+{% block content %}
+<div class="safe-zone">
+    <div class="modern-powerwall">
+        <div class="site-name">{{ site_name }}</div>
+        <div class="powerwall-stats">
+            <!-- Battery Card -->
+            <div class="stat-card">
+                <div class="stat-icon">🔋</div>
+                <div class="stat-label">Battery</div>
+                <div class="stat-value {% if battery_percent >= 80 %}battery-high{% elif battery_percent >= 30 %}battery-medium{% else %}battery-low{% endif %}">
+                    {{ battery_percent|round(1) }}<span class="stat-unit">%</span>
+                </div>
+                <div class="stat-label" style="font-size:38px; margin-top:18px; opacity:0.5;">Backup Reserve: {{ backup_reserve_percent|round(1) }}%</div>
+            </div>
+            <!-- Solar Card -->
+            <div class="stat-card">
+                <div class="stat-icon">☀️</div>
+                <div class="stat-label">Solar</div>
+                <div class="stat-value">{{ solar_power|round(2) }}<span class="stat-unit">kW</span></div>
+                <div class="stat-label" style="font-size:38px; margin-top:18px; opacity:0.5;">Grid: {{ grid_status }}</div>
+            </div>
+            <!-- Home Usage Card -->
+            <div class="stat-card">
+                <div class="stat-icon">🏠</div>
+                <div class="stat-label">Home Usage</div>
+                <div class="stat-value">{{ home_power|round(2) }}<span class="stat-unit">kW</span></div>
+                <div class="stat-label" style="font-size:38px; margin-top:18px; opacity:0.5;">Battery: {{ battery_power|round(2) }} kW</div>
+            </div>
+        </div>
+
+        <div class="status-row">
+            <div class="status-card">
+                <span>⚡ Grid Import:</span> {{ grid_import|round(2) }} kW
+            </div>
+            <div class="status-card">
+                <span>🔌 Grid Export:</span> {{ grid_export|round(2) }} kW
+            </div>
+            <div class="status-card">
+                <span>⏳ Time to Full:</span> {{ time_to_full or 'N/A' }}
+            </div>
+            <div class="status-card">
+                <span>⏳ Time to Empty:</span> {{ time_to_empty or 'N/A' }}
+            </div>
+            <div class="status-card">
+                <span>🌩️ Storm Watch:</span> {{ 'Active' if storm_mode_active else 'Inactive' }}
+            </div>
+            <div class="status-card">
+                <span>🔄 Site Status:</span> {{ site_status }}
+            </div>
+        </div>
+
+        {% if alerts and alerts|length > 0 %}
+        <div class="alert">
+            ⚠️ {{ alerts[0] }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
