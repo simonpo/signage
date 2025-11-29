@@ -5,7 +5,6 @@ Fetches latest internet speed test results from local Speedtest Tracker instance
 
 import logging
 from datetime import datetime
-from typing import Optional
 
 from src.clients.base import APIClient
 from src.config import Config
@@ -29,7 +28,7 @@ class SpeedtestClient(APIClient):
         self.base_url = Config.SPEEDTEST_URL.rstrip("/")
         self.token = Config.SPEEDTEST_TOKEN
 
-    def get_latest(self) -> Optional[SpeedtestData]:
+    def get_latest(self) -> SpeedtestData | None:
         """
         Fetch latest speedtest results.
 

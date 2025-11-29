@@ -8,7 +8,6 @@ import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from PIL import Image
 
@@ -126,7 +125,7 @@ class OutputManager:
         )
 
     def save_image(
-        self, image: Image.Image, filename: str, source: Optional[str] = None
+        self, image: Image.Image, filename: str, source: str | None = None
     ) -> list[Path]:
         """
         Save image to all configured output profiles.

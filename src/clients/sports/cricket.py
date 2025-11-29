@@ -4,7 +4,6 @@ TODO: Implement using Cricbuzz or CricketAPI.
 """
 
 import logging
-from typing import Optional
 
 from src.clients.sports.base_sports import BaseSportsClient
 from src.models.signage_data import SportsData
@@ -27,7 +26,7 @@ class CricketClient(BaseSportsClient):
         super().__init__()
         logger.warning("CricketClient not yet implemented")
 
-    def get_team_data(self, team_id: str) -> Optional[SportsData]:
+    def get_team_data(self, team_id: str) -> SportsData | None:
         """Get team data (not implemented)."""
         logger.warning("CricketClient.get_team_data() not yet implemented")
         return None

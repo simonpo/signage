@@ -4,7 +4,6 @@ Maps weather conditions to background categories.
 """
 
 import logging
-from typing import Optional
 
 from src.clients.base import APIClient
 from src.config import Config
@@ -47,7 +46,7 @@ class WeatherClient(APIClient):
         self.api_key = Config.WEATHER_API_KEY
         self.city = Config.WEATHER_CITY
 
-    def get_weather(self) -> Optional[WeatherData]:
+    def get_weather(self) -> WeatherData | None:
         """
         Fetch current weather for configured city.
 

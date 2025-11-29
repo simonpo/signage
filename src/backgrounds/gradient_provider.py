@@ -4,7 +4,6 @@ Generates beautiful gradient backgrounds programmatically.
 """
 
 import logging
-from typing import Optional
 
 from PIL import Image, ImageDraw
 
@@ -19,7 +18,7 @@ class GradientProvider(BackgroundProvider):
     Generates smooth vertical gradients for clean, modern aesthetics.
     """
 
-    def get_background(self, query: str, width: int, height: int) -> Optional[Image.Image]:
+    def get_background(self, query: str, width: int, height: int) -> Image.Image | None:
         """
         Generate gradient background.
 

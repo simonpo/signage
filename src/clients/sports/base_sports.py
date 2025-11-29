@@ -4,7 +4,6 @@ Base sports client with live detection and caching.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from src.clients.base import APIClient
 from src.models.signage_data import SportsData
@@ -22,7 +21,7 @@ class BaseSportsClient(APIClient, ABC):
     cache_duration_minutes = 15
 
     @abstractmethod
-    def get_team_data(self, team_id: str) -> Optional[SportsData]:
+    def get_team_data(self, team_id: str) -> SportsData | None:
         """
         Fetch comprehensive team data.
 

@@ -6,7 +6,6 @@ Loads and crops images from local filesystem.
 import logging
 import random
 from pathlib import Path
-from typing import Optional
 
 from PIL import Image
 
@@ -23,7 +22,7 @@ class LocalProvider(BackgroundProvider):
     Expects directory structure: backgrounds/topic/category/
     """
 
-    def __init__(self, base_path: Optional[Path] = None):
+    def __init__(self, base_path: Path | None = None):
         """
         Initialize local provider.
 
@@ -32,7 +31,7 @@ class LocalProvider(BackgroundProvider):
         """
         self.base_path = base_path or Config.BACKGROUNDS_PATH
 
-    def get_background(self, query: str, width: int, height: int) -> Optional[Image.Image]:
+    def get_background(self, query: str, width: int, height: int) -> Image.Image | None:
         """
         Load random background from local directory.
 

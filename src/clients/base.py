@@ -5,7 +5,7 @@ All API clients should inherit from this.
 
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -54,10 +54,10 @@ class APIClient:
         self,
         url: str,
         method: str = "GET",
-        headers: Optional[dict[str, str]] = None,
-        params: Optional[dict[str, Any]] = None,
-        json_data: Optional[dict[str, Any]] = None,
-    ) -> Optional[requests.Response]:
+        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
+        json_data: dict[str, Any] | None = None,
+    ) -> requests.Response | None:
         """
         Make HTTP request with exponential backoff retry.
 

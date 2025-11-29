@@ -3,7 +3,6 @@ Stock quote API client using Alpha Vantage.
 """
 
 import logging
-from typing import Optional
 
 from src.clients.base import APIClient
 from src.config import Config
@@ -29,7 +28,7 @@ class StockClient(APIClient):
         if not self.symbol:
             logger.warning("STOCK_SYMBOL not configured - stock quotes will be disabled")
 
-    def get_quote(self) -> Optional[StockData]:
+    def get_quote(self) -> StockData | None:
         """
         Fetch current stock quote for configured symbol.
 

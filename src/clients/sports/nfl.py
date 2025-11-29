@@ -5,7 +5,6 @@ Fetches Seahawks fixtures, results, and NFC West standings.
 
 import logging
 from datetime import datetime
-from typing import Optional
 
 from src.clients.sports.base_sports import BaseSportsClient
 from src.config import Config
@@ -32,7 +31,7 @@ class NFLClient(BaseSportsClient):
         super().__init__()
         self.team_id = Config.SEAHAWKS_TEAM_ID
 
-    def get_team_data(self, team_id: Optional[str] = None) -> Optional[SportsData]:
+    def get_team_data(self, team_id: str | None = None) -> SportsData | None:
         """
         Get comprehensive team data: fixtures, results, standings.
 
@@ -177,7 +176,7 @@ class NFLClient(BaseSportsClient):
         except (ValueError, KeyError):
             return {}
 
-    def _parse_result(self, game: dict, team_id: str) -> Optional[SportsResult]:
+    def _parse_result(self, game: dict, team_id: str) -> SportsResult | None:
         """Parse completed game into SportsResult."""
         try:
             competitions = game.get("competitions", [{}])[0]
@@ -201,7 +200,7 @@ class NFLClient(BaseSportsClient):
             logger.warning(f"Failed to parse result: {e}")
             return None
 
-    def _parse_fixture(self, game: dict, team_id: str) -> Optional[SportsFixture]:
+    def _parse_fixture(self, game: dict, team_id: str) -> SportsFixture | None:
         """Parse upcoming game into SportsFixture."""
         try:
             competitions = game.get("competitions", [{}])[0]
@@ -227,7 +226,7 @@ class NFLClient(BaseSportsClient):
             logger.warning(f"Failed to parse fixture: {e}")
             return None
 
-    def _get_live_score(self, team_id: str) -> Optional[str]:
+    def _get_live_score(self, team_id: str) -> str | None:
         """Get live score if game is in progress."""
         url = f"{self.ESPN_BASE}/scoreboard"
 
@@ -268,7 +267,7 @@ class NFLClient(BaseSportsClient):
 
         return None
 
-    def is_game_today(self, team_id: Optional[str] = None) -> bool:
+    def is_game_today(self, team_id: str | None = None) -> bool:
         """Check if team has a game today."""
         if team_id is None:
             team_id = self.team_id
@@ -288,7 +287,7 @@ class NFLClient(BaseSportsClient):
 
         return False
 
-    def is_game_live(self, team_id: Optional[str] = None) -> bool:
+    def is_game_live(self, team_id: str | None = None) -> bool:
         """Check if team is currently playing."""
         if team_id is None:
             team_id = self.team_id

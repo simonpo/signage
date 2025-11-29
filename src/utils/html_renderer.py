@@ -6,7 +6,6 @@ Converts HTML templates to high-resolution PNG images.
 import asyncio
 import logging
 from pathlib import Path
-from typing import Optional
 
 from PIL import Image
 from playwright.async_api import Browser, async_playwright
@@ -25,7 +24,7 @@ class HTMLRenderer:
 
     def __init__(self):
         """Initialize HTML renderer."""
-        self.browser: Optional[Browser] = None
+        self.browser: Browser | None = None
         self._playwright = None
         logger.debug("HTMLRenderer initialized")
 

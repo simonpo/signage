@@ -7,7 +7,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import requests
 
@@ -160,7 +160,7 @@ class TeslaFleetClient(APIClient):
             logger.error("Please run: python oauth_tesla.py")
             raise
 
-    def _api_request(self, endpoint: str, method: str = "GET") -> Optional[dict[str, Any]]:
+    def _api_request(self, endpoint: str, method: str = "GET") -> dict[str, Any] | None:
         """
         Make authenticated API request.
 
@@ -188,7 +188,7 @@ class TeslaFleetClient(APIClient):
 
         return None
 
-    def get_vehicles(self) -> Optional[list[dict[str, Any]]]:
+    def get_vehicles(self) -> list[dict[str, Any]] | None:
         """
         Get list of vehicles.
 
@@ -204,7 +204,7 @@ class TeslaFleetClient(APIClient):
 
         return None
 
-    def get_vehicle_data(self, vehicle_id: str) -> Optional[dict[str, Any]]:
+    def get_vehicle_data(self, vehicle_id: str) -> dict[str, Any] | None:
         """
         Get vehicle data (battery, range, location, etc.).
 
@@ -221,7 +221,7 @@ class TeslaFleetClient(APIClient):
 
         return None
 
-    def get_energy_sites(self) -> Optional[list[dict[str, Any]]]:
+    def get_energy_sites(self) -> list[dict[str, Any]] | None:
         """
         Get list of energy sites (Powerwalls, Solar, etc.).
 
@@ -237,7 +237,7 @@ class TeslaFleetClient(APIClient):
 
         return None
 
-    def get_energy_site_data(self, site_id: str) -> Optional[dict[str, Any]]:
+    def get_energy_site_data(self, site_id: str) -> dict[str, Any] | None:
         """
         Get energy site data (battery %, grid status, solar production).
 

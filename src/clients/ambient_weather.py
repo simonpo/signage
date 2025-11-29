@@ -6,7 +6,6 @@ Fetches real-time hyper-local weather from user's Ambient Weather device.
 import json
 import logging
 from datetime import datetime
-from typing import Optional
 
 from src.clients.base import APIClient
 from src.config import Config
@@ -36,7 +35,7 @@ class AmbientWeatherClient(APIClient):
         self.api_key = Config.AMBIENT_API_KEY
         self.app_key = Config.AMBIENT_APP_KEY
 
-    def get_weather(self, include_trend: bool = True) -> Optional[AmbientWeatherData]:
+    def get_weather(self, include_trend: bool = True) -> AmbientWeatherData | None:
         """
         Fetch current weather from user's Ambient Weather station.
 
@@ -129,7 +128,7 @@ class AmbientWeatherClient(APIClient):
             logger.error(f"Failed to parse Ambient Weather response: {e}")
             return None
 
-    def get_all_sensors(self) -> Optional[AmbientMultiSensorData]:
+    def get_all_sensors(self) -> AmbientMultiSensorData | None:
         """
         Fetch all sensor data from user's Ambient Weather station.
         Includes all temp1f-temp10f and humidity1-humidity10 sensors.

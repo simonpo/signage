@@ -5,7 +5,6 @@ Free tier: 10 requests/minute
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 import pytz
 
@@ -27,7 +26,7 @@ class FootballClient(BaseSportsClient):
     BASE_URL = "https://api.football-data.org/v4"
     PREMIER_LEAGUE_ID = 2021  # Premier League code
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         """Initialize football client with API key."""
         super().__init__()
         self.api_key = api_key or Config.FOOTBALL_API_KEY
@@ -35,7 +34,7 @@ class FootballClient(BaseSportsClient):
         if not self.api_key:
             logger.warning("No FOOTBALL_API_KEY configured - FootballClient will not work")
 
-    def _make_request(self, endpoint: str) -> Optional[dict]:
+    def _make_request(self, endpoint: str) -> dict | None:
         """Make API request with authentication."""
         if not self.api_key:
             logger.error("No API key available")
@@ -53,7 +52,7 @@ class FootballClient(BaseSportsClient):
         )
         return None
 
-    def get_team_data(self, team_id: str) -> Optional[SportsData]:
+    def get_team_data(self, team_id: str) -> SportsData | None:
         """
         Get comprehensive team data including fixtures and standings.
 

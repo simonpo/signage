@@ -3,7 +3,6 @@ Base class for background image providers.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from PIL import Image
 
@@ -15,7 +14,7 @@ class BackgroundProvider(ABC):
     """
 
     @abstractmethod
-    def get_background(self, query: str, width: int, height: int) -> Optional[Image.Image]:
+    def get_background(self, query: str, width: int, height: int) -> Image.Image | None:
         """
         Get background image matching query at specified dimensions.
 

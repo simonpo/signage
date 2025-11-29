@@ -7,7 +7,6 @@ import logging
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 from src.config import Config
 
@@ -23,7 +22,7 @@ class FileManager:
     # Regex to parse date from filename: prefix_YYYY-MM-DD.jpg
     FILENAME_PATTERN = re.compile(r"^(.+?)_(\d{4}-\d{2}-\d{2})\.jpg$")
 
-    def __init__(self, output_path: Optional[Path] = None, keep_days: Optional[int] = None):
+    def __init__(self, output_path: Path | None = None, keep_days: int | None = None):
         """
         Initialize file manager.
 
@@ -35,7 +34,7 @@ class FileManager:
         self.keep_days = keep_days if keep_days is not None else Config.KEEP_DAYS
         self.output_path.mkdir(parents=True, exist_ok=True)
 
-    def get_current_filename(self, prefix: str, date: Optional[datetime] = None) -> str:
+    def get_current_filename(self, prefix: str, date: datetime | None = None) -> str:
         """
         Generate date-based filename.
 
@@ -52,7 +51,7 @@ class FileManager:
         date_str = date.strftime("%Y-%m-%d")
         return f"{prefix}_{date_str}.jpg"
 
-    def get_file_path(self, prefix: str, date: Optional[datetime] = None) -> Path:
+    def get_file_path(self, prefix: str, date: datetime | None = None) -> Path:
         """
         Get full path for a signage file.
 
@@ -66,7 +65,7 @@ class FileManager:
         filename = self.get_current_filename(prefix, date)
         return self.output_path / filename
 
-    def cleanup_old_files(self, prefix: Optional[str] = None) -> int:
+    def cleanup_old_files(self, prefix: str | None = None) -> int:
         """
         Delete files older than keep_days.
 
@@ -112,7 +111,7 @@ class FileManager:
 
         return deleted_count
 
-    def list_files(self, prefix: Optional[str] = None) -> list[Path]:
+    def list_files(self, prefix: str | None = None) -> list[Path]:
         """
         List signage files, sorted by date (newest first).
 
@@ -140,7 +139,7 @@ class FileManager:
 
         return sorted(files, key=extract_date, reverse=True)
 
-    def get_latest_file(self, prefix: str) -> Optional[Path]:
+    def get_latest_file(self, prefix: str) -> Path | None:
         """
         Get the most recent file for a given prefix.
 

@@ -6,7 +6,7 @@ All data classes follow a clean pattern: fetch → model → SignageContent → 
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 
 @dataclass
@@ -37,9 +37,9 @@ class SignageContent:
         "modern_powerwall",
     ] = "centered"
     background_mode: str = "gradient"
-    background_query: Optional[str] = None
-    timestamp: Optional[datetime] = None
-    map_image: Optional[Path] = None  # For ferry map composite
+    background_query: str | None = None
+    timestamp: datetime | None = None
+    map_image: Path | None = None  # For ferry map composite
 
     def generate_filename(self, date: datetime) -> str:
         """Generate date-based filename: prefix_YYYY-MM-DD.jpg"""
@@ -62,8 +62,8 @@ class PowerwallData:
     site_status: str
     grid_import: float  # kW
     grid_export: float  # kW
-    time_to_full: Optional[str] = None
-    time_to_empty: Optional[str] = None
+    time_to_full: str | None = None
+    time_to_empty: str | None = None
     alerts: list[str] = field(default_factory=list)
 
     def to_signage(self) -> SignageContent:
@@ -104,9 +104,9 @@ class TeslaVehicleData:
         "modern_tesla",
     ] = "centered"
     background_mode: str = "gradient"
-    background_query: Optional[str] = None
-    timestamp: Optional[datetime] = None
-    map_image: Optional[Path] = None  # For ferry map composite
+    background_query: str | None = None
+    timestamp: datetime | None = None
+    map_image: Path | None = None  # For ferry map composite
 
     def generate_filename(self, date: datetime) -> str:
         """Generate date-based filename: prefix_YYYY-MM-DD.jpg"""
@@ -173,13 +173,13 @@ class WeatherData:
     humidity: int
     wind_speed: float
     wind_direction: int
-    visibility: Optional[int] = None  # meters
-    cloudiness: Optional[int] = None  # percentage 0-100
-    pressure: Optional[int] = None  # hPa
-    sunrise: Optional[int] = None  # unix timestamp
-    sunset: Optional[int] = None  # unix timestamp
-    wind_gust: Optional[float] = None  # mph
-    rain_1h: Optional[float] = None  # mm in last hour
+    visibility: int | None = None  # meters
+    cloudiness: int | None = None  # percentage 0-100
+    pressure: int | None = None  # hPa
+    sunrise: int | None = None  # unix timestamp
+    sunset: int | None = None  # unix timestamp
+    wind_gust: float | None = None  # mph
+    rain_1h: float | None = None  # mm in last hour
 
     def to_signage(self) -> SignageContent:
         """Convert to signage with beautiful multi-section layout."""
@@ -270,16 +270,16 @@ class AmbientWeatherData:
     dew_point: float
     dailyrainin: float
     hourlyrainin: float
-    temp_high: Optional[float] = None
-    temp_low: Optional[float] = None
-    solarradiation: Optional[float] = None
-    uv: Optional[int] = None
+    temp_high: float | None = None
+    temp_low: float | None = None
+    solarradiation: float | None = None
+    uv: int | None = None
     # Indoor air quality
-    pm25_in: Optional[float] = None  # Indoor PM2.5 µg/m³
-    aqi_pm25_in: Optional[int] = None  # AQI from PM2.5
-    co2_in: Optional[int] = None  # Indoor CO2 ppm
-    tempinf: Optional[float] = None  # Indoor temperature
-    humidityin: Optional[int] = None  # Indoor humidity
+    pm25_in: float | None = None  # Indoor PM2.5 µg/m³
+    aqi_pm25_in: int | None = None  # AQI from PM2.5
+    co2_in: int | None = None  # Indoor CO2 ppm
+    tempinf: float | None = None  # Indoor temperature
+    humidityin: int | None = None  # Indoor humidity
 
     def to_signage(self) -> SignageContent:
         """Convert to signage with modern card layout."""
@@ -367,7 +367,7 @@ class SpeedtestData:
     server_name: str
     server_host: str
     timestamp: str
-    url: Optional[str] = None
+    url: str | None = None
 
     def to_signage(self) -> SignageContent:
         """Convert to signage with modern HTML layout."""
@@ -398,9 +398,9 @@ class AmbientSensorData:
     """Individual sensor reading from Ambient Weather station."""
 
     name: str
-    temperature: Optional[float] = None
-    humidity: Optional[int] = None
-    battery_ok: Optional[bool] = None
+    temperature: float | None = None
+    humidity: int | None = None
+    battery_ok: bool | None = None
 
 
 @dataclass
@@ -411,7 +411,7 @@ class AmbientMultiSensorData:
     outdoor_temp: float
     outdoor_humidity: int
     sensors: list[AmbientSensorData] = field(default_factory=list)
-    last_updated: Optional[str] = None
+    last_updated: str | None = None
 
     def to_signage(self) -> SignageContent:
         """Convert to signage with compact grid layout showing all sensors."""
@@ -534,12 +534,12 @@ class SportsData:
 
     team_name: str
     sport: Literal["nfl", "football", "rugby", "cricket"]
-    last_result: Optional[SportsResult] = None
+    last_result: SportsResult | None = None
     next_fixtures: list[SportsFixture] = field(default_factory=list)
     league_table: list[LeagueTableRow] = field(default_factory=list)
     is_live: bool = False
-    live_score: Optional[str] = None
-    team_logo_url: Optional[str] = None
+    live_score: str | None = None
+    team_logo_url: str | None = None
     primary_color: str = "#003366"
     secondary_color: str = "#69BE28"
 
@@ -623,9 +623,9 @@ class FerryData:
     fauntleroy_departures: list[FerrySchedule] = field(default_factory=list)
     vessels: list[FerryVessel] = field(default_factory=list)
     alerts: list[str] = field(default_factory=list)
-    wait_time_minutes: Optional[int] = None
+    wait_time_minutes: int | None = None
 
-    def to_signage(self, map_path: Optional[Path] = None) -> SignageContent:
+    def to_signage(self, map_path: Path | None = None) -> SignageContent:
         """
         Convert to signage with grid layout.
         Two columns: Southworth departures | Fauntleroy departures
@@ -698,7 +698,7 @@ class FerryMapData:
     """Ferry vessel positions for full-screen map view."""
 
     vessels: list[FerryVessel] = field(default_factory=list)
-    timestamp: Optional[str] = None
+    timestamp: str | None = None
 
     def to_signage(self) -> SignageContent:
         """Convert to signage - map rendered separately, no text overlay."""
