@@ -7,7 +7,7 @@ name = "signage"
 version = "0.7.0"
 description = "Dynamic signage system for Samsung Frame TV"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Simon Powell"}
