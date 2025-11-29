@@ -607,6 +607,11 @@ def main():
     )
     parser.add_argument("--daemon", action="store_true", help="Run in daemon mode with scheduler")
     parser.add_argument("--html", action="store_true", help="Use HTML rendering instead of PIL")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Generate images without uploading to TV (for testing)",
+    )
 
     args = parser.parse_args()
 
@@ -623,6 +628,10 @@ def main():
     file_mgr = FileManager()
 
     logger.info(f"Rendering mode: {'HTML' if args.html else 'PIL (legacy)'}")
+
+    if args.dry_run:
+        logger.info("DRY RUN MODE: Images will be generated but NOT uploaded to TV")
+        output_manager.dry_run = True
 
     # Run generators based on source selection
     if args.daemon:

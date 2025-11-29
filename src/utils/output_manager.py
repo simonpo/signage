@@ -56,6 +56,7 @@ class OutputManager:
         """Initialize output manager with profiles from config."""
         self.profiles = self._parse_profiles()
         self.archive_keep_count = Config.ARCHIVE_KEEP_COUNT
+        self.dry_run = False  # Can be set to True to skip TV upload
 
         if not self.profiles:
             logger.warning("No output profiles configured, using default profile")
