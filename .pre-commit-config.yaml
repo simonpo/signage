@@ -25,7 +25,7 @@ repos:
     hooks:
       - id: mypy
         args: [--ignore-missing-imports, --check-untyped-defs]
-        additional_dependencies: [types-requests, types-pytz]
+        additional_dependencies: [types-requests, types-pytz, types-Pillow]
 
   # Pytest - run tests before commit
   - repo: local
@@ -43,6 +43,23 @@ repos:
     rev: v1.5.0
     hooks:
       - id: detect-secrets
+
+  # Security scanning
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: pip-audit security scan
+        entry: pip-audit
+        language: system
+        pass_filenames: false
+        files: requirements.*\.txt$
+
+      - id: bandit
+        name: bandit security linting
+        entry: bandit
+        language: system
+        args: [-r, src/, -ll]
+        pass_filenames: false
 
   # Standard pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
