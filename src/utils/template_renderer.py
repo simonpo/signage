@@ -418,12 +418,46 @@ class TemplateRenderer:
         Returns:
             Rendered HTML string
         """
+        from datetime import datetime
+
+        # Format cached_at timestamp if present
+        cached_at_display = None
+        if tesla_data.cached_at:
+            try:
+                cached_dt = datetime.fromisoformat(tesla_data.cached_at)
+                cached_at_display = cached_dt.strftime("%B %d, %Y at %I:%M %p")
+            except Exception:
+                cached_at_display = tesla_data.cached_at
+
         context = {
-            "vehicle_name": "Tesla Model Y",
+            "vehicle_name": tesla_data.vehicle_name,
             "battery_level": tesla_data.battery_level,
             "battery_unit": tesla_data.battery_unit,
             "range": tesla_data.range,
             "range_unit": tesla_data.range_unit,
+            "charging_state": tesla_data.charging_state,
+            "charge_limit_soc": tesla_data.charge_limit_soc,
+            "time_to_full": tesla_data.time_to_full,
+            "charger_power": tesla_data.charger_power,
+            "plugged_in": tesla_data.plugged_in,
+            "odometer": tesla_data.odometer,
+            "inside_temp": tesla_data.inside_temp,
+            "outside_temp": tesla_data.outside_temp,
+            "climate_on": tesla_data.climate_on,
+            "defrost_on": tesla_data.defrost_on,
+            "software_version": tesla_data.software_version,
+            "locked": tesla_data.locked,
+            "sentry_mode": tesla_data.sentry_mode,
+            "latitude": tesla_data.latitude,
+            "longitude": tesla_data.longitude,
+            "heading": tesla_data.heading,
+            "shift_state": tesla_data.shift_state,
+            "speed": tesla_data.speed,
+            "tire_pressure": tesla_data.tire_pressure,
+            "last_seen": tesla_data.last_seen,
+            "online": tesla_data.online,
+            "location_display": tesla_data.location_display,
+            "cached_at": cached_at_display,
         }
 
         return self.render("modern_tesla_layout.html", context)
@@ -453,6 +487,19 @@ class TemplateRenderer:
         ]
         index = round(degrees / 22.5) % 16
         return directions[index]
+
+    def render_system_health(self, system_data: dict) -> str:
+        """
+        Render system health dashboard.
+
+        Args:
+            system_data: Dictionary with system health metrics
+
+        Returns:
+            Rendered HTML string
+        """
+        # system_data is already a dict with all the template variables we need
+        return self.render("modern_system_layout.html", system_data)
 
     def save_html(self, html: str, output_path: Path) -> None:
         """

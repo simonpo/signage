@@ -13,14 +13,15 @@ from src.clients.ferry import FerryClient
 from src.clients.speedtest import SpeedtestClient
 from src.clients.sports.nfl import NFLClient
 from src.clients.stock import StockClient
+from src.clients.system_health import SystemHealthClient
 from src.clients.tesla_fleet import TeslaFleetClient
 from src.clients.weather import WeatherClient
 from src.config import Config
-from src.models.signage_data import PowerwallData, TeslaData
+from src.models.signage_data import PowerwallData, SystemHealthData, TeslaData
 from src.renderers.image_renderer import SignageRenderer
 from src.renderers.map_renderer import MapRenderer
 from src.utils.file_manager import FileManager
-from src.utils.logging_utils import setup_logging
+from src.utils.logging_utils import setup_logging, timeit
 from src.utils.output_manager import OutputManager
 
 # === LOGGING ===
@@ -32,6 +33,7 @@ logger = logging.getLogger(__name__)
 # === GENERATOR FUNCTIONS ===
 
 
+@timeit
 def generate_powerwall(
     renderer: SignageRenderer, tesla_client: TeslaFleetClient, file_mgr: FileManager
 ) -> None:
@@ -101,10 +103,10 @@ def generate_powerwall(
             content, filename=filename, timestamp=timestamp, powerwall_data=powerwall_data
         )
 
-        logger.info("✓ Powerwall signage complete")
+        logger.info(f"✓ Powerwall signage complete - {battery_percent:.0f}% battery, {grid_status}")
 
     except Exception as e:
-        logger.error(f"Failed to generate Powerwall signage: {e}")
+        logger.error(f"✗ Powerwall signage failed: {e}")
 
 
 # === GENERATOR FUNCTIONS ===
@@ -136,47 +138,51 @@ def _render_and_save(
         logger.debug(f"  - {path}")
 
 
+@timeit
 def generate_tesla(
     renderer: SignageRenderer, tesla_client: TeslaFleetClient, file_mgr: FileManager
 ) -> None:
 
     try:
-        logger.info("[TESLA] Generating Tesla signage...")
+        logger.info("Generating Tesla signage...")
 
         # Get vehicles from Fleet API
         vehicles = tesla_client.get_vehicles()
-        logger.info(f"[TESLA] Vehicles returned: {vehicles}")
         if not vehicles or len(vehicles) == 0:
-            logger.warning("[TESLA] No vehicles found")
+            logger.warning("No vehicles found")
             return
 
         # Use first vehicle (most users have one)
         vehicle = vehicles[0]
         vehicle_id = vehicle["id"]
         vehicle_name = vehicle.get("display_name", "Tesla")
-        logger.info(f"[TESLA] Using vehicle: {vehicle_name} (ID: {vehicle_id})")
-        logger.info(f"[TESLA] Vehicle dict: {vehicle}")
+        logger.debug(f"Using vehicle: {vehicle_name} (ID: {vehicle_id})")
 
         # Get vehicle data
         vehicle_data = tesla_client.get_vehicle_data(str(vehicle_id))
-        logger.info(f"[TESLA] vehicle_data: {vehicle_data}")
+        cached_data = None
+        using_cache = False
+
         if not vehicle_data:
-            logger.warning("[TESLA] Failed to fetch vehicle data")
-            return
+            # Try to use cached data as fallback
+            cached_data = tesla_client.get_cached_vehicle_data(str(vehicle_id))
+            if cached_data:
+                vehicle_data = cached_data["data"]
+                using_cache = True
+                cached_at = cached_data["cached_at"]
+                logger.info(f"Using cached vehicle data from {cached_at} (vehicle is asleep)")
+            else:
+                logger.warning(
+                    "Vehicle data unavailable and no cache - vehicle may be asleep or out of connectivity"
+                )
+                return
 
         # Extract all relevant fields
         charge_state = vehicle_data.get("charge_state", {})
         climate_state = vehicle_data.get("climate_state", {})
         vehicle_state = vehicle_data.get("vehicle_state", {})
         drive_state = vehicle_data.get("drive_state", {})
-        gui_settings = vehicle_data.get("gui_settings", {})
         tire_pressure = vehicle_data.get("vehicle_config", {}).get("tpms_pressure", {})
-        logger.info(f"[TESLA] charge_state: {charge_state}")
-        logger.info(f"[TESLA] climate_state: {climate_state}")
-        logger.info(f"[TESLA] vehicle_state: {vehicle_state}")
-        logger.info(f"[TESLA] drive_state: {drive_state}")
-        logger.info(f"[TESLA] gui_settings: {gui_settings}")
-        logger.info(f"[TESLA] tire_pressure: {tire_pressure}")
 
         battery_level = charge_state.get("battery_level")
         battery_range = charge_state.get("battery_range")
@@ -185,16 +191,12 @@ def generate_tesla(
         time_to_full = charge_state.get("time_to_full_charge", "")
         charger_power = charge_state.get("charger_power", 0.0)
         conn_charge_cable = charge_state.get("conn_charge_cable", "")
-        logger.info(
-            f"[TESLA] battery_level: {battery_level}, battery_range: {battery_range}, charging_state: {charging_state}, charge_limit_soc: {charge_limit_soc}, time_to_full: {time_to_full}, charger_power: {charger_power}, conn_charge_cable: {conn_charge_cable}"
-        )
 
         # Improved plugged_in and charging logic
         plugged_in = conn_charge_cable not in (None, "", "Disconnected")
         is_charging = charging_state.lower() in ("charging", "starting") or (
             charger_power and charger_power > 0
         )
-        logger.info(f"[TESLA] plugged_in: {plugged_in}, is_charging: {is_charging}")
 
         odometer = vehicle_state.get("odometer", 0.0)
         inside_temp = climate_state.get("inside_temp", 0.0)
@@ -214,9 +216,6 @@ def generate_tesla(
         last_seen = vehicle.get("last_seen", "")
         online = vehicle.get("state", "online") == "online"
         location_display = drive_state.get("native_location", "") or ""
-        logger.info(
-            f"[TESLA] odometer: {odometer}, inside_temp: {inside_temp}, outside_temp: {outside_temp}, climate_on: {climate_on}, defrost_on: {defrost_on}, software_version: {software_version}, locked: {locked}, sentry_mode: {sentry_mode}, latitude: {latitude}, longitude: {longitude}, heading: {heading}, shift_state: {shift_state}, speed: {speed}, tire_pressure: {tire_pressure}, last_seen: {last_seen}, online: {online}, location_display: {location_display}"
-        )
 
         tesla_data = TeslaData(
             vehicle_name=vehicle_name,
@@ -246,26 +245,28 @@ def generate_tesla(
             last_seen=last_seen,
             online=online,
             location_display=location_display,
+            cached_at=cached_data["cached_at"] if using_cache else None,
         )
-
-        logger.info(f"[TESLA] tesla_data: {tesla_data}")
 
         # Convert to signage content
         content = tesla_data.to_signage()
-        logger.info(f"[TESLA] signage content: {content}")
 
         # Render with simple filename
         timestamp = Config.get_current_time()
         filename = "tesla.png"
-        logger.info(f"[TESLA] Rendering to file: {filename} at {timestamp}")
         renderer.render(content, filename=filename, timestamp=timestamp, tesla_data=tesla_data)
 
-        logger.info("[TESLA] ✓ Tesla signage complete")
+        # Success message with key metrics
+        charge_status = "charging" if is_charging else "idle"
+        logger.info(
+            f"✓ Tesla signage complete - {battery_level}% battery, {int(battery_range)}mi range ({charge_status})"
+        )
 
     except Exception as e:
-        logger.error(f"Failed to generate Tesla signage: {e}")
+        logger.error(f"✗ Tesla signage failed: {e}")
 
 
+@timeit
 def generate_weather(
     renderer: SignageRenderer, weather_client: WeatherClient, file_mgr: FileManager
 ) -> None:
@@ -290,10 +291,12 @@ def generate_weather(
 
         # No cleanup - always overwrite same file
 
-        logger.info("✓ Weather signage complete")
+        logger.info(
+            f"✓ Weather signage complete - {weather_data.temperature}°F, {weather_data.description}"
+        )
 
     except Exception as e:
-        logger.error(f"Failed to generate weather signage: {e}")
+        logger.error(f"✗ Weather signage failed: {e}")
 
 
 def generate_ambient_weather(
@@ -362,6 +365,7 @@ def generate_ambient_sensors(
         logger.error(f"Failed to generate multi-sensor display: {e}")
 
 
+@timeit
 def generate_speedtest(
     renderer: SignageRenderer, speedtest_client: SpeedtestClient, file_mgr: FileManager
 ) -> None:
@@ -388,12 +392,15 @@ def generate_speedtest(
 
         # No cleanup - always overwrite same file
 
-        logger.info(f"✓ Speedtest signage complete: {speedtest_data.download:.1f} Mbps down")
+        logger.info(
+            f"✓ Speedtest signage complete - {speedtest_data.download:.0f}↓ {speedtest_data.upload:.0f}↑ Mbps"
+        )
 
     except Exception as e:
-        logger.error(f"Failed to generate speedtest signage: {e}")
+        logger.error(f"✗ Speedtest signage failed: {e}")
 
 
+@timeit
 def generate_stock(
     renderer: SignageRenderer, stock_client: StockClient, file_mgr: FileManager
 ) -> None:
@@ -418,12 +425,13 @@ def generate_stock(
 
         # No cleanup - always overwrite same file
 
-        logger.info("✓ Stock signage complete")
+        logger.info(f"✓ Stock signage complete - {stock_data.symbol} ${stock_data.price}")
 
     except Exception as e:
-        logger.error(f"Failed to generate stock signage: {e}")
+        logger.error(f"✗ Stock signage failed: {e}")
 
 
+@timeit
 def generate_ferry(
     renderer: SignageRenderer, ferry_client: FerryClient, file_mgr: FileManager
 ) -> None:
@@ -460,10 +468,13 @@ def generate_ferry(
 
         # No cleanup - always overwrite same file
 
-        logger.info("✓ Ferry signage complete")
+        departures_count = len(ferry_data.southworth_departures) + len(
+            ferry_data.fauntleroy_departures
+        )
+        logger.info(f"✓ Ferry signage complete - {departures_count} departures")
 
     except Exception as e:
-        logger.error(f"Failed to generate ferry signage: {e}")
+        logger.error(f"✗ Ferry signage failed: {e}")
 
 
 def generate_ferry_map(
@@ -500,6 +511,88 @@ def generate_ferry_map(
     except Exception as e:
         logger.error(f"Failed to generate ferry map: {e}")
         raise
+
+
+@timeit
+def generate_system(renderer: SignageRenderer, file_mgr: FileManager) -> None:
+    """Generate system health signage."""
+    try:
+        logger.info("Generating system health signage...")
+
+        # Collect system health data
+        health_client = SystemHealthClient()
+        health_data = health_client.get_health_data()
+
+        if not health_data:
+            logger.warning("No system health data available")
+            return
+
+        # Calculate status
+        generators = health_data.get("generators", {})
+        total_failures = sum(g.get("failure", 0) for g in generators.values())
+        total_runs = sum(g.get("success", 0) + g.get("failure", 0) for g in generators.values())
+        success_rate = (total_runs - total_failures) / total_runs * 100 if total_runs > 0 else 100
+
+        if success_rate >= 95:
+            status = "HEALTHY"
+        elif success_rate >= 80:
+            status = "DEGRADED"
+        else:
+            status = "DOWN"
+
+        # Format time_ago for each generator
+        from datetime import datetime
+
+        now = datetime.now()
+        for _name, stats in generators.items():
+            if stats.get("last_run"):
+                delta = now - stats["last_run"]
+                if delta.total_seconds() < 60:
+                    stats["time_ago"] = f"{int(delta.total_seconds())}s ago"
+                elif delta.total_seconds() < 3600:
+                    stats["time_ago"] = f"{int(delta.total_seconds() / 60)}m ago"
+                else:
+                    stats["time_ago"] = f"{int(delta.total_seconds() / 3600)}h ago"
+            else:
+                stats["time_ago"] = "never"
+
+        # Create data model
+        system_data = SystemHealthData(
+            status=status,
+            uptime=health_data["uptime"]["formatted"],
+            generators=generators,
+            recent_errors=health_data.get("recent_errors", []),
+            disk_space=health_data.get("disk_space", {}),
+            images_generated=health_data.get("images_generated", {}),
+            log_file_size=health_data.get("log_file_size", {}),
+        )
+
+        # Convert to signage content
+        content = system_data.to_signage()
+
+        # Prepare template variables
+        timestamp = Config.get_current_time()
+        filename = "system.png"
+
+        # Render with system data
+        template_vars = {
+            "status": status,
+            "uptime": system_data.uptime,
+            "generators": system_data.generators,
+            "disk_free_gb": system_data.disk_space.get("free_gb", 0),
+            "total_images": system_data.images_generated.get("total", 0),
+            "log_size": system_data.log_file_size.get("size_formatted", "0 KB"),
+            "error_count": len(system_data.recent_errors),
+        }
+
+        renderer.render(content, filename=filename, timestamp=timestamp, system_data=template_vars)
+
+        logger.info(
+            f"✓ System health signage complete - {status}, {success_rate:.0f}% success rate"
+        )
+
+    except Exception as e:
+        logger.error(f"✗ System health signage failed: {e}")
 
 
 def generate_sports(
@@ -601,6 +694,7 @@ def main():
             "arsenal",
             "football",
             "rugby",
+            "system",
         ],
         default="all",
         help="Which signage to generate",
@@ -688,6 +782,9 @@ def main():
 
         if args.source == "rugby":
             generate_sports(renderer, file_mgr, sport_type="rugby")
+
+        if args.source == "system":
+            generate_system(renderer, file_mgr)
 
         logger.info(f"All signage generation complete. Files in: {Config.OUTPUT_PATH}")
 

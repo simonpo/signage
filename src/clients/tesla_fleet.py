@@ -36,6 +36,7 @@ class TeslaFleetClient(APIClient):
     AUTH_URL = "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token"
 
     TOKEN_FILE = Path(".tesla_tokens.json")
+    VEHICLE_CACHE_FILE = Path(".cache/tesla_vehicle_data.json")
 
     def __init__(self):
         """Initialize Tesla Fleet client."""
@@ -67,7 +68,10 @@ class TeslaFleetClient(APIClient):
                     expires_at_str = data.get("expires_at")
                     if expires_at_str:
                         self.token_expires_at = datetime.fromisoformat(expires_at_str)
-                    logger.debug("Loaded existing Tesla tokens")
+                        time_remaining = self.token_expires_at - datetime.now()
+                        logger.debug(
+                            f"Loaded Tesla tokens (expires in {time_remaining.total_seconds()/3600:.1f}h)"
+                        )
             except Exception as e:
                 logger.warning(f"Failed to load tokens: {e}")
 
@@ -184,7 +188,19 @@ class TeslaFleetClient(APIClient):
         if response and response.status_code == 200:
             return response.json()
         elif response:
-            logger.error(f"API request failed with {response.status_code}: {response.text}")
+            # 408 timeouts are expected for sleeping vehicles
+            if response.status_code == 408:
+                logger.warning(
+                    "Vehicle unavailable (408 timeout) - likely asleep or out of connectivity"
+                )
+            # 401/403 suggest auth issues
+            elif response.status_code in [401, 403]:
+                logger.error(
+                    f"Authentication failed ({response.status_code}). "
+                    "Token may be expired or invalid. Run: python oauth_tesla.py"
+                )
+            else:
+                logger.error(f"API request failed with {response.status_code}: {response.text}")
 
         return None
 
@@ -206,20 +222,81 @@ class TeslaFleetClient(APIClient):
 
     def get_vehicle_data(self, vehicle_id: str) -> dict[str, Any] | None:
         """
-        Get vehicle data (battery, range, location, etc.).
+        Get detailed vehicle data (battery, location, climate, etc).
+        Caches successful responses for fallback when vehicle is asleep.
 
         Args:
-            vehicle_id: Vehicle ID
+            vehicle_id: Vehicle ID string
 
         Returns:
-            Vehicle data dict or None
+            Vehicle data dictionary or None
         """
-        data = self._api_request(f"/api/1/vehicles/{vehicle_id}/vehicle_data")
+        endpoint = f"/api/1/vehicles/{vehicle_id}/vehicle_data"
+        data = self._api_request(endpoint)
 
         if data and "response" in data:
-            return data["response"]
+            vehicle_data = data["response"]
+            # Cache successful response
+            self._cache_vehicle_data(vehicle_id, vehicle_data)
+            return vehicle_data
 
         return None
+
+    def get_cached_vehicle_data(self, vehicle_id: str) -> dict[str, Any] | None:
+        """
+        Get cached vehicle data from last successful fetch.
+
+        Args:
+            vehicle_id: Vehicle ID string
+
+        Returns:
+            Dict with 'data' and 'cached_at' keys, or None if no cache exists
+        """
+        if not self.VEHICLE_CACHE_FILE.exists():
+            return None
+
+        try:
+            with open(self.VEHICLE_CACHE_FILE) as f:
+                cache = json.load(f)
+                vehicle_cache = cache.get(vehicle_id)
+                if vehicle_cache:
+                    return vehicle_cache
+        except Exception as e:
+            logger.debug(f"Failed to load cached vehicle data: {e}")
+
+        return None
+
+    def _cache_vehicle_data(self, vehicle_id: str, data: dict[str, Any]) -> None:
+        """
+        Cache vehicle data for fallback use.
+
+        Args:
+            vehicle_id: Vehicle ID string
+            data: Vehicle data to cache
+        """
+        try:
+            # Ensure cache directory exists
+            self.VEHICLE_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+            # Load existing cache or create new
+            cache = {}
+            if self.VEHICLE_CACHE_FILE.exists():
+                with open(self.VEHICLE_CACHE_FILE) as f:
+                    cache = json.load(f)
+
+            # Store data with timestamp
+            cache[vehicle_id] = {
+                "data": data,
+                "cached_at": datetime.now().isoformat(),
+            }
+
+            # Write back to file
+            with open(self.VEHICLE_CACHE_FILE, "w") as f:
+                json.dump(cache, f, indent=2)
+
+            logger.debug(f"Cached vehicle data for {vehicle_id}")
+        except Exception as e:
+            logger.debug(f"Failed to cache vehicle data: {e}")
 
     def get_energy_sites(self) -> list[dict[str, Any]] | None:
         """
