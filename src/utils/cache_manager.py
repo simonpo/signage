@@ -39,7 +39,7 @@ class CacheManager:
         Returns:
             MD5 hash of the input
         """
-        return hashlib.md5(url_or_query.encode()).hexdigest()
+        return hashlib.md5(url_or_query.encode(), usedforsecurity=False).hexdigest()
 
     def get_cached_image(self, key: str, max_age_days: int = 7) -> Path | None:
         """
