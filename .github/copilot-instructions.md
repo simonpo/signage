@@ -80,3 +80,132 @@ git checkout -b feature/your-feature-name
 Once you've switched branches, I'll proceed with the implementation."
 
 **Exception:** Doc-only changes (README.md, *.md in root) can proceed on `main`.
+
+## CI/CD and Testing Guidelines
+
+### Critical: Understanding CI Failures
+
+When CI fails, **diagnose methodically**:
+
+1. **Identify which job failed**: lint, test, or config-validation
+2. **Read the actual error output** - don't assume what's wrong
+3. **CI runs ALL checks, not just PR diff** - formatting issues anywhere in the repo will fail CI
+
+### Common CI Failure Patterns
+
+**Black formatting failures:**
+- **Symptom**: `would reformat X files` in CI but local `black --check .` passes
+- **Root Cause**: Version mismatch between local and CI
+- **Solution**:
+  - Check `.pre-commit-config.yaml` for black version (currently 24.10.0)
+  - Ensure `.github/workflows/ci.yml` pins same version: `pip install black==24.10.0`
+  - Reinstall locally: `pip install black==24.10.0 --force-reinstall`
+  - Run `black .` to reformat with correct version
+  - **Never assume local black is correct** - CI version is authoritative
+
+**Ruff linting failures:**
+- **Symptom**: CI shows `Found X errors` but wasn't obvious from black output
+- **Root Cause**: Lint job runs BOTH black AND ruff sequentially
+- **Solution**:
+  - Read entire CI log, don't stop at first error
+  - Run `ruff check .` locally to see all issues
+  - Use `ruff check --fix .` for auto-fixable issues
+  - Common issues: unused variables (F841), bare Exception (B017)
+
+**Test failures after "safe" changes:**
+- **Symptom**: Changed exception type to fix ruff, now test fails
+- **Root Cause**: Test expects specific exception type
+- **Solution**:
+  - Run the specific test locally: `pytest path/to/test.py::TestClass::test_name -v`
+  - Match exception type to what's actually raised (check imports!)
+  - For requests errors: use `requests.exceptions.HTTPError`, not generic `Exception`
+
+### Pre-commit Hook Best Practices
+
+**Before committing:**
+1. Pre-commit hooks will auto-fix many issues (trailing whitespace, etc.)
+2. If hooks fail, **read the output** - files may have been modified
+3. Re-stage modified files: `git add <file>`
+4. Commit again - hooks run again on new staged content
+5. **Use `--no-verify` sparingly** - it defeats the purpose of hooks
+
+**Bypassing hooks:**
+- Only use `git commit --no-verify` when hooks are broken or during emergencies
+- Document WHY you bypassed in commit message
+- Fix the underlying issue ASAP
+
+### Branch Protection and Status Checks
+
+**Current Configuration:**
+- Required status checks: `CI / Lint`, `CI / Test`, `CI / Config Validation`
+- Strict mode: `false` (checks don't need to re-run on merge commit)
+- Required approving reviews: 0 (admin can merge without approval)
+
+**Status check names MUST match exactly:**
+- Wrong: `["lint", "test", "config-validation"]` ❌
+- Correct: `["CI / Lint", "CI / Test", "CI / Config Validation"]` ✅
+- Check with: `gh pr checks <number> --json name,workflow`
+
+**If unable to merge PR:**
+1. Check status check names match exactly (see above)
+2. Ensure `strict: false` in branch protection
+3. Verify checks actually passed (not just pending)
+4. Last resort: temporarily disable status checks, merge, re-enable
+
+**Updating branch protection:**
+```bash
+gh api repos/simonpo/signage/branches/main/protection \
+  --method PUT --input - <<'EOF'
+{
+  "required_status_checks": {
+    "strict": false,
+    "contexts": ["CI / Lint", "CI / Test", "CI / Config Validation"]
+  },
+  "enforce_admins": true,
+  "required_pull_request_reviews": {"required_approving_review_count": 0},
+  "required_linear_history": true,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "restrictions": null
+}
+EOF
+```
+
+### Debugging Workflow
+
+**When CI fails repeatedly:**
+
+1. **Stop and analyze** - don't keep pushing hoping it fixes itself
+2. **Run CI commands locally** in exact order:
+   ```bash
+   black --check --diff .
+   ruff check .
+   mypy src/ --ignore-missing-imports
+   pytest tests/ -v
+   ```
+3. **Check versions match CI**:
+   - Python version (CI uses 3.9)
+   - Black version (currently 24.10.0)
+   - Tool versions in requirements.txt
+4. **Read ENTIRE error output** - later errors often more relevant than first
+5. **Fix root cause, not symptoms** - version mismatches, not individual files
+
+**Red flags:**
+- ⚠️ "It works locally but fails in CI" → version mismatch
+- ⚠️ Fixing same files repeatedly → not using correct formatter version
+- ⚠️ Tests pass individually but fail in CI → missing imports or setup issues
+- ⚠️ Black says "already formatted" but CI disagrees → wrong black version installed
+
+### Version Pinning is Critical
+
+**Always pin versions:**
+- `.pre-commit-config.yaml`: Exact versions (e.g., `rev: 24.10.0`)
+- `.github/workflows/ci.yml`: Exact versions (e.g., `black==24.10.0`)
+- `requirements.txt`: Minimum versions with `>=` OR exact with `==`
+
+**When updating formatter versions:**
+1. Update `.pre-commit-config.yaml` first
+2. Update `.github/workflows/ci.yml` to match
+3. Run `pre-commit run --all-files` to reformat everything
+4. Commit reformatted files
+5. Update `requirements.txt` if needed
