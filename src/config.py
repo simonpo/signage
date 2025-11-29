@@ -138,7 +138,7 @@ class Config:
         logger.info("Configuration validated successfully")
 
     @classmethod
-    def get_timezone(cls) -> pytz.timezone:
+    def get_timezone(cls) -> pytz.BaseTzInfo:
         """
         Get the configured timezone.
         Falls back to UTC if the configured timezone is invalid.
