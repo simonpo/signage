@@ -1,43 +1,27 @@
 # CHANGELOG
 
-## Unreleased
+
+## v0.9.0 (2025-11-29)
 
 ### Features
 
-- Add lightweight observability with system health signage
-  - System stats collector parses logs for generator success/failure rates
-  - Meta self-monitoring: system creates signage showing its own health
-  - Modern dashboard layout with generator grid and system resources
-  - Health status: HEALTHY (>95%), DEGRADED (>80%), DOWN (<80%)
+- Add lightweight observability with system health signage and tesla caching
+  ([#20](https://github.com/simonpo/signage/pull/20),
+  [`630e897`](https://github.com/simonpo/signage/commit/630e897293f01a55b8a345046fb622c4bb010d3e))
 
-- Add Tesla vehicle data caching for graceful degradation
-  - Cache successful API responses to `.cache/tesla_vehicle_data.json`
-  - Automatic fallback to cached data when vehicle is asleep (408 timeout)
-  - Display "Vehicle Asleep" banner with cached data timestamp
-  - Never wakes sleeping vehicles to preserve battery
+* feat: add lightweight observability with system health signage and tesla caching
 
-- Improve error handling and logging
-  - Standardize success messages with ✓ indicator and key metrics
-  - Standardize error messages with ✗ indicator
-  - Add @timeit decorator to all generator functions
-  - Distinguish 408 timeouts (vehicle asleep) from auth failures (401/403)
-  - Better token expiration logging with time remaining
+- Add system stats collector parsing logs for generator metrics - Create system health signage
+  showing success rates and errors - Implement Tesla vehicle data caching for graceful degradation -
+  Add fallback to cached data when vehicle is asleep - Improve error messages distinguishing 408
+  timeouts from auth failures - Standardize logging with ✓/✗ indicators and @timeit decorators - Fix
+  ferry departures attribute error - Remove remaining whale references from scheduler - Add 11 new
+  tests (131 total) - Add psutil==7.1.3 for system monitoring
 
-### Bug Fixes
+* test: fix tesla caching tests to mock Config in CI
 
-- Fix ferry generator AttributeError on departures
-  - Was accessing `ferry_data.departures` (doesn't exist)
-  - Now correctly uses `southworth_departures` + `fauntleroy_departures`
-
-### Tests
-
-- Add 11 new tests for observability features (131 total, up from 120)
-  - 7 tests for SystemStats (uptime, generator tracking, errors, disk space)
-  - 4 tests for Tesla caching (cache creation, retrieval, overwrites)
-
-### Dependencies
-
-- Add psutil==7.1.3 for system resource monitoring
+- Add mock_tesla_config fixture to provide test credentials - Prevents ValueError when
+  TESLA_CLIENT_ID/SECRET not set in CI - Add pragma comment for detect-secrets false positive
 
 
 ## v0.8.0 (2025-11-29)
@@ -167,6 +151,9 @@ All tests pass with Python 3.11.11 (120 passed, 1 skipped)
 
 - Update pyproject.toml requires-python from >=3.9 to >=3.11 - Update CI workflow to use Python 3.11
   for all jobs - Required for modern type union syntax (PEP 604)
+
+- **release**: 0.8.0 [skip ci]
+  ([`6c1fd97`](https://github.com/simonpo/signage/commit/6c1fd973cd7d03efd0907cd79799c4f00dd31806))
 
 ### Continuous Integration
 
