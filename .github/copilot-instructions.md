@@ -137,14 +137,30 @@ When CI fails, **diagnose methodically**:
 ### Branch Protection and Status Checks
 
 **Current Configuration:**
-- Required status checks: `CI / Lint`, `CI / Test`, `CI / Config Validation`
+- Required status checks: `Lint`, `Test`, `Config Validation`
 - Strict mode: `false` (checks don't need to re-run on merge commit)
 - Required approving reviews: 0 (admin can merge without approval)
 
-**Status check names MUST match exactly:**
-- Wrong: `["lint", "test", "config-validation"]` ❌
-- Correct: `["CI / Lint", "CI / Test", "CI / Config Validation"]` ✅
-- Check with: `gh pr checks <number> --json name,workflow`
+**CRITICAL: Status check names vs display names:**
+- GitHub UI shows: `CI / Lint (pull_request)` ← This is the DISPLAY NAME
+- Actual check name: `Lint` ← This is what goes in branch protection
+- **Always use the actual check name, not the display name**
+
+**How to find the correct check names:**
+```bash
+# Get check names from a recent commit
+gh api repos/OWNER/REPO/commits/SHA/check-runs --jq '.check_runs[] | .name'
+
+# Example output:
+# Lint
+# Test
+# Config Validation
+```
+
+**Common mistakes:**
+- ❌ Using `"CI / Lint"` (display name from GitHub UI)
+- ❌ Using `"lint"` (lowercase job name)
+- ✅ Using `"Lint"` (actual check run name)
 
 **If unable to merge PR:**
 1. Check status check names match exactly (see above)
@@ -159,7 +175,11 @@ gh api repos/simonpo/signage/branches/main/protection \
 {
   "required_status_checks": {
     "strict": false,
-    "contexts": ["CI / Lint", "CI / Test", "CI / Config Validation"]
+    "checks": [
+      {"context": "Lint"},
+      {"context": "Test"},
+      {"context": "Config Validation"}
+    ]
   },
   "enforce_admins": true,
   "required_pull_request_reviews": {"required_approving_review_count": 0},
