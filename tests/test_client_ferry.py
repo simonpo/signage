@@ -181,9 +181,7 @@ class TestFerryClient:
         assert time_str == ""
 
     @responses.activate
-    def test_vessels_filters_by_route(
-        self, monkeypatch, mock_vessels_response
-    ):
+    def test_vessels_filters_by_route(self, monkeypatch, mock_vessels_response):
         """Test vessel filtering by route ID."""
         monkeypatch.setattr(Config, "FERRY_ROUTE", "Fauntleroy-Southworth")
         monkeypatch.setattr(Config, "WSDOT_API_KEY", "test_key")
@@ -355,9 +353,7 @@ class TestFerryClient:
         assert data is not None
 
     @responses.activate
-    def test_schedule_filters_past_sailings(
-        self, monkeypatch, mock_schedule_response
-    ):
+    def test_schedule_filters_past_sailings(self, monkeypatch, mock_schedule_response):
         """Test that past sailings are filtered out."""
         monkeypatch.setattr(Config, "FERRY_ROUTE", "Fauntleroy-Southworth")
         monkeypatch.setattr(Config, "WSDOT_API_KEY", "test_key")

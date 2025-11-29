@@ -4,8 +4,6 @@ Tests for TeslaFleetClient with mocked HTTP responses.
 
 import json
 from datetime import datetime, timedelta
-from pathlib import Path
-from unittest.mock import Mock, patch
 
 import pytest
 import responses
@@ -298,7 +296,7 @@ class TestTeslaFleetClient:
         client._save_tokens("access_token_123", 3600, "refresh_token_456")
 
         # Verify both tokens saved
-        with open(temp_token_file, "r") as f:
+        with open(temp_token_file) as f:
             data = json.load(f)
         assert data["access_token"] == "access_token_123"
         assert data["refresh_token"] == "refresh_token_456"
@@ -391,9 +389,7 @@ class TestTeslaFleetClient:
         assert sites[0]["site_name"] == "My Powerwall"
 
     @responses.activate
-    def test_get_energy_site_data(
-        self, monkeypatch, temp_token_file, mock_token_response
-    ):
+    def test_get_energy_site_data(self, monkeypatch, temp_token_file, mock_token_response):
         """Test energy site live status API call."""
         monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
         monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
@@ -431,9 +427,7 @@ class TestTeslaFleetClient:
         assert data["percentage_charged"] == 95.5
 
     @responses.activate
-    def test_api_error_with_status_code(
-        self, monkeypatch, temp_token_file, mock_token_response
-    ):
+    def test_api_error_with_status_code(self, monkeypatch, temp_token_file, mock_token_response):
         """Test API error handling with non-200 status."""
         monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
         monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
@@ -461,9 +455,7 @@ class TestTeslaFleetClient:
         assert vehicles is None
 
     @responses.activate
-    def test_failed_token_refresh_fallback(
-        self, monkeypatch, temp_token_file
-    ):
+    def test_failed_token_refresh_fallback(self, monkeypatch, temp_token_file):
         """Test fallback to client_credentials when refresh fails."""
         monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
         monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
@@ -512,7 +504,7 @@ class TestTeslaFleetClient:
         """Test handling of token save failures."""
         monkeypatch.setattr(Config, "TESLA_CLIENT_ID", "test_client_id")
         monkeypatch.setattr(Config, "TESLA_CLIENT_SECRET", "test_client_secret")
-        
+
         # Use a read-only directory to trigger write failure
         readonly_file = tmp_path / "readonly" / ".tesla_tokens.json"
         monkeypatch.setattr(TeslaFleetClient, "TOKEN_FILE", readonly_file)
@@ -520,7 +512,7 @@ class TestTeslaFleetClient:
         client = TeslaFleetClient()
         # Should not crash, just log warning
         client._save_tokens("test_token", 3600)
-        
+
         # Token should still be in memory even if save failed
         assert client.access_token == "test_token"
 
@@ -548,7 +540,7 @@ class TestTeslaFleetClient:
         )
 
         client = TeslaFleetClient()
-        
+
         # Should raise exception when token fetch completely fails
         with pytest.raises(Exception):
             client.get_vehicles()
@@ -595,8 +587,8 @@ class TestTeslaFleetClient:
         # Verify token was refreshed and new refresh token saved
         assert client.access_token == "refreshed_token"
         assert client.refresh_token == "new_refresh_token"
-        
+
         # Check file has new refresh token
-        with open(temp_token_file, "r") as f:
+        with open(temp_token_file) as f:
             data = json.load(f)
         assert data["refresh_token"] == "new_refresh_token"

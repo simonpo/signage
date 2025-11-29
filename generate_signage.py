@@ -10,14 +10,13 @@ import sys
 
 from src.clients.ambient_weather import AmbientWeatherClient
 from src.clients.ferry import FerryClient
-from src.clients.homeassistant import HomeAssistantClient
 from src.clients.speedtest import SpeedtestClient
-from src.clients.tesla_fleet import TeslaFleetClient
 from src.clients.sports.nfl import NFLClient
 from src.clients.stock import StockClient
+from src.clients.tesla_fleet import TeslaFleetClient
 from src.clients.weather import WeatherClient
 from src.config import Config
-from src.models.signage_data import TeslaData, PowerwallData
+from src.models.signage_data import PowerwallData, TeslaData
 from src.renderers.image_renderer import SignageRenderer
 from src.renderers.map_renderer import MapRenderer
 from src.utils.file_manager import FileManager
@@ -30,10 +29,12 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-
 # === GENERATOR FUNCTIONS ===
 
-def generate_powerwall(renderer: SignageRenderer, tesla_client: TeslaFleetClient, file_mgr: FileManager) -> None:
+
+def generate_powerwall(
+    renderer: SignageRenderer, tesla_client: TeslaFleetClient, file_mgr: FileManager
+) -> None:
     """Generate Powerwall signage."""
     try:
         logger.info("Generating Powerwall signage...")
@@ -96,7 +97,9 @@ def generate_powerwall(renderer: SignageRenderer, tesla_client: TeslaFleetClient
         # Render with simple filename
         timestamp = Config.get_current_time()
         filename = "powerwall.png"
-        renderer.render(content, filename=filename, timestamp=timestamp, powerwall_data=powerwall_data)
+        renderer.render(
+            content, filename=filename, timestamp=timestamp, powerwall_data=powerwall_data
+        )
 
         logger.info("✓ Powerwall signage complete")
 
@@ -133,7 +136,9 @@ def _render_and_save(
         logger.debug(f"  - {path}")
 
 
-def generate_tesla(renderer: SignageRenderer, tesla_client: TeslaFleetClient, file_mgr: FileManager) -> None:
+def generate_tesla(
+    renderer: SignageRenderer, tesla_client: TeslaFleetClient, file_mgr: FileManager
+) -> None:
 
     try:
         logger.info("[TESLA] Generating Tesla signage...")
@@ -180,11 +185,15 @@ def generate_tesla(renderer: SignageRenderer, tesla_client: TeslaFleetClient, fi
         time_to_full = charge_state.get("time_to_full_charge", "")
         charger_power = charge_state.get("charger_power", 0.0)
         conn_charge_cable = charge_state.get("conn_charge_cable", "")
-        logger.info(f"[TESLA] battery_level: {battery_level}, battery_range: {battery_range}, charging_state: {charging_state}, charge_limit_soc: {charge_limit_soc}, time_to_full: {time_to_full}, charger_power: {charger_power}, conn_charge_cable: {conn_charge_cable}")
+        logger.info(
+            f"[TESLA] battery_level: {battery_level}, battery_range: {battery_range}, charging_state: {charging_state}, charge_limit_soc: {charge_limit_soc}, time_to_full: {time_to_full}, charger_power: {charger_power}, conn_charge_cable: {conn_charge_cable}"
+        )
 
         # Improved plugged_in and charging logic
         plugged_in = conn_charge_cable not in (None, "", "Disconnected")
-        is_charging = charging_state.lower() in ("charging", "starting") or (charger_power and charger_power > 0)
+        is_charging = charging_state.lower() in ("charging", "starting") or (
+            charger_power and charger_power > 0
+        )
         logger.info(f"[TESLA] plugged_in: {plugged_in}, is_charging: {is_charging}")
 
         odometer = vehicle_state.get("odometer", 0.0)
@@ -205,7 +214,9 @@ def generate_tesla(renderer: SignageRenderer, tesla_client: TeslaFleetClient, fi
         last_seen = vehicle.get("last_seen", "")
         online = vehicle.get("state", "online") == "online"
         location_display = drive_state.get("native_location", "") or ""
-        logger.info(f"[TESLA] odometer: {odometer}, inside_temp: {inside_temp}, outside_temp: {outside_temp}, climate_on: {climate_on}, defrost_on: {defrost_on}, software_version: {software_version}, locked: {locked}, sentry_mode: {sentry_mode}, latitude: {latitude}, longitude: {longitude}, heading: {heading}, shift_state: {shift_state}, speed: {speed}, tire_pressure: {tire_pressure}, last_seen: {last_seen}, online: {online}, location_display: {location_display}")
+        logger.info(
+            f"[TESLA] odometer: {odometer}, inside_temp: {inside_temp}, outside_temp: {outside_temp}, climate_on: {climate_on}, defrost_on: {defrost_on}, software_version: {software_version}, locked: {locked}, sentry_mode: {sentry_mode}, latitude: {latitude}, longitude: {longitude}, heading: {heading}, shift_state: {shift_state}, speed: {speed}, tire_pressure: {tire_pressure}, last_seen: {last_seen}, online: {online}, location_display: {location_display}"
+        )
 
         tesla_data = TeslaData(
             vehicle_name=vehicle_name,
@@ -659,7 +670,6 @@ def main():
         if args.source == "ferry_map":
             with FerryClient() as ferry_client:
                 generate_ferry_map(ferry_client, output_manager, file_mgr)
-
 
         if args.source in ["all", "sports", "nfl"]:
             generate_sports(renderer, file_mgr, sport_type=args.source)

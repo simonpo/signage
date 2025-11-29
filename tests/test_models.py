@@ -5,8 +5,6 @@ Tests for data models in src/models/signage_data.py
 from datetime import datetime
 from pathlib import Path
 
-import pytest
-
 from src.models.signage_data import (
     AmbientWeatherData,
     FerryData,

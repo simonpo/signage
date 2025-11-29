@@ -212,4 +212,6 @@ class TestWeatherClient:
             weather = client.get_weather()
 
             assert weather is not None
-            assert weather.condition == expected_condition, f"Expected {owm_condition} -> {expected_condition}"
+            assert (
+                weather.condition == expected_condition
+            ), f"Expected {owm_condition} -> {expected_condition}"
