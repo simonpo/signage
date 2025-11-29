@@ -1,5 +1,10 @@
 # Samsung Frame TV Signage
 
+[![CI](https://github.com/simonpo/signage/actions/workflows/ci.yml/badge.svg)](https://github.com/simonpo/signage/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/simonpo/signage/branch/main/graph/badge.svg)](https://codecov.io/gh/simonpo/signage)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+
 Generate data-driven images for Samsung Frame TVs in Art Mode. Fetch live data from weather APIs, ferry schedules, sports scores, and more, then render them as beautiful 4K images to display on your TV.
 
 ## What it does
