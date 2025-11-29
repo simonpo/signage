@@ -3,10 +3,21 @@
 import json
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from src.clients.tesla_fleet import TeslaFleetClient
+
+
+@pytest.fixture
+def mock_tesla_config():
+    """Mock Tesla configuration."""
+    with patch("src.clients.tesla_fleet.Config") as mock_config:
+        mock_config.TESLA_CLIENT_ID = "test_client_id"
+        mock_config.TESLA_CLIENT_SECRET = "test_client_secret"  # pragma: allowlist secret
+        mock_config.TESLA_REGION = "na"
+        yield mock_config
 
 
 @pytest.fixture
@@ -31,7 +42,7 @@ def mock_cache_file():
     temp_path.unlink(missing_ok=True)
 
 
-def test_cache_vehicle_data(tmp_path):
+def test_cache_vehicle_data(tmp_path, mock_tesla_config):
     """Test caching vehicle data to file."""
     cache_file = tmp_path / "test_cache.json"
 
@@ -68,7 +79,7 @@ def test_cache_vehicle_data(tmp_path):
         TeslaFleetClient.VEHICLE_CACHE_FILE = original_cache
 
 
-def test_get_cached_vehicle_data(mock_cache_file):
+def test_get_cached_vehicle_data(mock_cache_file, mock_tesla_config):
     """Test retrieving cached vehicle data."""
     # Monkey-patch the cache file location
     original_cache = TeslaFleetClient.VEHICLE_CACHE_FILE
@@ -89,7 +100,7 @@ def test_get_cached_vehicle_data(mock_cache_file):
         TeslaFleetClient.VEHICLE_CACHE_FILE = original_cache
 
 
-def test_get_cached_vehicle_data_missing():
+def test_get_cached_vehicle_data_missing(mock_tesla_config):
     """Test retrieving cached data for non-existent vehicle."""
     # Use non-existent cache file
     original_cache = TeslaFleetClient.VEHICLE_CACHE_FILE
@@ -105,7 +116,7 @@ def test_get_cached_vehicle_data_missing():
         TeslaFleetClient.VEHICLE_CACHE_FILE = original_cache
 
 
-def test_cache_overwrites_old_data(tmp_path):
+def test_cache_overwrites_old_data(tmp_path, mock_tesla_config):
     """Test that caching updates existing vehicle data."""
     cache_file = tmp_path / "test_cache_overwrite.json"
 
