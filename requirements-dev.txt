@@ -1,0 +1,46 @@
+# Development dependencies for signage project
+# Extends production requirements with dev/test tools
+# All versions pinned exactly for reproducible builds
+# Last updated: 2025-11-28
+
+# Include all production dependencies
+-r requirements.txt
+
+# Code formatting and linting
+black==24.10.0
+ruff==0.14.6
+mypy==1.18.2
+
+# Testing
+pytest==8.4.2
+pytest-cov==7.0.0
+responses==0.25.8
+coverage==7.10.7
+
+# Pre-commit hooks
+pre-commit==4.3.0
+
+# Type checking support
+mypy-extensions==1.1.0
+typing-inspection==0.4.2
+
+# Pre-commit hook dependencies
+cfgv==3.4.0
+distlib==0.4.0
+filelock==3.19.1
+identify==2.6.15
+nodeenv==1.9.1
+platformdirs==4.4.0
+virtualenv==20.35.4
+PyYAML==6.0.3
+
+# Development utilities
+click==8.1.8
+iniconfig==2.1.0
+packaging==25.0
+pathspec==0.12.1
+pluggy==1.6.0
+tomli==2.3.0
+Pygments==2.19.2
+pytokens==0.3.0
+exceptiongroup==1.3.1

@@ -54,6 +54,21 @@ Multi-location temperature and humidity from Ambient Weather stations (outdoor, 
 - **Stock quotes** with daily change indicators
 - **Ambient weather** personal station dashboard with outdoor conditions, barometric pressure, UV index, solar radiation, wind, and rain data
 
+## Requirements
+
+**Python Version**: 3.9 or later (tested with Python 3.9.6)
+
+The project uses a `.python-version` file for version managers like `pyenv` or `asdf`. If you don't have Python 3.9+, install it before proceeding.
+
+**Dependencies**: Managed via `requirements.txt` (production) and `requirements-dev.txt` (development)
+- All dependencies are pinned to exact versions for reproducible builds
+- Security auditing via `pip-audit` in CI/CD pipeline
+
+**Other Requirements**:
+- Playwright (installed automatically via setup script)
+- Samsung Frame TV (2024+ models tested)
+- API keys for your chosen data sources
+
 ## Installation
 
 Clone the repository and run the setup script:
@@ -65,6 +80,35 @@ cd signage
 ```
 
 This creates a Python virtual environment and installs all dependencies, including Playwright for HTML rendering.
+
+### Manual Installation
+
+If you prefer manual setup:
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install production dependencies
+pip install -r requirements.txt
+
+# OR install with development tools (for contributors)
+pip install -r requirements-dev.txt
+
+# Install Playwright browsers
+playwright install chromium
+```
+
+### Dependency Management
+
+The project uses **exact version pinning** for all dependencies:
+- **requirements.txt**: Production dependencies only (deploy to servers)
+- **requirements-dev.txt**: Includes production deps + development tools (black, ruff, pytest, etc.)
+
+This ensures reproducible builds across all environments and CI/CD pipelines.
+
+**Security**: All dependencies are audited for CVEs via `pip-audit` in the CI pipeline.
 
 ## Configuration
 
@@ -215,7 +259,13 @@ tests/            Test suite
 
 1. **Data collection**: Clients fetch data from APIs or local sources
 2. **Model conversion**: Raw data becomes structured SignageContent objects
-3. **Background selection**: Provider chooses or generates a background image (weather-aware for conditions)
+3# Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and contribution guidelines.
+
+**For Contributors**: Install development dependencies with `pip install -r requirements-dev.txt` to get all formatting, linting, and testing tools.
+
+#. **Background selection**: Provider chooses or generates a background image (weather-aware for conditions)
 4. **Rendering**: Template engine (HTML/CSS or PIL) combines data with background
 5. **Output**: 3840×2160 PNG saved to `art_folder/`
 

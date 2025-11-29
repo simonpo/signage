@@ -10,10 +10,12 @@ Engineering fundamentals standards based on Phase 1 completion. All Python code 
 ## Project Context
 
 - **Project**: Samsung Frame TV Signage System
-- **Python Version**: 3.9+
+- **Python Version**: 3.9+ (specified in `.python-version`)
 - **Code Formatter**: Black (line-length 100)
 - **Linter**: Ruff + MyPy
 - **CI/CD**: GitHub Actions (.github/workflows/ci.yml)
+- **Dependency Management**: Exact version pinning in `requirements.txt` and `requirements-dev.txt`
+- **Security**: Automated CVE scanning via `pip-audit` in CI
 - **Phase**: Phase 1 Complete, Phase 2 (Testing) in progress
 
 ## Required Tools Configuration
@@ -382,6 +384,72 @@ git commit --no-verify
 
 If any check fails, the commit is blocked. Fix the issues and commit again.
 
+## Dependency Management
+
+**Critical**: All dependencies MUST use exact version pinning.
+
+### Requirements Files
+
+- **requirements.txt**: Production dependencies only (exact versions with `==`)
+- **requirements-dev.txt**: Development tools (extends requirements.txt with `-r requirements.txt`)
+
+### Adding New Dependencies
+
+```bash
+# Activate venv
+source venv/bin/activate
+
+# Install new package
+pip install package-name
+
+# Get exact version
+pip freeze | grep package-name
+
+# Add to appropriate file with exact version
+echo "package-name==X.Y.Z" >> requirements.txt
+# OR for dev tools
+echo "package-name==X.Y.Z" >> requirements-dev.txt
+```
+
+### Updating Dependencies
+
+```bash
+# Update specific package
+pip install --upgrade package-name
+
+# Capture new version
+pip freeze | grep package-name
+
+# Update in requirements file with new exact version
+```
+
+### Security Auditing
+
+All dependencies are automatically scanned for CVEs via `pip-audit` in CI:
+
+```bash
+# Run locally
+pip install pip-audit
+pip-audit -r requirements.txt
+pip-audit -r requirements-dev.txt
+```
+
+### Version Pinning Rules
+
+- ✅ **Always**: `package==1.2.3` (exact version)
+- ❌ **Never**: `package>=1.2.0` (minimum version)
+- ❌ **Never**: `package` (unpinned)
+
+**Exception**: Git dependencies like `samsungtvws` must specify exact commit hash.
+
+### Why Exact Pins?
+
+1. **Reproducible builds**: Same code = same dependencies = same behavior
+2. **No surprises**: Updates are deliberate, not automatic
+3. **CI/CD reliability**: Tests validate exact versions you deploy
+4. **Security tracking**: Know exactly what you're running
+5. **Rollback safety**: Can reproduce any previous state
+
 ## References
 
 - **Action Plan**: `planning/action-plan.md` (local only, gitignored)
@@ -389,6 +457,8 @@ If any check fails, the commit is blocked. Fix the issues and commit again.
 - **Tool Config**: `pyproject.toml`
 - **Base Client**: `src/clients/base.py`
 - **Config Validation**: `src/config_validator.py`
+- **Requirements**: `requirements.txt` (production), `requirements-dev.txt` (development)
+- **Python Version**: `.python-version`
 
 ## Not Doing (Explicit Non-Goals)
 
@@ -397,6 +467,7 @@ If any check fails, the commit is blocked. Fix the issues and commit again.
 - Direct `os.getenv()` calls (use Config)
 - Committing unformatted code
 - Ignoring CI failures
+- Unpinned or loosely-pinned dependencies (always exact versions)
 
 ---
 

@@ -1,6 +1,7 @@
 # Pre-commit hooks for code quality enforcement
-# Install: pip install pre-commit && pre-commit install
+# Install: pip install -r requirements-dev.txt && pre-commit install
 # Run manually: pre-commit run --all-files
+# Note: Tool versions should match requirements-dev.txt for consistency
 
 repos:
   # Black code formatter

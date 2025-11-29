@@ -54,9 +54,24 @@ source "$VENV_DIR/bin/activate"
 echo "Upgrading pip..."
 pip install --upgrade pip > /dev/null 2>&1
 
-# Install dependencies
-echo "Installing dependencies..."
-pip install -r requirements.txt
+# Determine which requirements to install
+echo ""
+read -p "Install development tools (black, ruff, pytest)? (Y/n) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    echo "Installing development dependencies..."
+    pip install -r requirements-dev.txt
+    echo -e "${GREEN}✓ Development dependencies installed${NC}"
+
+    # Install pre-commit hooks
+    echo "Installing pre-commit hooks..."
+    pre-commit install
+    echo -e "${GREEN}✓ Pre-commit hooks installed${NC}"
+else
+    echo "Installing production dependencies..."
+    pip install -r requirements.txt
+    echo -e "${GREEN}✓ Production dependencies installed${NC}"
+fi
 
 # Install Playwright browsers if needed
 if grep -q "playwright" requirements.txt; then
