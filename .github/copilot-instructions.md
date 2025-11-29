@@ -38,6 +38,20 @@ refactor: extract template rendering logic
 
 For Python code standards (formatting, linting, testing), see [python-standards.instructions.md](python-standards.instructions.md).
 
+## README Badge Maintenance
+
+**Test Count Badge** (line 4 of README.md):
+- Manually update when test count changes significantly
+- Current format: `[![Tests](https://img.shields.io/badge/tests-XXX%20passing-success)]`
+- Update the `XXX` number after running `pytest tests/ -v`
+- This is a static shields.io badge, not dynamic from CI
+- Check count with: `pytest tests/ -v | grep "passed"`
+
+**Other badges are dynamic and don't need updates:**
+- CI status badge (auto-updates from GitHub Actions)
+- codecov badge (auto-updates from codecov.io uploads)
+- Code style, License, Python version (static metadata)
+
 ## Branch Protection Workflow
 
 This repository uses branch protection on `main`. Before implementing code changes, **always check the current branch**.

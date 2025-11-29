@@ -10,10 +10,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Comprehensive test coverage for Stock client (9 tests, 100% coverage)
 - Comprehensive test coverage for Speedtest client (12 tests, 100% coverage)
+- Security scanning with pip-audit, bandit, and detect-secrets pre-commit hooks
+- Type stubs for Pillow (types-Pillow)
+- Build tools pinning (setuptools, wheel)
+- CI workflow matrix testing for Python 3.11 and 3.12
+- Playwright browser caching in CI for faster test runs
+- Concurrency control in CI to cancel outdated workflow runs
+- README badge maintenance documentation
 
 ### Changed
 - Test coverage increased from 40.64% to 43.89%
-- Total test count increased from 72 to 93 tests
+- Total test count increased from 72 to 120 tests
+- Updated pre-commit tool versions (ruff 0.14.6, mypy 1.18.2)
+- Optimized pytest pre-commit hook to run only on changed files
+- Consolidated CI lint and test jobs into single build job with matrix strategy
+- Removed 31 unused dependencies (15 from production, 16 from dev)
+- Fixed Python version to 3.11.11 throughout project
+
+### Fixed
+- MD5 usage security warning in cache_manager.py (added usedforsecurity=False)
+- Dependency version mismatches between local and CI environments
+
+### Removed
+- Unused dependencies: selenium, beautifulsoup4, undetected-chromedriver, playwright-stealth, lxml, and 26 others
 
 ## [0.5.0] - 2025-11-28
 
