@@ -5,10 +5,10 @@ All configuration is loaded from .env (never committed).
 """
 
 
+import hashlib
 import json
 import logging
 import os
-import hashlib
 from pathlib import Path
 
 import urllib3
@@ -69,7 +69,6 @@ def main():
         tv.close()
         return
 
-
     # === STEP 3: Load uploaded log (filename -> sha256 hash) ===
     uploaded = {}
     if LOG_PATH.exists():
@@ -77,7 +76,7 @@ def main():
             with open(LOG_PATH) as f:
                 uploaded = json.load(f)
             if not isinstance(uploaded, dict):
-                logging.warning(f"Uploaded log format invalid, resetting.")
+                logging.warning("Uploaded log format invalid, resetting.")
                 uploaded = {}
             logging.info(f"Loaded {len(uploaded)} previously uploaded file hashes")
         except Exception as e:
