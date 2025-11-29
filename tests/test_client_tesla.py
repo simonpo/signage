@@ -6,6 +6,7 @@ import json
 from datetime import datetime, timedelta
 
 import pytest
+import requests
 import responses
 
 from src.clients.tesla_fleet import TeslaFleetClient
@@ -219,7 +220,7 @@ class TestTeslaFleetClient:
         client = TeslaFleetClient()
         assert client.access_token == "old_token"  # Loaded from file
 
-        vehicles = client.get_vehicles()
+        client.get_vehicles()
 
         # Token should be refreshed
         assert client.access_token == "new_access_token"
@@ -542,7 +543,7 @@ class TestTeslaFleetClient:
         client = TeslaFleetClient()
 
         # Should raise exception when token fetch completely fails
-        with pytest.raises(Exception):
+        with pytest.raises(requests.exceptions.HTTPError):
             client.get_vehicles()
 
     @responses.activate
@@ -582,7 +583,7 @@ class TestTeslaFleetClient:
         )
 
         client = TeslaFleetClient()
-        vehicles = client.get_vehicles()
+        client.get_vehicles()
 
         # Verify token was refreshed and new refresh token saved
         assert client.access_token == "refreshed_token"
