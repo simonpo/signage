@@ -45,7 +45,6 @@ class SignageScheduler:
             "weather": 1800,  # 30 minutes
             "stock": 300,  # 5 minutes
             "ferry": 300,  # 5 minutes
-            "whales": 3600,  # 1 hour
             "sports": 7200,  # 2 hours (when not live)
         }
 
@@ -136,7 +135,6 @@ class SignageScheduler:
                 self._check_and_run_weather()
                 self._check_and_run_stock()
                 self._check_and_run_ferry()
-                self._check_and_run_whales()
                 self._check_and_run_sports()
 
                 # Sleep for 30 seconds before next check

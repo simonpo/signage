@@ -50,3 +50,4 @@ MarkupSafe==3.0.3
 # Playwright dependencies
 greenlet==3.2.4
 pyee==13.0.0
+psutil==7.1.3

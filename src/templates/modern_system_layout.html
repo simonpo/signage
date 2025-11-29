@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}System Health{% endblock %}
+
+{% block styles %}
+/* Modern system health dashboard */
+.system-container {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 40px;
+    padding: 60px 100px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+/* Header with status */
+.system-header {
+    text-align: center;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.system-title {
+    font-size: 75px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+.system-status {
+    font-size: 45px;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+.status-healthy { color: #22c55e; }
+.status-degraded { color: #f59e0b; }
+.status-down { color: #ef4444; }
+
+/* Generator grid */
+.generators-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+.generator-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 35px 40px;
+    backdrop-filter: blur(10px);
+}
+
+.generator-card.success {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.generator-card.warning {
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.generator-card.error {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.generator-name {
+    font-size: 48px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    text-transform: capitalize;
+}
+
+.generator-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.stat-item {
+    font-size: 32px;
+    opacity: 0.8;
+}
+
+.stat-label {
+    font-size: 26px;
+    opacity: 0.6;
+    margin-right: 8px;
+}
+
+.stat-value {
+    font-weight: 600;
+}
+
+.stat-value.good { color: #22c55e; }
+.stat-value.warning { color: #f59e0b; }
+.stat-value.error { color: #ef4444; }
+
+/* Footer info */
+.system-footer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+.footer-stat {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 15px;
+    padding: 25px 30px;
+    text-align: center;
+}
+
+.footer-label {
+    font-size: 28px;
+    opacity: 0.6;
+    margin-bottom: 8px;
+}
+
+.footer-value {
+    font-size: 40px;
+    font-weight: 600;
+}
+
+.error-list {
+    margin-top: 10px;
+    font-size: 26px;
+    opacity: 0.7;
+}
+
+{% endblock %}
+
+{% block content %}
+<div class="system-container">
+    <!-- Header -->
+    <div class="system-header">
+        <div class="system-title">🖥️ SYSTEM HEALTH</div>
+        <div class="system-status status-{{ status|lower }}">
+            {% if status == "HEALTHY" %}● HEALTHY{% elif status == "DEGRADED" %}▲ DEGRADED{% else %}✖ DOWN{% endif %}
+        </div>
+        <div class="stat-item" style="font-size: 32px; margin-top: 15px; opacity: 0.7;">
+            Uptime: {{ uptime }}
+        </div>
+    </div>
+
+    <!-- Generators Grid -->
+    <div class="generators-grid">
+        {% for name, stats in generators.items() %}
+        {% set total = stats.success + stats.failure %}
+        {% set success_rate = (stats.success / total * 100) if total > 0 else 0 %}
+        {% set card_class = "success" if success_rate >= 95 else ("warning" if success_rate >= 80 else "error") %}
+
+        <div class="generator-card {{ card_class }}">
+            <div class="generator-name">
+                {{ name }}
+            </div>
+            <div class="generator-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Success:</span>
+                    <span class="stat-value {% if success_rate >= 95 %}good{% elif success_rate >= 80 %}warning{% else %}error{% endif %}">
+                        {{ stats.success }}/{{ total }} ({{ "%.0f"|format(success_rate) }}%)
+                    </span>
+                </div>
+                <div class="stat-item">
+                    {% if stats.last_run %}
+                    <span class="stat-label">Last:</span>
+                    <span class="stat-value">{{ stats.time_ago }}</span>
+                    {% else %}
+                    <span class="stat-value error">Never run</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Footer Stats -->
+    <div class="system-footer">
+        <div class="footer-stat">
+            <div class="footer-label">Disk Free</div>
+            <div class="footer-value">{{ "%.0f"|format(disk_free_gb) }} GB</div>
+        </div>
+        <div class="footer-stat">
+            <div class="footer-label">Images (7d)</div>
+            <div class="footer-value">{{ total_images }}</div>
+        </div>
+        <div class="footer-stat">
+            <div class="footer-label">Log Size</div>
+            <div class="footer-value">{{ log_size }}</div>
+        </div>
+        <div class="footer-stat">
+            <div class="footer-label">Errors (24h)</div>
+            <div class="footer-value {% if error_count > 5 %}error{% elif error_count > 0 %}warning{% else %}good{% endif %}">
+                {{ error_count }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

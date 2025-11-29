@@ -1,5 +1,44 @@
 # CHANGELOG
 
+## Unreleased
+
+### Features
+
+- Add lightweight observability with system health signage
+  - System stats collector parses logs for generator success/failure rates
+  - Meta self-monitoring: system creates signage showing its own health
+  - Modern dashboard layout with generator grid and system resources
+  - Health status: HEALTHY (>95%), DEGRADED (>80%), DOWN (<80%)
+
+- Add Tesla vehicle data caching for graceful degradation
+  - Cache successful API responses to `.cache/tesla_vehicle_data.json`
+  - Automatic fallback to cached data when vehicle is asleep (408 timeout)
+  - Display "Vehicle Asleep" banner with cached data timestamp
+  - Never wakes sleeping vehicles to preserve battery
+
+- Improve error handling and logging
+  - Standardize success messages with ✓ indicator and key metrics
+  - Standardize error messages with ✗ indicator
+  - Add @timeit decorator to all generator functions
+  - Distinguish 408 timeouts (vehicle asleep) from auth failures (401/403)
+  - Better token expiration logging with time remaining
+
+### Bug Fixes
+
+- Fix ferry generator AttributeError on departures
+  - Was accessing `ferry_data.departures` (doesn't exist)
+  - Now correctly uses `southworth_departures` + `fauntleroy_departures`
+
+### Tests
+
+- Add 11 new tests for observability features (131 total, up from 120)
+  - 7 tests for SystemStats (uptime, generator tracking, errors, disk space)
+  - 4 tests for Tesla caching (cache creation, retrieval, overwrites)
+
+### Dependencies
+
+- Add psutil==7.1.3 for system resource monitoring
+
 
 ## v0.8.0 (2025-11-29)
 

@@ -101,6 +101,14 @@
         <!-- Vehicle Name -->
         <div class="vehicle-name">{{ vehicle_name }}</div>
 
+        <!-- Cached Data Alert (if showing stale data) -->
+        {% if cached_at %}
+        <div style="background: rgba(0, 0, 0, 0.85); border: 3px solid rgba(251, 191, 36, 0.9); border-radius: 30px; padding: 50px 90px; margin-bottom: 80px; font-size: 60px; color: rgba(251, 191, 36, 1); text-align: center; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);">
+            <div style="font-size: 90px; margin-bottom: 25px; font-weight: 600; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);">⚠️ Vehicle Asleep</div>
+            <div style="color: rgba(255, 255, 255, 0.95); font-size: 55px; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);">Showing data from {{ cached_at }}</div>
+        </div>
+        {% endif %}
+
         <!-- Multi-section grid for all stats -->
         <div class="vehicle-stats" style="grid-template-columns: repeat(4, 1fr); gap: 60px;">
             <!-- Battery -->

@@ -132,6 +132,7 @@ class SignageRenderer:
         sensors_data: Any | None = None,
         sports_data: Any | None = None,
         tesla_data: Any | None = None,
+        system_data: Any | None = None,
     ) -> list[Path]:
         """
         Render signage content to image file(s).
@@ -175,6 +176,7 @@ class SignageRenderer:
                 sensors_data,
                 sports_data,
                 tesla_data,
+                system_data,
             )
         else:
             return self._render_pil(content, filename, timestamp, weather_data)
@@ -258,6 +260,7 @@ class SignageRenderer:
         sensors_data: Any | None = None,
         sports_data: Any | None = None,
         tesla_data: Any | None = None,
+        system_data: Any | None = None,
     ) -> list[Path]:
         """
         Render using HTML templates (modern mode).
@@ -296,6 +299,9 @@ class SignageRenderer:
         elif content.layout_type == "modern_tesla" and tesla_data:
             # Render modern Tesla vehicle display
             html = self.template_renderer.render_tesla_display(tesla_data)
+        elif content.layout_type == "modern_system" and system_data:
+            # Render system health dashboard
+            html = self.template_renderer.render_system_health(system_data)
         # Note: modern_powerwall layout reserved for future use
         else:
             # Render text layout template

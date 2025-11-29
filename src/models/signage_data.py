@@ -35,6 +35,7 @@ class SignageContent:
         "modern_rugby",
         "modern_tesla",
         "modern_powerwall",
+        "modern_system",
     ] = "centered"
     background_mode: str = "gradient"
     background_query: str | None = None
@@ -145,6 +146,7 @@ class TeslaData:
     last_seen: str = ""
     online: bool = True
     location_display: str = ""
+    cached_at: str | None = None  # ISO timestamp when data was cached
 
     def to_signage(self) -> SignageContent:
         """Convert to signage content with modern HTML layout."""
@@ -708,4 +710,27 @@ class FerryMapData:
             layout_type="map",
             background_mode="none",
             background_query="",
+        )
+
+
+@dataclass
+class SystemHealthData:
+    """System health and observability metrics."""
+
+    status: str  # "healthy", "degraded", "down"
+    uptime: str
+    generators: dict[str, dict]  # {source: {success, failure, last_run}}
+    recent_errors: list[dict]  # [{timestamp, level, message}]
+    disk_space: dict[str, float]  # {total_gb, used_gb, free_gb, percent_used}
+    images_generated: dict[str, int]  # {source: count, total: count}
+    log_file_size: dict[str, str | float]  # {size_mb, size_formatted}
+
+    def to_signage(self) -> SignageContent:
+        """Convert to signage content for system health display."""
+        return SignageContent(
+            lines=[],  # Use HTML template
+            filename_prefix="system",
+            layout_type="modern_system",
+            background_mode="gradient",
+            background_query="system/health",
         )
