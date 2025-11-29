@@ -34,9 +34,56 @@ docs: update readme with tesla setup
 refactor: extract template rendering logic
 ```
 
+## Semantic Versioning & Releases
+
+**Automated release management** via Python Semantic Release:
+
+**How it works:**
+1. Merge PRs to `main` using conventional commits
+2. Manually trigger release workflow in GitHub Actions
+3. Semantic Release analyzes commits since last tag
+4. Automatically:
+   - Determines version bump (major.minor.patch)
+   - Updates version in `pyproject.toml`
+   - Updates `CHANGELOG.md` from [Unreleased]
+   - Creates git tag (e.g., `v0.6.0`)
+   - Creates GitHub Release with notes
+
+**Version bump rules:**
+- `feat:` commits → MINOR version (0.5.0 → 0.6.0)
+- `fix:`, `perf:` commits → PATCH version (0.5.0 → 0.5.1)
+- `BREAKING CHANGE:` in body → MAJOR version (0.5.0 → 1.0.0)
+- `docs:`, `chore:`, `test:` → No version bump
+
+**Manual release trigger:**
+```bash
+# Via GitHub UI: Actions → Release → Run workflow
+# Or via gh CLI:
+gh workflow run release.yml
+```
+
+**Force release (even without changes):**
+```bash
+gh workflow run release.yml -f force=true
+```
+
 ## Code Standards
 
 For Python code standards (formatting, linting, testing), see [python-standards.instructions.md](python-standards.instructions.md).
+
+## README Badge Maintenance
+
+**Test Count Badge** (line 4 of README.md):
+- Manually update when test count changes significantly
+- Current format: `[![Tests](https://img.shields.io/badge/tests-XXX%20passing-success)]`
+- Update the `XXX` number after running `pytest tests/ -v`
+- This is a static shields.io badge, not dynamic from CI
+- Check count with: `pytest tests/ -v | grep "passed"`
+
+**Other badges are dynamic and don't need updates:**
+- CI status badge (auto-updates from GitHub Actions)
+- codecov badge (auto-updates from codecov.io uploads)
+- Code style, License, Python version (static metadata)
 
 ## Branch Protection Workflow
 
