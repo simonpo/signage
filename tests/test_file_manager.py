@@ -38,8 +38,10 @@ class TestFileManager:
         """Test filename generation with current date."""
         fm = FileManager(output_path=tmp_path)
         filename = fm.get_current_filename("tesla")
-        # Should be today's date
-        today = datetime.now().strftime("%Y-%m-%d")
+        # Should be today's date in configured timezone
+        from src.config import Config
+
+        today = Config.get_current_time().strftime("%Y-%m-%d")
         assert filename == f"tesla_{today}.jpg"
 
     def test_get_file_path(self, tmp_path):
