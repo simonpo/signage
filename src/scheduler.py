@@ -5,8 +5,8 @@ Manages update intervals and live event detection.
 
 import logging
 import time
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable, Optional
 
 from src.clients.ferry import FerryClient
 from src.clients.homeassistant import HomeAssistantClient
@@ -36,7 +36,7 @@ class SignageScheduler:
         """
         self.renderer = renderer
         self.file_mgr = file_mgr
-        self.last_run: dict[str, Optional[datetime]] = {}
+        self.last_run: dict[str, datetime | None] = {}
         self.running = False
 
         # Default update intervals (in seconds)

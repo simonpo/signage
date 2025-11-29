@@ -7,13 +7,14 @@ import functools
 import logging
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 from src.config import Config
 
 
-def setup_logging(level: Optional[str] = None, log_file: Optional[str] = None) -> None:
+def setup_logging(level: str | None = None, log_file: str | None = None) -> None:
     """
     Configure structured logging for the application.
 
@@ -76,7 +77,7 @@ def setup_logging(level: Optional[str] = None, log_file: Optional[str] = None) -
     root_logger.info(f"Logging configured at {level.upper()} level")
 
 
-def timeit(func: Optional[Callable] = None, *, log_args: bool = False) -> Callable:
+def timeit(func: Callable | None = None, *, log_args: bool = False) -> Callable:
     """
     Decorator to measure and log function execution time.
 
@@ -144,7 +145,7 @@ def timeit(func: Optional[Callable] = None, *, log_args: bool = False) -> Callab
         return decorator(func)
 
 
-def log_section(title: str, logger: Optional[logging.Logger] = None) -> None:
+def log_section(title: str, logger: logging.Logger | None = None) -> None:
     """
     Log a section header for better readability.
 
@@ -171,7 +172,7 @@ class LogContext:
     """
 
     def __init__(
-        self, description: str, logger: Optional[logging.Logger] = None, level: int = logging.INFO
+        self, description: str, logger: logging.Logger | None = None, level: int = logging.INFO
     ):
         """
         Initialize log context.

@@ -5,7 +5,7 @@ Provides utilities for rendering HTML templates to images via headless browser.
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -48,7 +48,7 @@ class TemplateRenderer:
         }
         return self.render("modern_powerwall_layout.html", context)
 
-    def __init__(self, templates_dir: Optional[Path] = None):
+    def __init__(self, templates_dir: Path | None = None):
         """
         Initialize template renderer.
 
@@ -428,7 +428,7 @@ class TemplateRenderer:
 
         return self.render("modern_tesla_layout.html", context)
 
-    def _wind_direction_to_compass(self, degrees: Optional[int]) -> str:
+    def _wind_direction_to_compass(self, degrees: int | None) -> str:
         """Convert wind direction degrees to compass direction."""
         if degrees is None:
             return "N"

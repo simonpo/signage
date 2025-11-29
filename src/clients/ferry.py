@@ -6,7 +6,6 @@ Fetches real-time data from WSDOT Ferries API.
 import logging
 import re
 from datetime import datetime
-from typing import Optional
 
 from src.clients.base import APIClient
 from src.config import Config
@@ -49,7 +48,7 @@ class FerryClient(APIClient):
         if not self.api_key:
             logger.warning("WSDOT_API_KEY not configured")
 
-    def get_ferry_data(self) -> Optional[FerryData]:
+    def get_ferry_data(self) -> FerryData | None:
         """
         Fetch comprehensive ferry data: schedule, vessels, alerts.
 
@@ -173,7 +172,7 @@ class FerryClient(APIClient):
             logger.error(f"Failed to fetch ferry schedule: {e}")
             return []
 
-    def _parse_dotnet_date(self, date_str: str) -> tuple[Optional[datetime], str]:
+    def _parse_dotnet_date(self, date_str: str) -> tuple[datetime | None, str]:
         """
         Parse .NET JSON date format to readable time.
 
@@ -205,7 +204,7 @@ class FerryClient(APIClient):
             logger.debug(f"Failed to parse date {date_str}: {e}")
             return None, ""
 
-    def _get_terminal_name(self, terminal_id: Optional[int]) -> str:
+    def _get_terminal_name(self, terminal_id: int | None) -> str:
         """Map terminal ID to name."""
         id_to_name = {v: k for k, v in TERMINAL_IDS.items()}
         return id_to_name.get(terminal_id, f"Terminal {terminal_id}")
@@ -303,7 +302,7 @@ class FerryClient(APIClient):
             logger.error(f"Failed to fetch ferry alerts: {e}")
             return []
 
-    def _get_wait_time(self) -> Optional[int]:
+    def _get_wait_time(self) -> int | None:
         """
         Fetch current wait time at home terminal.
 
@@ -418,7 +417,7 @@ class FerryWebScraper:
         """Initialize scraper."""
         logger.warning("FerryWebScraper is a stub - web scraping fallback not implemented")
 
-    def get_ferry_data(self) -> Optional[FerryData]:
+    def get_ferry_data(self) -> FerryData | None:
         """Scrape ferry data from website."""
         logger.warning("Web scraping fallback called but not implemented")
         return None

@@ -6,7 +6,6 @@ Validates .env configuration on startup and provides type-safe config access.
 import json
 import logging
 from pathlib import Path
-from typing import Optional
 
 from pydantic import Field, HttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -45,30 +44,28 @@ class SignageConfig(BaseSettings):
     # ===== Optional Configuration =====
 
     # Ambient Weather
-    AMBIENT_API_KEY: Optional[str] = Field(default=None, description="Ambient Weather API key")
-    AMBIENT_APP_KEY: Optional[str] = Field(
-        default=None, description="Ambient Weather application key"
-    )
+    AMBIENT_API_KEY: str | None = Field(default=None, description="Ambient Weather API key")
+    AMBIENT_APP_KEY: str | None = Field(default=None, description="Ambient Weather application key")
     AMBIENT_BG_MODE: str = Field(default="local", pattern="^(local|gradient|unsplash|pexels)$")
     AMBIENT_SENSOR_NAMES: str = Field(
         default="{}", description="JSON mapping of sensor channels to names"
     )
 
     # Speedtest
-    SPEEDTEST_URL: Optional[str] = Field(default="http://192.168.1.36:8765")
-    SPEEDTEST_TOKEN: Optional[str] = Field(default=None)
+    SPEEDTEST_URL: str | None = Field(default="http://192.168.1.36:8765")
+    SPEEDTEST_TOKEN: str | None = Field(default=None)
     SPEEDTEST_BG_MODE: str = Field(default="local", pattern="^(local|gradient|unsplash|pexels)$")
 
     # Stock Quotes
-    STOCK_SYMBOL: Optional[str] = Field(default=None, description="Stock ticker symbol")
-    STOCK_API_KEY: Optional[str] = Field(default=None, description="Alpha Vantage API key")
+    STOCK_SYMBOL: str | None = Field(default=None, description="Stock ticker symbol")
+    STOCK_API_KEY: str | None = Field(default=None, description="Alpha Vantage API key")
     STOCK_BG_MODE: str = Field(default="gradient", pattern="^(local|gradient|unsplash|pexels)$")
 
     # Ferry
-    FERRY_ROUTE: Optional[str] = Field(default=None, description="Ferry route name")
-    FERRY_HOME_TERMINAL: Optional[str] = Field(default=None, description="Home terminal name")
+    FERRY_ROUTE: str | None = Field(default=None, description="Ferry route name")
+    FERRY_HOME_TERMINAL: str | None = Field(default=None, description="Home terminal name")
     FERRY_BG_MODE: str = Field(default="local", pattern="^(local|gradient|unsplash|pexels)$")
-    WSDOT_API_KEY: Optional[str] = Field(default=None, description="WSDOT API key")
+    WSDOT_API_KEY: str | None = Field(default=None, description="WSDOT API key")
 
     # Sports Teams
     SEAHAWKS_ENABLED: bool = Field(default=False)
@@ -80,11 +77,11 @@ class SignageConfig(BaseSettings):
     ENGLAND_CRICKET_ENABLED: bool = Field(default=False)
 
     # API Keys
-    SPORTS_API_KEY: Optional[str] = Field(default=None)
-    FOOTBALL_API_KEY: Optional[str] = Field(default=None, description="football-data.org API key")
-    UNSPLASH_API_KEY: Optional[str] = Field(default=None)
-    PEXELS_API_KEY: Optional[str] = Field(default=None)
-    GOOGLE_MAPS_API_KEY: Optional[str] = Field(default=None)
+    SPORTS_API_KEY: str | None = Field(default=None)
+    FOOTBALL_API_KEY: str | None = Field(default=None, description="football-data.org API key")
+    UNSPLASH_API_KEY: str | None = Field(default=None)
+    PEXELS_API_KEY: str | None = Field(default=None)
+    GOOGLE_MAPS_API_KEY: str | None = Field(default=None)
 
     # ===== System Configuration =====
 
@@ -97,7 +94,7 @@ class SignageConfig(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = Field(default="INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
-    LOG_FILE: Optional[str] = Field(default=None)
+    LOG_FILE: str | None = Field(default=None)
 
     # Output management
     OUTPUT_PROFILES: str = Field(default="")

@@ -7,7 +7,6 @@ import hashlib
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 from src.config import Config
 
@@ -20,7 +19,7 @@ class CacheManager:
     Uses MD5 hashing for cache keys.
     """
 
-    def __init__(self, cache_path: Optional[Path] = None):
+    def __init__(self, cache_path: Path | None = None):
         """
         Initialize cache manager.
 
@@ -42,7 +41,7 @@ class CacheManager:
         """
         return hashlib.md5(url_or_query.encode()).hexdigest()
 
-    def get_cached_image(self, key: str, max_age_days: int = 7) -> Optional[Path]:
+    def get_cached_image(self, key: str, max_age_days: int = 7) -> Path | None:
         """
         Retrieve cached image if it exists and is not too old.
 

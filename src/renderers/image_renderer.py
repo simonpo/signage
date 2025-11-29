@@ -7,7 +7,7 @@ Supports both PIL and HTML rendering modes.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -31,7 +31,7 @@ class SignageRenderer:
     Supports both PIL (legacy) and HTML (modern) rendering modes.
     """
 
-    def __init__(self, use_html: bool = False, output_manager: Optional[OutputManager] = None):
+    def __init__(self, use_html: bool = False, output_manager: OutputManager | None = None):
         """
         Initialize renderer and load fonts.
 
@@ -78,7 +78,7 @@ class SignageRenderer:
             logger.warning(f"Failed to load font {path}: {e}. Using default.")
             return ImageFont.load_default()
 
-    def _get_background_image(self, bg_mode: str, bg_query: Optional[str]) -> Image.Image:
+    def _get_background_image(self, bg_mode: str, bg_query: str | None) -> Image.Image:
         """
         Get background image from appropriate provider.
 
@@ -123,15 +123,15 @@ class SignageRenderer:
     def render(
         self,
         content: SignageContent,
-        filename: Optional[str] = None,
-        timestamp: Optional[datetime] = None,
-        weather_data: Optional[AmbientWeatherData] = None,
-        ferry_data: Optional[Any] = None,
-        stock_data: Optional[Any] = None,
-        speedtest_data: Optional[Any] = None,
-        sensors_data: Optional[Any] = None,
-        sports_data: Optional[Any] = None,
-        tesla_data: Optional[Any] = None,
+        filename: str | None = None,
+        timestamp: datetime | None = None,
+        weather_data: AmbientWeatherData | None = None,
+        ferry_data: Any | None = None,
+        stock_data: Any | None = None,
+        speedtest_data: Any | None = None,
+        sensors_data: Any | None = None,
+        sports_data: Any | None = None,
+        tesla_data: Any | None = None,
     ) -> list[Path]:
         """
         Render signage content to image file(s).
@@ -184,7 +184,7 @@ class SignageRenderer:
         content: SignageContent,
         filename: str,
         timestamp: datetime,
-        weather_data: Optional[AmbientWeatherData] = None,
+        weather_data: AmbientWeatherData | None = None,
     ) -> list[Path]:
         """
         Render using PIL (legacy mode).
@@ -251,13 +251,13 @@ class SignageRenderer:
         content: SignageContent,
         filename: str,
         timestamp: datetime,
-        weather_data: Optional[AmbientWeatherData] = None,
-        ferry_data: Optional[Any] = None,
-        stock_data: Optional[Any] = None,
-        speedtest_data: Optional[Any] = None,
-        sensors_data: Optional[Any] = None,
-        sports_data: Optional[Any] = None,
-        tesla_data: Optional[Any] = None,
+        weather_data: AmbientWeatherData | None = None,
+        ferry_data: Any | None = None,
+        stock_data: Any | None = None,
+        speedtest_data: Any | None = None,
+        sensors_data: Any | None = None,
+        sports_data: Any | None = None,
+        tesla_data: Any | None = None,
     ) -> list[Path]:
         """
         Render using HTML templates (modern mode).

@@ -4,7 +4,6 @@ TODO: Replace with proper web scraping or API when available.
 """
 
 import logging
-from typing import Optional
 
 from src.clients.sports.base_sports import BaseSportsClient
 from src.models.signage_data import SportsData, SportsFixture, SportsResult
@@ -24,7 +23,7 @@ class RugbyClient(BaseSportsClient):
         """Initialize rugby client."""
         super().__init__()
 
-    def get_team_data(self, team_id: str = "2") -> Optional[SportsData]:
+    def get_team_data(self, team_id: str = "2") -> SportsData | None:
         """
         Get comprehensive team data including fixtures and results.
 

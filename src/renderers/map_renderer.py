@@ -5,7 +5,6 @@ Renders vessel locations on a simple map for split-layout ferry displays.
 
 import logging
 from pathlib import Path
-from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -52,7 +51,7 @@ class MapRenderer:
             return ImageFont.load_default()
 
     def render_ferry_map(
-        self, vessels: list[FerryVessel], base_map_path: Optional[Path] = None
+        self, vessels: list[FerryVessel], base_map_path: Path | None = None
     ) -> Image.Image:
         """
         Render ferry map with vessel positions.

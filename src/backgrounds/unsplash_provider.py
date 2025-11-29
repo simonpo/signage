@@ -4,7 +4,6 @@ Fetches high-quality photos from Unsplash with caching.
 """
 
 import logging
-from typing import Optional
 
 from PIL import Image
 
@@ -35,7 +34,7 @@ class UnsplashProvider(BackgroundProvider, APIClient):
         if not self.api_key:
             logger.warning("UNSPLASH_API_KEY not configured")
 
-    def get_background(self, query: str, width: int, height: int) -> Optional[Image.Image]:
+    def get_background(self, query: str, width: int, height: int) -> Image.Image | None:
         """
         Get background image from Unsplash.
 

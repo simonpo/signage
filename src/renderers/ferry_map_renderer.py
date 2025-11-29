@@ -6,7 +6,6 @@ Renders real-time ferry locations across Puget Sound with satellite imagery.
 import logging
 from datetime import datetime, timedelta
 from io import BytesIO
-from typing import Optional
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
@@ -64,7 +63,7 @@ class FerryMapRenderer:
         except Exception:
             return ImageFont.load_default()
 
-    def _fetch_satellite_map(self) -> Optional[Image.Image]:
+    def _fetch_satellite_map(self) -> Image.Image | None:
         """
         Fetch satellite imagery from Google Maps Static API with one-week caching.
         Cached images are stored in .cache/ferry_map_bg.jpg and refreshed weekly.
