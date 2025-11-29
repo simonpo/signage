@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Comprehensive test coverage for Stock client (9 tests, 100% coverage)
+- Comprehensive test coverage for Speedtest client (12 tests, 100% coverage)
+
+### Changed
+- Test coverage increased from 40.64% to 43.89%
+- Total test count increased from 72 to 93 tests
+
 ## [0.5.0] - 2025-11-28
 
 ### Added
