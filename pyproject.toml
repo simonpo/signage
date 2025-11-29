@@ -87,9 +87,7 @@ strict_equality = true
 [[tool.mypy.overrides]]
 module = [
     "playwright.*",
-    "bs4.*",
     "samsungtvws.*",
-    "undetected_chromedriver.*",
 ]
 ignore_missing_imports = true
 

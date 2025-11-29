@@ -14,14 +14,14 @@ repos:
 
   # Ruff linter (replaces flake8, isort, etc.)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.4
+    rev: v0.14.6  # MUST MATCH requirements-dev.txt
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
 
   # MyPy type checking
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.13.0
+    rev: v1.18.2  # MUST MATCH requirements-dev.txt
     hooks:
       - id: mypy
         args: [--ignore-missing-imports, --check-untyped-defs]
