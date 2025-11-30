@@ -12,7 +12,7 @@ services:
     env_file:
       - .env
     environment:
-      - TZ=${TIMEZONE:-US/Pacific}
+      - TZ=${TIMEZONE:-America/Los_Angeles}
       - PYTHONUNBUFFERED=1
 
     # Volume mounts

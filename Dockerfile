@@ -9,11 +9,13 @@ WORKDIR /app
 # Install system dependencies
 # - fonts for text rendering
 # - git for version info
+# - tzdata for timezone support
 # - playwright system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     fonts-dejavu-extra \
     git \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -34,7 +36,7 @@ RUN mkdir -p /app/art_folder /app/.cache /app/data
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    TZ=US/Pacific
+    TZ=America/Los_Angeles
 
 # Health check - verify main script exists and Python works
 HEALTHCHECK --interval=5m --timeout=10s --start-period=30s --retries=3 \
