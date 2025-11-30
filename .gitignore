@@ -61,6 +61,10 @@ coverage.xml
 TESLA_SETUP*.md
 tesla-*-setup.sh
 
+# === Docker ===
+docker-compose.override.yml
+.dockerignore.local
+
 # === Generated / Runtime ===
 *.tmp
 *.bak

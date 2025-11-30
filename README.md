@@ -71,6 +71,22 @@ The project uses a `.python-version` file for version managers like `pyenv` or `
 
 ## Installation
 
+### Quick Start with Docker (Recommended)
+
+The easiest way to run the signage system is with Docker:
+
+```bash
+git clone https://github.com/simonpo/signage.git
+cd signage
+cp .env.example .env
+nano .env  # Add your API keys
+docker-compose up -d
+```
+
+See [DOCKER.md](DOCKER.md) for comprehensive Docker deployment guide, including Proxmox LXC, Raspberry Pi, and NAS setup.
+
+### Native Python Installation
+
 Clone the repository and run the setup script:
 
 ```bash
@@ -81,7 +97,7 @@ cd signage
 
 This creates a Python virtual environment and installs all dependencies, including Playwright for HTML rendering.
 
-### Manual Installation
+#### Manual Installation
 
 If you prefer manual setup:
 

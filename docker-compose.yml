@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  signage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: signage-generator
+    restart: unless-stopped
+
+    # Environment configuration
+    env_file:
+      - .env
+    environment:
+      - TZ=${TIMEZONE:-US/Pacific}
+      - PYTHONUNBUFFERED=1
+
+    # Volume mounts
+    volumes:
+      # Generated images (read-write)
+      - ./art_folder:/app/art_folder
+
+      # Background images (read-only)
+      - ./backgrounds:/app/backgrounds:ro
+
+      # Cache directory (read-write)
+      - ./.cache:/app/.cache
+
+      # Future: Data collection directory
+      # - ./data:/app/data
+
+    # Resource limits (uncomment to enable)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2.0'
+    #       memory: 2G
+    #     reservations:
+    #       cpus: '0.5'
+    #       memory: 512M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# Optional: Create named volumes instead of bind mounts
+# volumes:
+#   art_folder:
+#   cache:
