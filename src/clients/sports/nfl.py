@@ -46,21 +46,27 @@ class NFLClient(BaseSportsClient):
 
         logger.info(f"Fetching NFL data for team {team_id}")
 
+        # Get team info first (logo, colors, division)
+        team_info = self._get_team_info(team_id)
+        division = team_info.get("division", "NFL")
+
         # Get schedule for this team
         schedule = self._get_schedule(team_id)
 
-        # Get NFC West standings
-        standings = self._get_standings()
-
-        # Get team info (logo, colors)
-        team_info = self._get_team_info(team_id)
+        # Get division standings based on team's division
+        standings = self._get_standings(division)
 
         # Parse last result and next fixtures
         last_result = None
         next_fixtures = []
 
         for game in schedule:
-            status = game.get("status", {}).get("type", {}).get("name", "")
+            # Status is nested in competitions[0].status
+            competitions = game.get("competitions", [])
+            if not competitions:
+                continue
+
+            status = competitions[0].get("status", {}).get("type", {}).get("name", "")
 
             if status in ["STATUS_FINAL", "STATUS_FINAL_OVERTIME"]:
                 # This is a completed game
@@ -89,6 +95,7 @@ class NFLClient(BaseSportsClient):
             team_logo_url=team_info.get("logo"),
             primary_color=team_info.get("color", "#002244"),
             secondary_color=team_info.get("alt_color", "#69BE28"),
+            league_name=f"{division} Standings",
         )
 
     def _get_schedule(self, team_id: str) -> list[dict]:
@@ -109,8 +116,13 @@ class NFLClient(BaseSportsClient):
             logger.error(f"Failed to parse schedule: {e}")
             return []
 
-    def _get_standings(self) -> list[LeagueTableRow]:
-        """Fetch NFC West standings."""
+    def _get_standings(self, division: str) -> list[LeagueTableRow]:
+        """
+        Fetch standings for a specific division.
+
+        Args:
+            division: Division name like "NFC West", "AFC East", etc.
+        """
         url = f"{self.ESPN_BASE}/standings"
 
         response = self._make_request(url)
@@ -121,12 +133,21 @@ class NFLClient(BaseSportsClient):
         try:
             data = response.json()
 
-            # Find NFC West division
+            # Parse division string (e.g., "NFC West" -> conference="NFC", div_name="West")
+            parts = division.split()
+            if len(parts) != 2:
+                logger.warning(f"Invalid division format: {division}")
+                return []
+
+            conference_abbr = parts[0]  # "NFC" or "AFC"
+            div_name = parts[1]  # "West", "East", "North", "South"
+
+            # Find the division in the standings data
             for conference in data.get("children", []):
-                if conference.get("abbreviation") == "NFC":
-                    for division in conference.get("children", []):
-                        if "West" in division.get("name", ""):
-                            standings = division.get("standings", {}).get("entries", [])
+                if conference.get("abbreviation") == conference_abbr:
+                    for div in conference.get("children", []):
+                        if div_name in div.get("name", ""):
+                            standings = div.get("standings", {}).get("entries", [])
 
                             rows = []
                             for entry in standings[:5]:  # Top 5
@@ -146,9 +167,11 @@ class NFLClient(BaseSportsClient):
                                     )
                                 )
 
-                            return rows
+                            if rows:
+                                logger.info(f"Found {len(rows)} standings for {division}")
+                                return rows
 
-            logger.warning("Could not find NFC West standings")
+            logger.warning(f"Could not find standings for {division}")
             return []
 
         except (ValueError, KeyError) as e:
@@ -156,7 +179,7 @@ class NFLClient(BaseSportsClient):
             return []
 
     def _get_team_info(self, team_id: str) -> dict:
-        """Get team name, logo, colors."""
+        """Get team name, logo, colors, and division."""
         url = f"{self.ESPN_BASE}/teams/{team_id}"
 
         response = self._make_request(url)
@@ -167,13 +190,32 @@ class NFLClient(BaseSportsClient):
             data = response.json()
             team = data.get("team", {})
 
+            # Extract division from standingSummary (e.g., "2nd in NFC West")
+            # Try from next event first
+            division = "NFL"
+            next_events = team.get("nextEvent", [])
+            if next_events and isinstance(next_events, list):
+                standing_summary = next_events[0].get("standingSummary", "")
+                if " in " in standing_summary:
+                    division = standing_summary.split(" in ")[1].strip()
+
+            # If that didn't work, try from team's standingSummary directly
+            if division == "NFL" and "standingSummary" in team:
+                standing_summary = team.get("standingSummary", "")
+                if " in " in standing_summary:
+                    division = standing_summary.split(" in ")[1].strip()
+
+            logger.debug(f"Extracted division: {division} for team {team_id}")
+
             return {
                 "name": team.get("displayName", ""),
                 "logo": team.get("logos", [{}])[0].get("href"),
                 "color": f"#{team.get('color', '002244')}",
                 "alt_color": f"#{team.get('alternateColor', '69BE28')}",
+                "division": division,
             }
-        except (ValueError, KeyError):
+        except (ValueError, KeyError) as e:
+            logger.error(f"Failed to parse team info: {e}")
             return {}
 
     def _parse_result(self, game: dict, team_id: str) -> SportsResult | None:
@@ -192,8 +234,8 @@ class NFLClient(BaseSportsClient):
                 date=date_obj.strftime("%b %d"),
                 home_team=home_team.get("team", {}).get("shortDisplayName", ""),
                 away_team=away_team.get("team", {}).get("shortDisplayName", ""),
-                home_score=home_team.get("score", "0"),
-                away_score=away_team.get("score", "0"),
+                home_score=str(home_team.get("score", {}).get("displayValue", "0")),
+                away_score=str(away_team.get("score", {}).get("displayValue", "0")),
                 competition="NFL",
             )
         except (KeyError, ValueError, IndexError) as e:

@@ -110,6 +110,7 @@ class FootballClient(BaseSportsClient):
                 live_score=live_score,
                 primary_color="#EF0107",  # Arsenal red
                 secondary_color="#FFFFFF",  # Arsenal white
+                league_name="Premier League Standings",
             )
 
         except Exception as e:

@@ -40,15 +40,11 @@ class TestSignageConfig:
         for key in env_keys_to_clear:
             monkeypatch.delenv(key, raising=False)
 
-    def test_config_requires_ha_url(self, tmp_path):
-        """Test that HA_URL is required."""
+    def test_config_requires_weather_city(self, tmp_path):
+        """Test that WEATHER_CITY is required."""
         env_file = tmp_path / ".env"
         env_file.write_text(
             """
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
-WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 """
         )
@@ -56,54 +52,27 @@ WEATHER_API_KEY=test_weather_key_123
         with pytest.raises(ValidationError) as exc_info:
             SignageConfig(_env_file=str(env_file))
 
-        assert "HA_URL" in str(exc_info.value)
+        assert "WEATHER_CITY" in str(exc_info.value)
 
-    def test_config_requires_ha_token(self, tmp_path):
-        """Test that HA_TOKEN is required."""
+    def test_config_requires_weather_api_key(self, tmp_path):
+        """Test that WEATHER_API_KEY is required."""
         env_file = tmp_path / ".env"
         env_file.write_text(
             """
-HA_URL=http://test:8123
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
-WEATHER_API_KEY=test_weather_key_123
 """
         )
 
         with pytest.raises(ValidationError) as exc_info:
             SignageConfig(_env_file=str(env_file))
 
-        assert "HA_TOKEN" in str(exc_info.value)
-
-    def test_config_ha_token_min_length(self, tmp_path):
-        """Test that HA_TOKEN must be at least 20 chars."""
-        env_file = tmp_path / ".env"
-        env_file.write_text(
-            """
-HA_URL=http://test:8123
-HA_TOKEN=short
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
-WEATHER_CITY=TestCity
-WEATHER_API_KEY=test_weather_key_123
-"""
-        )
-
-        with pytest.raises(ValidationError) as exc_info:
-            SignageConfig(_env_file=str(env_file))
-
-        assert "at least 20 characters" in str(exc_info.value)
+        assert "WEATHER_API_KEY" in str(exc_info.value)
 
     def test_config_validates_required_fields(self, tmp_path):
         """Test that all required fields are validated."""
         env_file = tmp_path / ".env"
         env_file.write_text(
             """
-HA_URL=http://test:8123
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 """
@@ -111,22 +80,14 @@ WEATHER_API_KEY=test_weather_key_123
 
         config = SignageConfig(_env_file=str(env_file))
 
-        assert str(config.HA_URL) == "http://test:8123/"
-        assert config.HA_TOKEN == "test_token_12345678901234567890"
-        assert config.TESLA_BATTERY == "sensor.test_battery"
-        assert config.TESLA_RANGE == "sensor.test_range"
         assert config.WEATHER_CITY == "TestCity"
-        assert config.WEATHER_API_KEY == "test_weather_key_123"
+        assert config.WEATHER_API_KEY == "test_weather_key_123"  # pragma: allowlist secret
 
     def test_config_optional_fields_default_none(self, tmp_path):
         """Test that optional fields default to None."""
         env_file = tmp_path / ".env"
         env_file.write_text(
             """
-HA_URL=http://test:8123
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 """
@@ -135,8 +96,11 @@ WEATHER_API_KEY=test_weather_key_123
         config = SignageConfig(_env_file=str(env_file))
 
         # Required fields should be set
-        assert config.HA_URL is not None
-        assert config.HA_TOKEN == "test_token_12345678901234567890"
+        assert config.WEATHER_CITY == "TestCity"
+        assert config.WEATHER_API_KEY == "test_weather_key_123"
+        # Optional fields default
+        assert config.AMBIENT_API_KEY is None
+        assert config.STOCK_API_KEY is None
         # Config loads successfully even without all optional fields
         assert config.LOG_LEVEL == "INFO"  # default value
 
@@ -145,10 +109,6 @@ WEATHER_API_KEY=test_weather_key_123
         env_file = tmp_path / ".env"
         env_file.write_text(
             """
-HA_URL=http://test:8123
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 WEATHER_BG_MODE=invalid_mode
@@ -166,10 +126,6 @@ WEATHER_BG_MODE=invalid_mode
             env_file = tmp_path / f".env_{mode}"
             env_file.write_text(
                 f"""
-HA_URL=http://test:8123
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 WEATHER_BG_MODE={mode}
@@ -185,10 +141,6 @@ WEATHER_BG_MODE={mode}
         sensor_mapping = {"1": "Outdoor", "2": "Greenhouse", "3": "Chicken Coop"}
         env_file.write_text(
             f"""
-HA_URL=http://test:8123
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 AMBIENT_SENSOR_NAMES={json.dumps(sensor_mapping)}
@@ -206,10 +158,6 @@ AMBIENT_SENSOR_NAMES={json.dumps(sensor_mapping)}
         env_file = tmp_path / ".env"
         env_file.write_text(
             """
-HA_URL=http://test:8123
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 UNKNOWN_VAR=should_be_ignored
@@ -226,10 +174,6 @@ ANOTHER_UNKNOWN=also_ignored
         env_file = tmp_path / ".env"
         env_file.write_text(
             """
-HA_URL=http://test:8123
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 LOG_LEVEL=INVALID
@@ -247,10 +191,6 @@ LOG_LEVEL=INVALID
             env_file = tmp_path / f".env_{level}"
             env_file.write_text(
                 f"""
-HA_URL=http://test:8123
-HA_TOKEN=test_token_12345678901234567890
-TESLA_BATTERY=sensor.test_battery
-TESLA_RANGE=sensor.test_range
 WEATHER_CITY=TestCity
 WEATHER_API_KEY=test_weather_key_123
 LOG_LEVEL={level}

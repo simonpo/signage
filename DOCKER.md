@@ -104,8 +104,6 @@ All configuration is done via `.env` file (not committed to git):
 # Required
 WEATHER_API_KEY=your_openweather_key
 WEATHER_CITY=Seattle,US
-HA_URL=http://192.168.1.100:8123
-HA_TOKEN=your_ha_token
 
 # Optional data sources
 TESLA_CLIENT_ID=your_client_id
@@ -256,7 +254,7 @@ docker-compose up -d
 docker-compose config
 
 # Check environment variables in container
-docker-compose exec signage env | grep -E '(TESLA|WEATHER|HA_)'
+docker-compose exec signage env | grep -E '(TESLA|WEATHER|STOCK)'
 ```
 
 ### Permission Issues

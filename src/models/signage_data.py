@@ -41,6 +41,7 @@ class SignageContent:
     background_query: str | None = None
     timestamp: datetime | None = None
     map_image: Path | None = None  # For ferry map composite
+    metadata: dict = field(default_factory=dict)  # For carrying data objects to templates
 
     def generate_filename(self, date: datetime) -> str:
         """Generate date-based filename: prefix_YYYY-MM-DD.jpg"""
@@ -150,12 +151,14 @@ class TeslaData:
 
     def to_signage(self) -> SignageContent:
         """Convert to signage content with modern HTML layout."""
+
         return SignageContent(
             lines=[],  # Empty - using modern HTML template
             filename_prefix="tesla",
             layout_type="modern_tesla",
             background_mode="local",
             background_query="tesla/modelY",
+            metadata={"tesla_data": self},
         )
 
 
@@ -229,6 +232,7 @@ class WeatherData:
             layout_type="modern_weather",
             background_mode="local",
             background_query=f"weather/{self.condition}",
+            metadata={"weather_data": self},
         )
 
     def _wind_direction_to_compass(self, degrees: int) -> str:
@@ -302,6 +306,7 @@ class AmbientWeatherData:
             layout_type="modern_ambient",  # Modern dashboard layout
             background_mode="local",
             background_query=f"weather/{condition}",
+            metadata={"weather_data": self},
         )
 
     def _aqi_quality(self, aqi: int) -> str:
@@ -463,6 +468,7 @@ class AmbientMultiSensorData:
             layout_type="modern_sensors",
             background_mode="local",
             background_query="sensors",
+            metadata={"sensors_data": self},
         )
 
 
@@ -486,6 +492,7 @@ class StockData:
             layout_type="modern_stock",
             background_mode="local",
             background_query="stock",
+            metadata={"stock_data": self},
         )
 
 
@@ -544,6 +551,7 @@ class SportsData:
     team_logo_url: str | None = None
     primary_color: str = "#003366"
     secondary_color: str = "#69BE28"
+    league_name: str = "Standings"
 
     def to_signage(self) -> SignageContent:
         """Convert to signage with left-aligned layout and team colors."""
@@ -581,12 +589,20 @@ class SportsData:
                     f"{row.position}. {row.team} - {row.points}pts " f"({row.played}P {row.won}W)"
                 )
 
+        # Create background query with fallback hierarchy:
+        # 1. Team-specific: sports/{sport}/{team_slug}
+        # 2. Generic sport: sports/{sport}/generic
+        # 3. Gradient (handled by BackgroundFactory if both return None)
+        team_slug = self.team_name.lower().replace(" ", "_").replace(".", "")
+        background_query = f"sports/{self.sport}/{team_slug}|sports/{self.sport}/generic"
+
         return SignageContent(
             lines=lines,
-            filename_prefix=f"{self.sport}_{self.team_name.lower().replace(' ', '_')}",
+            filename_prefix=f"{self.sport}_{team_slug}",
             layout_type=f"modern_{self.sport}",
             background_mode="local",
-            background_query=f"sports/{self.sport}",
+            background_query=background_query,
+            metadata={"sports_data": self},
         )
 
 
@@ -683,15 +699,7 @@ class FerryData:
             background_mode="local",
             background_query="ferry",
             map_image=map_path,
-        )
-
-        return SignageContent(
-            lines=lines,
-            filename_prefix="ferry",
-            layout_type="split",
-            background_mode="local",
-            background_query="ferry",
-            map_image=map_path,
+            metadata={"ferry_data": self},
         )
 
 
@@ -733,4 +741,5 @@ class SystemHealthData:
             layout_type="modern_system",
             background_mode="gradient",
             background_query="system/health",
+            metadata={"system_data": self},
         )

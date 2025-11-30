@@ -7,7 +7,7 @@ import json
 import logging
 from pathlib import Path
 
-from pydantic import Field, HttpUrl, field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
@@ -27,14 +27,6 @@ class SignageConfig(BaseSettings):
     )
 
     # ===== Required Configuration =====
-
-    # Home Assistant
-    HA_URL: HttpUrl = Field(..., description="Home Assistant URL")
-    HA_TOKEN: str = Field(..., min_length=20, description="Home Assistant long-lived access token")
-
-    # Tesla entities (from Home Assistant)
-    TESLA_BATTERY: str = Field(..., description="Tesla battery sensor entity ID")
-    TESLA_RANGE: str = Field(..., description="Tesla range sensor entity ID")
 
     # Weather (OpenWeatherMap)
     WEATHER_CITY: str = Field(..., min_length=2, description="City name for weather")
@@ -187,7 +179,6 @@ def load_and_validate_config() -> SignageConfig:
         config = SignageConfig()
 
         logger.info("Configuration loaded successfully")
-        logger.debug(f"  HA URL: {config.HA_URL}")
         logger.debug(f"  Weather: {config.WEATHER_CITY}")
         logger.debug(f"  Timezone: {config.TIMEZONE}")
         logger.debug(f"  Output: {config.OUTPUT_DIR}")

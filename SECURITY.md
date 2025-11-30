@@ -56,7 +56,6 @@ When reporting a vulnerability, please include:
 This project integrates with multiple third-party services requiring API credentials:
 
 - **Tesla Fleet API** - Vehicle access and control
-- **Home Assistant** - Smart home integration
 - **Weather APIs** - OpenWeatherMap, Ambient Weather
 - **Sports APIs** - football-data.org, etc.
 
@@ -92,14 +91,6 @@ The TV upload feature uses local network communication:
 - Keep TV on isolated VLAN if concerned about security
 - Only run upload script on trusted networks
 - TV firmware should be kept up-to-date
-
-### Home Assistant Integration
-
-If using Home Assistant integration:
-- Use long-lived access tokens (not passwords)
-- Create dedicated user for signage system
-- Limit token permissions to read-only sensors where possible
-- Use HTTPS for Home Assistant connections
 
 ### Dependencies
 

@@ -1,7 +1,7 @@
 # Samsung Frame TV Signage
 
 [![CI](https://github.com/simonpo/signage/actions/workflows/ci.yml/badge.svg)](https://github.com/simonpo/signage/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-131%20passing-success)](https://github.com/simonpo/signage/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-147%20passing-success)](https://github.com/simonpo/signage/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/simonpo/signage/branch/main/graph/badge.svg)](https://codecov.io/gh/simonpo/signage)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -15,19 +15,19 @@ This system pulls data from various sources and creates custom signage images. E
 
 ### Sports Scores
 
-Live scores and fixtures for your favourite teams. Currently supports Premier League football via football-data.org.
+Live scores and fixtures for your favourite teams. Supports Premier League football (via football-data.org) and NFL (via ESPN). Features dynamic team-specific backgrounds with fallback to generic sport backgrounds, and context-aware headings (e.g., "NFC West Standings" for NFL divisions).
 
-![Arsenal FC fixtures and league standings](art_folder/arsenal.png)
+![Manchester City fixtures and league standings](art_folder/arsenal.png)
 
 ### Tesla Vehicle Status
 
-Live data from your Tesla via Fleet API: battery level, range, charging status, climate control, locks, and more.
+Live data from your Tesla via Fleet API: battery level, range, charging status, climate control, locks, and more. Modern HTML-rendered dashboard with comprehensive vehicle metrics.
 
 ![Tesla vehicle dashboard showing battery, range, and status](art_folder/tesla.png)
 
 ### Weather Display
 
-Comprehensive weather dashboard showing current conditions, temperature, feels-like, high/low, humidity, pressure, wind, cloudiness, visibility, and sunrise/sunset times from OpenWeatherMap.
+Comprehensive weather dashboard with dynamic icons and day/night awareness. Shows current conditions with weather-appropriate icons (🌫️ for fog, 🌙 for clear nights), temperature, feels-like, high/low, humidity, pressure, wind with compass direction, cloudiness, visibility, and sunrise/sunset times from OpenWeatherMap. Features dynamic backgrounds that match current weather conditions.
 
 ![Weather display with modern two-column dashboard layout](art_folder/weather.png)
 
@@ -36,6 +36,12 @@ Comprehensive weather dashboard showing current conditions, temperature, feels-l
 Live departure times for Washington State Ferries (currently Fauntleroy-Southworth route).
 
 ![Ferry schedule showing next 7 departures](art_folder/ferry.png)
+
+### Ferry Map
+
+Real-time positions of all Washington State Ferry vessels on a satellite map view. Shows live vessel locations, headings, and current routes across Puget Sound.
+
+![Ferry map showing all WSF vessel positions](art_folder/ferry_map.png)
 
 ### Internet Speed
 
@@ -309,6 +315,13 @@ Weather data from [OpenWeatherMap](https://openweathermap.org/).
 Ferry data from [Washington State Department of Transportation](https://www.wsdot.wa.gov/ferries/).
 
 Football data from [football-data.org](https://www.football-data.org/).
+
+## Documentation
+
+- [ROADMAP.md](ROADMAP.md) - Project roadmap and planned features
+- [DOCKER.md](DOCKER.md) - Docker deployment guide
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development and contribution guidelines
+- [Architecture Decision Records](docs/adr/) - Design decisions and rationale
 
 # Branch Protection
 This repository has branch protection enabled on main.

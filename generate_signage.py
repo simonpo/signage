@@ -6,7 +6,6 @@ Modular architecture with clean separation of concerns.
 
 import argparse
 import logging
-import sys
 
 from src.clients.ambient_weather import AmbientWeatherClient
 from src.clients.ferry import FerryClient
@@ -675,6 +674,42 @@ def generate_sports(
 
 def main():
     """Main entry point."""
+    # Check for plugin system config (sources.yaml)
+
+    from src.plugins.config.loader import ConfigLoader
+
+    plugin_config = ConfigLoader.load()
+
+    if plugin_config:
+        # Use plugin system
+        logger.info("Using plugin system (sources.yaml found)")
+        # Import sources to register them
+        import src.plugins.sources  # noqa: F401
+        from src.plugins.executor import PluginExecutor
+
+        executor = PluginExecutor(plugin_config)
+
+        # Check if user wants to run specific source
+        import sys
+
+        if len(sys.argv) > 1 and "--source" in sys.argv:
+            # Extract source ID from args
+            source_idx = sys.argv.index("--source") + 1
+            if source_idx < len(sys.argv):
+                source_id = sys.argv[source_idx]
+                logger.info(f"Running single source: {source_id}")
+                executor.run(source_filter=source_id)
+            else:
+                executor.run()
+        else:
+            # Run all enabled sources
+            executor.run()
+
+        return
+
+    # Otherwise use legacy CLI system
+    logger.info("Using legacy CLI mode (sources.yaml not found)")
+
     parser = argparse.ArgumentParser(description="Generate signage images for Samsung Frame TV")
     parser.add_argument(
         "--source",
@@ -706,8 +741,24 @@ def main():
         action="store_true",
         help="Generate images without uploading to TV (for testing)",
     )
+    parser.add_argument(
+        "--migrate",
+        action="store_true",
+        help="Generate sources.yaml from current .env configuration",
+    )
 
     args = parser.parse_args()
+
+    # Handle migration first
+    if args.migrate:
+        from dotenv import load_dotenv
+
+        from src.plugins.migrator import ConfigMigrator
+
+        load_dotenv()
+        migrator = ConfigMigrator()
+        migrator.write_config()
+        return
 
     # Validate configuration
     try:
