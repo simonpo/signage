@@ -121,6 +121,7 @@ class TeslaData:
     """Tesla vehicle data from Fleet API."""
 
     vehicle_name: str = "Tesla"
+    vehicle_type: str = ""  # e.g., "modely", "model3", "models", "modelx"
     battery_level: str = ""
     battery_unit: str = "%"
     range: str = ""
@@ -148,6 +149,7 @@ class TeslaData:
     online: bool = True
     location_display: str = ""
     cached_at: str | None = None  # ISO timestamp when data was cached
+    last_updated: str = ""  # Human-readable timestamp of when data was fetched
 
     def to_signage(self) -> SignageContent:
         """Convert to signage content with modern HTML layout."""

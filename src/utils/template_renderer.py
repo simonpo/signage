@@ -445,6 +445,8 @@ class TemplateRenderer:
 
         context = {
             "vehicle_name": tesla_data.vehicle_name,
+            "vehicle_type": tesla_data.vehicle_type,
+            "last_updated": tesla_data.last_updated,
             "battery_level": tesla_data.battery_level,
             "battery_unit": tesla_data.battery_unit,
             "range": tesla_data.range,
