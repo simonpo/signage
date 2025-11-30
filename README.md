@@ -15,19 +15,19 @@ This system pulls data from various sources and creates custom signage images. E
 
 ### Sports Scores
 
-Live scores and fixtures for your favourite teams. Currently supports Premier League football via football-data.org.
+Live scores and fixtures for your favourite teams. Supports Premier League football (via football-data.org) and NFL (via ESPN). Features dynamic team-specific backgrounds with fallback to generic sport backgrounds, and context-aware headings (e.g., "NFC West Standings" for NFL divisions).
 
-![Arsenal FC fixtures and league standings](art_folder/arsenal.png)
+![Manchester City fixtures and league standings](art_folder/arsenal.png)
 
 ### Tesla Vehicle Status
 
-Live data from your Tesla via Fleet API: battery level, range, charging status, climate control, locks, and more.
+Live data from your Tesla via Fleet API: battery level, range, charging status, climate control, locks, and more. Modern HTML-rendered dashboard with comprehensive vehicle metrics.
 
 ![Tesla vehicle dashboard showing battery, range, and status](art_folder/tesla.png)
 
 ### Weather Display
 
-Comprehensive weather dashboard showing current conditions, temperature, feels-like, high/low, humidity, pressure, wind, cloudiness, visibility, and sunrise/sunset times from OpenWeatherMap.
+Comprehensive weather dashboard with dynamic icons and day/night awareness. Shows current conditions with weather-appropriate icons (🌫️ for fog, 🌙 for clear nights), temperature, feels-like, high/low, humidity, pressure, wind with compass direction, cloudiness, visibility, and sunrise/sunset times from OpenWeatherMap. Features dynamic backgrounds that match current weather conditions.
 
 ![Weather display with modern two-column dashboard layout](art_folder/weather.png)
 

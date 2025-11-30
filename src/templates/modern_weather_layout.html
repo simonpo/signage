@@ -20,13 +20,25 @@
     justify-content: space-between;
 }
 
-/* City name */
-.city-name {
-    font-size: 72px;
-    font-weight: 300;
+/* City header section */
+.city-header {
     margin-bottom: 60px;
-    opacity: 0.9;
+}
+
+.city-name {
+    font-size: 140px;
+    font-weight: 600;
+    opacity: 0.95;
     letter-spacing: 1px;
+    line-height: 1.1;
+}
+
+.updated-time {
+    font-size: 68px;
+    font-weight: 300;
+    opacity: 0.7;
+    margin-top: 12px;
+    letter-spacing: 0.5px;
 }
 
 /* Hero section: icon + temp */
@@ -49,7 +61,7 @@
 }
 
 .main-temperature {
-    font-size: 340px;
+    font-size: 280px;
     font-weight: 200;
     line-height: 0.85;
     letter-spacing: -8px;
@@ -116,38 +128,38 @@
 }
 
 .data-card {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(10px);
     border-radius: 28px;
     padding: 45px 50px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
 }
 
 .data-card-label {
-    font-size: 50px;
+    font-size: 58px;
     font-weight: 300;
-    opacity: 0.65;
+    opacity: 0.85;
     margin-bottom: 18px;
     text-transform: uppercase;
     letter-spacing: 1.2px;
 }
 
 .data-card-value {
-    font-size: 88px;
+    font-size: 110px;
     font-weight: 300;
     line-height: 1.1;
 }
 
 .data-card-unit {
-    font-size: 58px;
-    opacity: 0.7;
+    font-size: 70px;
+    opacity: 0.85;
     margin-left: 8px;
 }
 
 .data-card-secondary {
-    font-size: 46px;
-    opacity: 0.6;
+    font-size: 54px;
+    opacity: 0.8;
     margin-top: 12px;
     font-weight: 300;
 }
@@ -164,9 +176,9 @@
 }
 
 .wind-direction {
-    font-size: 120px;
+    font-size: 140px;
     font-weight: 300;
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
 .wind-speed {
@@ -177,7 +189,7 @@
 
 /* Rain card highlight */
 .rain-card {
-    background: rgba(100, 150, 255, 0.15);
+    background: rgba(100, 150, 255, 0.4);
     border-color: rgba(100, 150, 255, 0.3);
 }
 
@@ -194,24 +206,44 @@
     <div class="weather-dashboard">
         {# Left Column: Main Weather #}
         <div class="main-weather">
-            {# City name #}
-            <div class="city-name">{{ city }}</div>
+            {# City header with timestamp #}
+            <div class="city-header">
+                <div class="city-name">{{ city }}</div>
+                <div class="updated-time">{{ timestamp }}</div>
+            </div>
             
             {# Hero: Icon + Temperature #}
             <div class="hero-section">
                 <div class="weather-icon">
-                    {% if 'rain' in description.lower() or rain_in %}
-                        🌧️
-                    {% elif 'thunder' in description.lower() %}
+                    {% if condition == 'thunderstorm' %}
                         ⛈️
-                    {% elif 'snow' in description.lower() %}
+                    {% elif condition == 'rainy' or rain_in %}
+                        🌧️
+                    {% elif condition == 'snowy' %}
                         ❄️
-                    {% elif 'cloud' in description.lower() and cloudiness and cloudiness > 50 %}
-                        ☁️
-                    {% elif cloudiness and cloudiness > 20 %}
-                        ⛅
+                    {% elif condition == 'foggy' %}
+                        🌫️
+                    {% elif condition == 'cloudy' %}
+                        {% if is_daytime %}
+                            ☁️
+                        {% else %}
+                            ☁️
+                        {% endif %}
+                    {% elif condition == 'windy' %}
+                        💨
+                    {% elif condition == 'sunny' %}
+                        {% if is_daytime %}
+                            ☀️
+                        {% else %}
+                            🌙
+                        {% endif %}
                     {% else %}
-                        ☀️
+                        {# Partly cloudy or unknown #}
+                        {% if is_daytime %}
+                            ⛅
+                        {% else %}
+                            🌙
+                        {% endif %}
                     {% endif %}
                 </div>
                 

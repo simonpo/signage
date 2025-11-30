@@ -328,6 +328,7 @@ class TemplateRenderer:
             "last_result": sports_data.last_result,
             "next_fixtures": sports_data.next_fixtures,
             "league_table": sports_data.league_table,
+            "league_name": sports_data.league_name,
         }
 
         return self.render("modern_football_layout.html", context)
@@ -386,6 +387,16 @@ class TemplateRenderer:
         if weather_data.rain_1h:
             rain_in = weather_data.rain_1h / 25.4
 
+        # Determine if it's day or night based on sunrise/sunset
+        is_daytime = True
+        if weather_data.sunrise and weather_data.sunset:
+            import time
+            current_time = time.time()
+            is_daytime = weather_data.sunrise <= current_time <= weather_data.sunset
+
+        # Format current timestamp
+        current_timestamp = datetime.now().strftime("%A, %B %d at %I:%M %p").replace(" 0", " ")
+
         context = {
             "city": weather_data.city,
             "temperature": weather_data.temperature,
@@ -404,6 +415,8 @@ class TemplateRenderer:
             "sunrise_time": sunrise_time,
             "sunset_time": sunset_time,
             "rain_in": rain_in,
+            "is_daytime": is_daytime,
+            "timestamp": current_timestamp,
         }
 
         return self.render("modern_weather_layout.html", context)
@@ -488,18 +501,48 @@ class TemplateRenderer:
         index = round(degrees / 22.5) % 16
         return directions[index]
 
-    def render_system_health(self, system_data: dict) -> str:
+    def render_system_health(self, system_data) -> str:
         """
         Render system health dashboard.
 
         Args:
-            system_data: Dictionary with system health metrics
+            system_data: SystemHealthData object or dict with system health metrics
 
         Returns:
             Rendered HTML string
         """
-        # system_data is already a dict with all the template variables we need
-        return self.render("modern_system_layout.html", system_data)
+        # Convert dataclass to dict if needed
+        from dataclasses import asdict, is_dataclass
+        
+        if is_dataclass(system_data):
+            context = asdict(system_data)
+        elif isinstance(system_data, dict):
+            context = system_data
+        else:
+            raise ValueError(f"Expected dict or dataclass, got {type(system_data)}")
+        
+        # Flatten nested dicts for template compatibility
+        if "disk_space" in context and isinstance(context["disk_space"], dict):
+            disk = context.pop("disk_space")
+            context["disk_total_gb"] = disk.get("total_gb", 0)
+            context["disk_used_gb"] = disk.get("used_gb", 0)
+            context["disk_free_gb"] = disk.get("free_gb", 0)
+            context["disk_percent_used"] = disk.get("percent_used", 0)
+        
+        if "log_file_size" in context and isinstance(context["log_file_size"], dict):
+            log_size = context.pop("log_file_size")
+            context["log_size_mb"] = log_size.get("size_mb", 0)
+            context["log_size_formatted"] = log_size.get("size_formatted", "0 MB")
+        
+        if "images_generated" in context and isinstance(context["images_generated"], dict):
+            images = context.pop("images_generated")
+            context["total_images"] = images.get("total", 0)
+            context["images_by_source"] = {k: v for k, v in images.items() if k != "total"}
+        
+        # Add error_count from recent_errors
+        context["error_count"] = len(context.get("recent_errors", []))
+        
+        return self.render("modern_system_layout.html", context)
 
     def save_html(self, html: str, output_path: Path) -> None:
         """

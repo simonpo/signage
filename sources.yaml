@@ -1,0 +1,165 @@
+sources:
+- id: weather_default
+  type: weather
+  enabled: true
+  schedule: '*/15 * * * *'
+  config:
+    city: Port Orchard
+    api_key: ${WEATHER_API_KEY}
+  rendering:
+    layout: modern_weather
+    mode: html
+    background: local
+- id: tesla_default
+  type: tesla
+  enabled: true
+  schedule: '*/30 * * * *'
+  config:
+    vehicle_index: 0
+  rendering:
+    layout: modern_tesla
+    mode: html
+    background: local
+    background_query: tesla/modelY
+- id: ferry_default
+  type: ferry
+  enabled: true
+  schedule: '*/10 6-22 * * *'
+  config: {}
+  rendering:
+    layout: modern_ferry
+    mode: html
+    background: local
+    background_query: ferry
+- id: ambient_weather_default
+  type: ambient_weather
+  enabled: true
+  schedule: '*/15 * * * *'
+  config: {}
+  rendering:
+    layout: modern_ambient
+    mode: html
+    background: local
+    background_query: weather/sunny
+- id: ambient_sensors_default
+  type: ambient_sensors
+  enabled: true
+  schedule: '*/15 * * * *'
+  config: {}
+  rendering:
+    layout: modern_sensors
+    mode: html
+    background: local
+    background_query: sensors
+- id: arsenal
+  type: football
+  enabled: true
+  schedule: '0 */6 * * *'
+  config:
+    team_id: '57'
+  rendering:
+    layout: modern_football
+    mode: html
+    background: local
+- id: brighton
+  type: football
+  enabled: true
+  schedule: '0 */6 * * *'
+  config:
+    team_id: '397'
+  rendering:
+    layout: modern_football
+    mode: html
+    background: local
+- id: man_city
+  type: football
+  enabled: true
+  schedule: '0 */6 * * *'
+  config:
+    team_id: '65'
+  rendering:
+    layout: modern_football
+    mode: html
+    background: local
+- id: preston
+  type: football
+  enabled: false  # TODO: Find team ID - may require paid API tier for Championship
+  schedule: '0 */6 * * *'
+  config:
+    team_id: 'TBD'  # Preston North End - EFL Championship
+  rendering:
+    layout: modern_football
+    mode: html
+    background: local
+    background_query: sports/football
+- id: accrington
+  type: football
+  enabled: false  # TODO: Find team ID - may require paid API tier for League Two
+  schedule: '0 */6 * * *'
+  config:
+    team_id: 'TBD'  # Accrington Stanley - League Two
+  rendering:
+    layout: modern_football
+    mode: html
+    background: local
+    background_query: sports/football
+- id: stock_default
+  type: stock
+  enabled: true
+  schedule: '*/30 9-16 * * 1-5'
+  config: {}
+  rendering:
+    layout: modern_stock
+    mode: html
+    background: local
+    background_query: stock
+- id: system_health_default
+  type: system_health
+  enabled: true
+  schedule: '0 */12 * * *'
+  config: {}
+  rendering:
+    layout: modern_system
+    mode: html
+    background: gradient
+- id: ferry_map_default
+  type: ferry_map
+  enabled: true
+  schedule: '*/10 6-22 * * *'
+  config: {}
+  rendering:
+    layout: full_map
+    background: gradient
+- id: seahawks
+  type: nfl
+  enabled: true
+  schedule: '0 */6 * * *'
+  config:
+    team_id: '26'
+  rendering:
+    layout: modern_football
+    mode: html
+    background: local
+    background_query: sports/nfl
+- id: giants
+  type: nfl
+  enabled: true
+  schedule: '0 */6 * * *'
+  config:
+    team_id: '19'
+  rendering:
+    layout: modern_football
+    mode: html
+    background: local
+    background_query: sports/nfl
+- id: niners
+  type: nfl
+  enabled: true
+  schedule: '0 */6 * * *'
+  config:
+    team_id: '25'
+  rendering:
+    layout: modern_football
+    mode: html
+    background: local
+    background_query: sports/nfl
