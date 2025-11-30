@@ -1,7 +1,118 @@
 # CHANGELOG
 
 
+## v0.11.0 (2025-11-30)
+
+### Features
+
+- Enhance weather display with dynamic icons and ferry map improvements
+  ([#24](https://github.com/simonpo/signage/pull/24),
+  [`ab0be5c`](https://github.com/simonpo/signage/commit/ab0be5c047ed7b2a6951a1eafbb44956283dcf31))
+
+* docs: add ADR-0001 for plugin system architecture
+
+- Create comprehensive ADR documenting 3-phase plugin system design - Update ROADMAP with detailed
+  Phase 1-3 implementation plan - Add documentation section to README linking to ADRs - Correct
+  copilot instructions for semantic-release changelog workflow - Document 12 deferred features with
+  rationale and criteria
+
+Ref: ADR-0001
+
+* feat: enhance weather display with dynamic icons and improved layout
+
+- Add dynamic weather icons based on conditions (fog, rain, snow, etc) - Implement day/night
+  awareness using sunrise/sunset times - Show moon icon for clear nights instead of sun - Add
+  prominent location header (140px, bold) with timestamp - Increase data card text sizes for better
+  readability - Darken card backgrounds (rgba(0,0,0,0.45)) for improved contrast - Remove duplicate
+  timestamp footer from base template - Add weather condition backgrounds (foggy, rainy, sunny,
+  thunderstorm, cloudy) - Include metadata in WeatherData.to_signage() for HTML rendering - Update
+  README with enhanced feature descriptions - Add background image credits (Unsplash photographers)
+  - Add generic football backgrounds for team fallback
+
+* feat: add ferry map display with timestamp formatting
+
+- Add Ferry Map section to README with live vessel positions - Update ferry map timestamp to match
+  weather format (day, date, time) - Widen legend background box to fit all text - Reposition vessel
+  count to align with Google logo - Include ferry_map.png example image
+
+* test: add NFL client tests and update Arsenal image
+
+- Add test for NFLClient initialization - Verify ESPN API base URL configuration - Update Arsenal
+  example image with latest data - Improve test coverage from 41.35% to 41.90%
+
+* docs: update test count badge to 130 passing tests
+
+* feat: implement plugin-based source architecture with sources.yaml configuration
+
+Introduce a flexible plugin system that replaces hard-coded source generation with a declarative,
+  YAML-based configuration approach.
+
+## Core Architecture
+
+- **Plugin Registry**: Auto-discovery and registration of source plugins - **Base Source
+  Interface**: Common lifecycle hooks (setup, generate, cleanup) - **Plugin Executor**: Orchestrates
+  plugin execution with error handling and metrics - **Config Loader**: Validates and loads
+  sources.yaml configuration - **Config Migrator**: Migration tool from .env to sources.yaml
+
+## Plugin Sources Implemented
+
+- Weather (OpenWeatherMap) - Ambient Weather (sensors + weather cards) - Tesla (vehicle + powerwall)
+  - Ferry (schedule + map) - Football (Premier League via ESPN) - NFL (via ESPN) - Speedtest - Stock
+  quotes - System health
+
+## Configuration Schema
+
+sources.yaml supports: - Enable/disable sources individually - Custom schedules per source -
+  Source-specific parameters (team IDs, display settings) - Rendering mode selection (HTML vs PIL) -
+  Retry policies and timeout settings
+
+## Benefits
+
+- **Extensibility**: Add new sources without modifying core code - **Maintainability**: Clear
+  separation of concerns, each source is self-contained - **Flexibility**: Runtime configuration
+  changes without code edits - **Testability**: Mock and test sources independently -
+  **User-Friendly**: Simple YAML configuration vs complex .env variables
+
+## Migration Path
+
+System automatically detects sources.yaml: - If present: Uses plugin system - If absent: Falls back
+  to legacy CLI mode - Migration tool: `--migrate` flag generates sources.yaml from current .env
+
+## Documentation
+
+- PLUGIN_GUIDE.md: Developer guide for creating custom sources - PLUGIN_IMPLEMENTATION_PLAN.md:
+  Architecture decisions and implementation notes - examples/sources.yaml: Reference configuration
+  with all available sources
+
+## Testing
+
+- test_plugin_system.py: Core plugin infrastructure tests - test_new_plugins.py: Individual source
+  plugin tests - Updated test_config_validator.py for new schemas
+
+This establishes the foundation for a modular, plugin-based signage generation system while
+  maintaining backward compatibility with existing deployments.
+
+* test: add comprehensive plugin system tests
+
+Add 17 new tests for plugin infrastructure: - SourceMetrics dataclass - BaseSource abstract class
+  and concrete implementations - SourceRegistry registration and creation - ConfigLoader YAML
+  loading and validation - PluginExecutor initialization and execution - SourceConfig schema
+  validation - SourcesConfig with duplicate ID detection
+
+Coverage improvements: - Tests for abstract method enforcement - Tests for config validation - Tests
+  for disabled source skipping - Tests for duplicate ID detection
+
+Total tests: 130 → 147 (+17)
+
+* docs: update test count badge to 147 passing tests
+
+
 ## v0.10.0 (2025-11-30)
+
+### Chores
+
+- **release**: 0.10.0 [skip ci]
+  ([`721cbb0`](https://github.com/simonpo/signage/commit/721cbb0385b9667257e475723d70d566c20aa0ad))
 
 ### Features
 
