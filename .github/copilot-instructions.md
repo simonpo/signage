@@ -114,7 +114,67 @@ Semantic-release will:
 
 ## Code Standards
 
-For Python code standards (formatting, linting, testing), see [python-standards.instructions.md](python-standards.instructions.md).
+For Python code standards (formatting, linting, testing), see `.github/python-standards.instructions.md`.
+
+## Issue Tracking: ROADMAP vs GitHub Issues
+
+**Use ROADMAP.md for:**
+- High-level project direction and vision
+- Feature planning with phases (Phase 1, Phase 2, etc.)
+- Completed milestones tracking
+- Architecture decisions and future considerations
+- Strategic "nice to have" items without urgency
+
+**Use GitHub Issues for:**
+- **Specific, actionable bugs** (e.g., "Background not loading for Man City")
+- **Discrete feature requests** (e.g., "Add Championship team support")
+- **API limitations and blockers** (e.g., "ESPN API doesn't provide standings data")
+- **Technical debt** (e.g., "Refactor background provider fallback logic")
+- **Items that need discussion, tracking, or linking to PRs**
+
+**When user says "create a note in ROADMAP":**
+1. **Evaluate if it's better as a GitHub issue**:
+   - Is it a specific bug or problem? → GitHub Issue
+   - Is it blocked by external factors (API limits)? → GitHub Issue
+   - Is it actionable within 1-2 sprints? → GitHub Issue
+   - Does it need discussion or tracking? → GitHub Issue
+   - Is it strategic/future planning? → ROADMAP
+
+2. **Suggest creating a GitHub issue instead** if appropriate:
+   ```
+   "This sounds like a specific issue that would be better tracked in GitHub Issues
+   rather than the ROADMAP. Should I create an issue for this with full details?"
+   ```
+
+3. **If user agrees, create the issue** using `gh issue create`:
+   - Write descriptive title
+   - Include problem description, impact, possible solutions, related code
+   - Add appropriate labels (enhancement, bug, etc.)
+   - Reference in ROADMAP if needed: `- [ ] Fix ESPN standings (#22)`
+
+4. **If it belongs in ROADMAP**, add it there with context
+
+**Creating GitHub Issues:**
+Use `gh issue create` with structured format:
+```bash
+gh issue create --title "Brief descriptive title" \\
+  --body "## Problem
+[What's wrong or needed]
+
+## Impact
+[Who/what is affected]
+
+## Possible Solutions
+1. Option one
+2. Option two
+
+## Related Code
+- file.py - relevant context
+
+## Priority
+[Low/Medium/High with reasoning]" \\
+  --label "enhancement"
+```
 
 ## README Badge Maintenance
 

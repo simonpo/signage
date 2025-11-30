@@ -211,7 +211,7 @@
                 <div class="city-name">{{ city }}</div>
                 <div class="updated-time">{{ timestamp }}</div>
             </div>
-            
+
             {# Hero: Icon + Temperature #}
             <div class="hero-section">
                 <div class="weather-icon">
@@ -246,18 +246,18 @@
                         {% endif %}
                     {% endif %}
                 </div>
-                
+
                 <div class="temperature-section">
                     <div class="main-temperature">{{ temperature|int }}°</div>
                     <div class="condition-text">{{ description }}</div>
                 </div>
             </div>
-            
+
             {# Feels like #}
             <div class="feels-like">
                 Feels like {{ feels_like|int }}°
             </div>
-            
+
             {# Temperature range #}
             <div class="temp-range">
                 <span class="temp-range-label">↑</span>
@@ -265,7 +265,7 @@
                 <span class="temp-range-label">↓</span>
                 <span class="temp-range-value">{{ temp_low|int }}°</span>
             </div>
-            
+
             {# Sunrise and sunset #}
             {% if sunrise_time or sunset_time %}
             <div class="sun-times">
@@ -284,7 +284,7 @@
             </div>
             {% endif %}
         </div>
-        
+
         {# Right Column: Data Grid #}
         <div class="data-grid">
             {# Humidity #}
@@ -294,7 +294,7 @@
                     {{ humidity }}<span class="data-card-unit">%</span>
                 </div>
             </div>
-            
+
             {# Pressure #}
             {% if pressure %}
             <div class="data-card">
@@ -304,7 +304,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             {# Visibility #}
             {% if visibility_mi %}
             <div class="data-card">
@@ -314,7 +314,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             {# Cloudiness #}
             {% if cloudiness is not none %}
             <div class="data-card">
@@ -324,7 +324,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             {# Wind - full width #}
             <div class="data-card wind-card">
                 <div class="data-card-label">Wind</div>
@@ -342,7 +342,7 @@
                     </div>
                 </div>
             </div>
-            
+
             {# Rain - if raining #}
             {% if rain_in %}
             <div class="data-card rain-card" style="grid-column: span 2;">

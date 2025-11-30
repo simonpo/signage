@@ -151,7 +151,7 @@ class TeslaData:
 
     def to_signage(self) -> SignageContent:
         """Convert to signage content with modern HTML layout."""
-        from dataclasses import asdict
+
         return SignageContent(
             lines=[],  # Empty - using modern HTML template
             filename_prefix="tesla",

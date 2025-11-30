@@ -34,44 +34,54 @@ class LocalProvider(BackgroundProvider):
     def get_background(self, query: str, width: int, height: int) -> Image.Image | None:
         """
         Load random background from local directory.
+        Supports pipe-separated fallback paths (e.g., 'sports/football/arsenal|sports/football')
 
         Args:
             query: Path relative to base (e.g., 'weather/sunny' or 'tesla')
+                   Can include fallbacks: 'primary/path|fallback/path'
             width: Target width
             height: Target height
 
         Returns:
-            Cropped and resized image, or None if no images found
+            Cropped and resized image, or None if no images found in any path
         """
-        # Construct directory path
-        bg_dir = self.base_path / query
+        # Support pipe-separated fallback paths
+        paths = [p.strip() for p in query.split("|")]
 
-        if not bg_dir.exists():
-            logger.warning(f"Background directory not found: {bg_dir}")
-            return None
+        for path in paths:
+            # Construct directory path
+            bg_dir = self.base_path / path
 
-        # Find all image files
-        image_files = self._find_images(bg_dir)
+            if not bg_dir.exists():
+                logger.debug(f"Background directory not found: {bg_dir}")
+                continue
 
-        if not image_files:
-            logger.warning(f"No images found in {bg_dir}")
-            return None
+            # Find all image files
+            image_files = self._find_images(bg_dir)
 
-        # Select random image
-        selected = random.choice(image_files)
+            if not image_files:
+                logger.debug(f"No images found in {bg_dir}")
+                continue
 
-        try:
-            img = Image.open(selected)
+            # Select random image
+            selected = random.choice(image_files)
 
-            # Crop and resize to exact dimensions
-            img = smart_crop_to_fill(img, width, height)
+            try:
+                img = Image.open(selected)
 
-            logger.debug(f"Loaded background: {selected.name}")
-            return img
+                # Crop and resize to exact dimensions
+                img = smart_crop_to_fill(img, width, height)
 
-        except Exception as e:
-            logger.error(f"Failed to load background {selected}: {e}")
-            return None
+                logger.debug(f"Loaded background: {selected.name} (from {path})")
+                return img
+
+            except Exception as e:
+                logger.error(f"Failed to load background {selected}: {e}")
+                continue
+
+        # All paths failed
+        logger.warning(f"No valid backgrounds found for query: {query}")
+        return None
 
     def _find_images(self, directory: Path) -> list[Path]:
         """

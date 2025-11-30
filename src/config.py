@@ -34,10 +34,6 @@ class Config:
     CACHE_PATH = BASE_DIR / ".cache"
     FONT_PATH = os.getenv("FONT_PATH", "/System/Library/Fonts/Supplemental/Arial Bold.ttf")
 
-    # ===== Home Assistant =====
-    HA_URL = os.getenv("HA_URL")
-    HA_TOKEN = os.getenv("HA_TOKEN")
-
     # ===== Tesla Fleet API =====
     TESLA_CLIENT_ID = os.getenv("TESLA_CLIENT_ID")
     TESLA_CLIENT_SECRET = os.getenv("TESLA_CLIENT_SECRET")
@@ -111,8 +107,6 @@ class Config:
         """
         # Check required vars
         required = {
-            "HA_URL": cls.HA_URL,
-            "HA_TOKEN": cls.HA_TOKEN,
             "WEATHER_CITY": cls.WEATHER_CITY,
             "WEATHER_API_KEY": cls.WEATHER_API_KEY,
         }

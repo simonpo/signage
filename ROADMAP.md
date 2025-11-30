@@ -26,6 +26,8 @@
 - [x] Ambient Weather personal station API
 - [ ] Rugby API integration
 - [ ] Cricket API integration
+- [ ] Investigate ESPN NFL division standings data source (#22)
+- [ ] Investigate football-data.org API tier limitations (#23)
 - [ ] Investigate Kitsap Transit Fast Ferry API/data source
   - Check for GTFS feed availability
   - Contact transit agency about API access
@@ -37,6 +39,7 @@
 - [ ] Implement graceful fallback when APIs are unavailable
 - [ ] Add configuration validation on startup
 - [ ] Create health check endpoint for daemon mode
+- [ ] **Revisit system_health signage generation** - verify stats collection is working properly with plugin system (generators dict, recent_errors, disk_space metrics may need updates)
 - [ ] Revise layout engine architecture
   - Allow topic-specific custom layouts beyond current 5 types
   - Enable per-topic spacing, font size, and positioning control

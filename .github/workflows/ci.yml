@@ -82,10 +82,6 @@ jobs:
       - name: Create test .env
         run: |
           cat > .env << 'ENVEOF'
-          HA_URL=http://test:8123
-          HA_TOKEN=test_token_12345678901234567890  # pragma: allowlist secret
-          TESLA_BATTERY=sensor.test_battery
-          TESLA_RANGE=sensor.test_range
           WEATHER_CITY=TestCity
           WEATHER_API_KEY=test_weather_key_123  # pragma: allowlist secret
           ENVEOF

@@ -9,6 +9,10 @@ pytz==2025.2
 Jinja2==3.1.6
 pydantic==2.12.4
 pydantic-settings==2.11.0
+PyYAML==6.0.3
+croniter==6.0.0
+python-dateutil==2.9.0.post0
+six==1.17.0
 
 # Browser automation (Playwright for HTML rendering)
 playwright==1.56.0

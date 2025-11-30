@@ -10,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             width: 3840px;
             height: 2160px;
@@ -20,7 +20,7 @@
             background: transparent;
             position: relative;
         }
-        
+
         /* Safe zone margins: 5% horizontal, 5% vertical */
         .safe-zone {
             position: absolute;
@@ -31,58 +31,58 @@
             width: 3456px;   /* 3840 - (192 * 2) */
             height: 1944px;  /* 2160 - (108 * 2) */
         }
-        
+
         /* Font sizes matching PIL renderer */
         .font-title {
             font-size: 200px;
             font-weight: bold;
             line-height: 1.2;
         }
-        
+
         .font-body {
             font-size: 120px;
             font-weight: bold;
             line-height: 1.2;
         }
-        
+
         .font-small {
             font-size: 80px;
             font-weight: bold;
             line-height: 1.2;
         }
-        
+
         /* Utility classes */
         .text-center {
             text-align: center;
         }
-        
+
         .text-left {
             text-align: left;
         }
-        
+
         .text-white {
             color: #ffffff;
         }
-        
+
         .text-secondary {
             color: #b4b4c8;
         }
-        
+
         /* Grid system */
         .grid {
             display: grid;
         }
-        
+
         .flex {
             display: flex;
         }
-        
+
         .flex-center {
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        
+
         /* Timestamp footer */
         .timestamp {
             position: absolute;
@@ -93,7 +93,7 @@
             color: #c8c8ff;
             text-align: center;
         }
-        
+
         /* Custom styles for specific layouts */
         {% block styles %}{% endblock %}
     </style>

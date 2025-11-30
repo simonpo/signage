@@ -9,7 +9,6 @@ from collections.abc import Callable
 from datetime import datetime
 
 from src.clients.ferry import FerryClient
-from src.clients.homeassistant import HomeAssistantClient
 from src.clients.sports.nfl import NFLClient
 from src.clients.stock import StockClient
 from src.clients.weather import WeatherClient
@@ -157,9 +156,10 @@ class SignageScheduler:
         try:
             # Import here to avoid circular imports
             from generate_signage import generate_tesla
+            from src.clients.tesla_fleet import TeslaFleetClient
 
-            with HomeAssistantClient() as ha_client:
-                generate_tesla(self.renderer, ha_client, self.file_mgr)
+            tesla_client = TeslaFleetClient()
+            generate_tesla(self.renderer, tesla_client, self.file_mgr)
 
             self.last_run["tesla"] = datetime.now()
 

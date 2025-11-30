@@ -391,6 +391,7 @@ class TemplateRenderer:
         is_daytime = True
         if weather_data.sunrise and weather_data.sunset:
             import time
+
             current_time = time.time()
             is_daytime = weather_data.sunrise <= current_time <= weather_data.sunset
 
@@ -513,14 +514,14 @@ class TemplateRenderer:
         """
         # Convert dataclass to dict if needed
         from dataclasses import asdict, is_dataclass
-        
+
         if is_dataclass(system_data):
             context = asdict(system_data)
         elif isinstance(system_data, dict):
             context = system_data
         else:
             raise ValueError(f"Expected dict or dataclass, got {type(system_data)}")
-        
+
         # Flatten nested dicts for template compatibility
         if "disk_space" in context and isinstance(context["disk_space"], dict):
             disk = context.pop("disk_space")
@@ -528,20 +529,20 @@ class TemplateRenderer:
             context["disk_used_gb"] = disk.get("used_gb", 0)
             context["disk_free_gb"] = disk.get("free_gb", 0)
             context["disk_percent_used"] = disk.get("percent_used", 0)
-        
+
         if "log_file_size" in context and isinstance(context["log_file_size"], dict):
             log_size = context.pop("log_file_size")
             context["log_size_mb"] = log_size.get("size_mb", 0)
             context["log_size_formatted"] = log_size.get("size_formatted", "0 MB")
-        
+
         if "images_generated" in context and isinstance(context["images_generated"], dict):
             images = context.pop("images_generated")
             context["total_images"] = images.get("total", 0)
             context["images_by_source"] = {k: v for k, v in images.items() if k != "total"}
-        
+
         # Add error_count from recent_errors
         context["error_count"] = len(context.get("recent_errors", []))
-        
+
         return self.render("modern_system_layout.html", context)
 
     def save_html(self, html: str, output_path: Path) -> None:
