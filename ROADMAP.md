@@ -73,33 +73,69 @@
 - [ ] Create systemd service file for daemon mode (for non-Docker deployments)
 - [ ] Add installation/setup documentation for production deployment
 
-### Architecture Improvements (Phase 3)
-- [ ] YAML-based configuration system
-  - Replace hardcoded config with flexible config.yaml
-  - Support multiple instances of same source type (e.g., multiple football teams)
-  - Enable/disable sources via configuration
-  - Define custom schedules per data source
-- [ ] Separate data collection from image generation
-  - Create standalone data collector service
-  - Store collected data as JSON with timestamps
-  - Enable independent scheduling (collect vs render)
-  - Support historical data retention and queries
-  - Allow multiple images from same data source
-- [ ] Plugin architecture for data sources
-  - Registry system for source types
-  - Dynamic source instantiation from config
-  - Standardized data source interface
-  - Easy addition of new source types without code changes
+### Architecture Improvements (Phase 3): Plugin System
 
-### Future Considerations
-- [ ] Encrypted credentials storage (vs plaintext .env)
-  - Master password approach with encrypted credentials.yaml
+**Status:** Design approved (see [ADR-0001](docs/adr/0001-plugin-system-architecture.md))
+
+**Goal:** Enable easy adoption by individuals, support multiple source instances, and improve reliability.
+
+#### Phase 1: MVP (Weeks 1-2)
+- [ ] Create plugin registry and base source interface
+- [ ] YAML configuration loader with Pydantic validation
+- [ ] Migrate weather source to plugin architecture
+- [ ] Migrate tesla source to plugin architecture
+- [ ] Migrate ferry source to plugin architecture
+- [ ] Backward compatibility mode (CLI args still work)
+- [ ] Migration tool: `--migrate` to generate sources.yaml
+- [ ] Unit tests for plugin system
+- [ ] Plugin development guide (PLUGIN_GUIDE.md)
+
+#### Phase 2: Production Ready (Weeks 3-4)
+- [ ] Built-in timeouts per source (default 30s)
+- [ ] Circuit breaker with exponential backoff
+- [ ] Configurable retry logic
+- [ ] Cached data fallback option
+- [ ] Parallel source execution with AsyncIO
+- [ ] Metrics persistence to JSON file
+- [ ] Enhanced config validation (cron, unique IDs)
+- [ ] Integration tests for full pipeline
+
+#### Phase 3: Observability (Week 5)
+- [ ] OpenTelemetry integration
+- [ ] Distributed tracing (source → client → API)
+- [ ] Console exporter (default)
+- [ ] Jaeger/Zipkin exporters (optional)
+- [ ] Structured metrics and error categorization
+- [ ] Observability documentation
+
+### Future Considerations (Phase 4+)
+
+**Deferred features** - Add when users request or when pain points emerge:
+
+#### Configuration & Extensibility
+- [ ] Source dependencies (DAG execution)
+- [ ] Multi-output sources (one fetch → multiple images)
+- [ ] Data sharing/deduplication between sources
+- [ ] Dynamic scheduling (time-of-day conditions)
+- [ ] Config-driven conditional rendering
+- [ ] Auto-discovery of plugins
+- [ ] Hot config reload without restart
+
+#### Reliability & Security
+- [ ] Resource limits per source (memory/CPU)
+- [ ] Plugin sandboxing/permissions
+- [ ] Encrypted credentials storage
+  - Master password approach
   - OS keyring integration (macOS Keychain, etc.)
-  - Hybrid fallback chain for flexibility
+  - Secrets manager (AWS Secrets, Vault)
+- [ ] SLO/error budget tracking
+- [ ] Multi-instance coordination (distributed locking)
+
+#### Developer Experience
+- [ ] Proper dependency injection container
+- [ ] Contract testing framework for plugins
+- [ ] Plugin marketplace/registry
 - [ ] VS Code dev container support
-  - Standardize development environment
-  - Useful if project gains multiple contributors
-  - Lower priority for solo development
 
 ## Completed
 - ✅ Modular architecture refactoring (12 phases)

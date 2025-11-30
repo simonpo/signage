@@ -310,5 +310,12 @@ Ferry data from [Washington State Department of Transportation](https://www.wsdo
 
 Football data from [football-data.org](https://www.football-data.org/).
 
+## Documentation
+
+- [ROADMAP.md](ROADMAP.md) - Project roadmap and planned features
+- [DOCKER.md](DOCKER.md) - Docker deployment guide
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development and contribution guidelines
+- [Architecture Decision Records](docs/adr/) - Design decisions and rationale
+
 # Branch Protection
 This repository has branch protection enabled on main.

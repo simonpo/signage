@@ -67,6 +67,51 @@ gh workflow run release.yml
 gh workflow run release.yml -f force=true
 ```
 
+## Changelog Management
+
+**IMPORTANT: Changelog is auto-generated from commit messages**
+
+This project uses **python-semantic-release** which automatically generates `CHANGELOG.md` from conventional commit messages. You do NOT manually edit the changelog.
+
+**How it works:**
+1. You write conventional commits (`feat:`, `fix:`, etc.)
+2. When release workflow runs, semantic-release:
+   - Analyzes all commits since last release
+   - Generates changelog entries automatically
+   - Groups commits by type (Features, Bug Fixes, etc.)
+   - Adds links to PRs and commits
+
+**Your responsibility:**
+- ✅ Write clear, descriptive conventional commit messages
+- ✅ Use correct commit types (feat, fix, docs, etc.)
+- ✅ Include PR numbers in merge commits (GitHub does this automatically)
+- ❌ Do NOT manually edit CHANGELOG.md
+
+**Example good commits:**
+```bash
+feat: add docker deployment support
+fix: correct timezone format in docker container
+docs: update readme with docker quick start
+test: fix system stats tests for relative timestamps
+```
+
+**What appears in changelog:**
+- `feat:` commits appear under "### Features"
+- `fix:` commits appear under "### Bug Fixes"
+- `docs:`, `chore:`, `test:` are included but may be grouped differently
+- Breaking changes (with `BREAKING CHANGE:` in body) appear prominently
+
+**After merge:**
+When you manually trigger the release workflow:
+```bash
+gh workflow run release.yml
+```
+Semantic-release will:
+1. Analyze commits since v0.9.0
+2. Generate new changelog section (e.g., v0.10.0)
+3. Commit the updated CHANGELOG.md
+4. Create git tag and GitHub release
+
 ## Code Standards
 
 For Python code standards (formatting, linting, testing), see [python-standards.instructions.md](python-standards.instructions.md).
