@@ -3,7 +3,7 @@ Tests for API clients.
 """
 
 from src.clients.base import APIClient
-from src.clients.homeassistant import HomeAssistantClient
+from src.clients.sports.nfl import NFLClient
 from src.clients.weather import WeatherClient
 
 
@@ -16,17 +16,13 @@ def test_api_client_initialization():
     client.close()
 
 
-def test_ha_client_requires_config():
-    """Test that HA client requires configuration."""
-    # This will fail if HA_URL or HA_TOKEN not set
-    # In real env, this should be configured
-    try:
-        client = HomeAssistantClient()
-        assert client.base_url is not None
-        assert client.headers is not None
-    except ValueError:
-        # Expected if not configured
-        pass
+def test_nfl_client_initialization():
+    """Test that NFL client initializes correctly."""
+    client = NFLClient()
+    assert client.session is not None
+    assert client.timeout == 10
+    assert client.ESPN_BASE == "https://site.api.espn.com/apis/site/v2/sports/football/nfl"
+    client.close()
 
 
 def test_weather_client_requires_key():
