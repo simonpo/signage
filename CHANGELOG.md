@@ -1,7 +1,53 @@
 # CHANGELOG
 
 
+## v0.10.0 (2025-11-30)
+
+### Features
+
+- Add docker deployment support ([#21](https://github.com/simonpo/signage/pull/21),
+  [`9dd0521`](https://github.com/simonpo/signage/commit/9dd05214abab359a2730c0886f399bfa21dd13ce))
+
+* feat: add docker deployment support
+
+- Add Dockerfile for containerized deployment - Add docker-compose.yml with health checks and volume
+  management - Add .dockerignore for optimized image builds - Add comprehensive DOCKER.md deployment
+  guide - Add validation script for Docker configuration - Update README with Docker quick start
+  section - Update ROADMAP to mark Docker support as complete - Update copilot instructions to
+  enforce branch checking
+
+Supports deployment on: - Proxmox LXC (recommended for performance) - Proxmox VM - Raspberry Pi -
+  Synology NAS - Any Docker-capable system
+
+Includes: - Resource limits and logging configuration - Health check monitoring - Volume mounts for
+  persistent data - Support for daemon mode - Comprehensive troubleshooting guide
+
+* fix: install playwright browsers in docker image
+
+- Add playwright install --with-deps chromium step - Required for HTML rendering to work in
+  container - Installs Chromium headless shell and FFMPEG - Image size increases but enables full
+  functionality
+
+* fix: add tzdata and correct timezone format in docker
+
+- Install tzdata package for timezone support - Change default timezone from US/Pacific to
+  America/Los_Angeles (correct IANA format) - Update Dockerfile, docker-compose.yml, and
+  .env.example - Fixes sunrise/sunset and ferry departure times displaying in UTC instead of local
+  time
+
+* fix: use current timestamps in system stats tests
+
+- Tests were using hardcoded dates from 2025-11-28 - System stats only looks at last 24 hours,
+  causing test data to be filtered out - Updated fixture to use datetime.now() with relative offsets
+  - All 131 tests now pass
+
+
 ## v0.9.0 (2025-11-29)
+
+### Chores
+
+- **release**: 0.9.0 [skip ci]
+  ([`12b923a`](https://github.com/simonpo/signage/commit/12b923a789e140d40ad7f13b46d3f81f02554a49))
 
 ### Features
 
