@@ -229,7 +229,7 @@ class FerryMapRenderer:
         )
 
         # Draw timestamp
-        timestamp = datetime.now().strftime("%I:%M %p %Z").lstrip("0")
+        timestamp = datetime.now().strftime("%A, %B %d at %I:%M %p").replace(" 0", " ")
         ts_bbox = draw.textbbox((0, 0), timestamp, font=self.label_font)
         ts_width = ts_bbox[2] - ts_bbox[0]
         draw.text(
@@ -255,7 +255,7 @@ class FerryMapRenderer:
         # Draw vessel count
         count_text = f"{len(vessels)} vessels in service"
         draw.text(
-            (self.MARGIN, self.MAP_HEIGHT - 150),
+            (50, self.MAP_HEIGHT - 200),
             count_text,
             fill=self.TEXT_COLOR,
             font=self.label_font,
@@ -397,7 +397,7 @@ class FerryMapRenderer:
 
         # Legend background
         draw.rectangle(
-            [legend_x - 20, legend_y - 20, legend_x + 400, legend_y + 200],
+            [legend_x - 20, legend_y - 20, legend_x + 480, legend_y + 200],
             fill=(0, 0, 0, 180),
             outline=self.TEXT_COLOR,
             width=2,

@@ -37,6 +37,12 @@ Live departure times for Washington State Ferries (currently Fauntleroy-Southwor
 
 ![Ferry schedule showing next 7 departures](art_folder/ferry.png)
 
+### Ferry Map
+
+Real-time positions of all Washington State Ferry vessels on a satellite map view. Shows live vessel locations, headings, and current routes across Puget Sound.
+
+![Ferry map showing all WSF vessel positions](art_folder/ferry_map.png)
+
 ### Internet Speed
 
 Results from your local Speedtest tracker showing download, upload, and ping.
