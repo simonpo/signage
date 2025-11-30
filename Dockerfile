@@ -9,6 +9,7 @@ WORKDIR /app
 # Install system dependencies
 # - fonts for text rendering
 # - git for version info
+# - playwright system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     fonts-dejavu-extra \
@@ -20,6 +21,9 @@ COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright browsers (required for HTML rendering)
+RUN playwright install --with-deps chromium
 
 # Copy application code
 COPY . .
