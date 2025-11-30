@@ -89,24 +89,34 @@ For Python code standards (formatting, linting, testing), see [python-standards.
 
 This repository uses branch protection on `main`. Before implementing code changes, **always check the current branch**.
 
+**CRITICAL: Check branch FIRST, before ANY code changes!**
+
 **Rules:**
 - ✅ Feature work: Must be on a feature branch (`feature/*`, `fix/*`, `test/*`, etc.)
 - ✅ Documentation: Can be on `main` (*.md files, docs/)
 - ❌ Code changes: Never commit directly to `main`
 
-**Before creating new code, check the branch:**
+**MANDATORY FIRST STEP - Check the branch:**
 
 ```bash
 git branch --show-current
 ```
 
-**If on `main` and implementing code changes:**
-1. Stop and inform the user
-2. Suggest they create a feature branch:
+**If on `main` and implementing ANY code changes (including new files):**
+1. **STOP immediately** - do not create any files yet
+2. Inform the user they're on `main`
+3. Suggest creating a feature branch:
    ```bash
    git checkout -b feature/descriptive-name
    ```
-3. Wait for confirmation before proceeding
+4. **Wait for confirmation** before proceeding
+5. After branch created, proceed with implementation
+
+**Copilot/AI Assistant Rule:**
+- When user asks for code implementation, **FIRST** check `git branch --show-current`
+- If result is `main`, **STOP** and ask user to create feature branch
+- Do NOT create files, edit code, or make changes while on `main`
+- This applies even if you already started discussing the solution
 
 **Acceptable branch patterns:**
 - `feature/*` - New features

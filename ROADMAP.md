@@ -56,14 +56,50 @@
 - [ ] Add examples for each signage type
 
 ### Deployment & Production
+- [x] Docker deployment support
+  - ✅ Dockerfile for containerized deployment
+  - ✅ docker-compose.yml for service orchestration
+  - ✅ .dockerignore for optimized builds
+  - ✅ Comprehensive DOCKER.md guide
+  - ✅ Support for Proxmox LXC, VM, Raspberry Pi, NAS
+  - ✅ Health checks and resource limits
+  - [ ] Multi-stage build for smaller images (future optimization)
 - [ ] Move log files to system location for daemon mode
   - Current: `signage.log` in project root (fine for development)
   - Production: `/var/log/signage/signage.log` (standard for system services)
   - Setup: `sudo mkdir -p /var/log/signage && sudo chown $USER:$USER /var/log/signage`
   - Update `.env`: `LOG_FILE=/var/log/signage/signage.log`
   - Configure logrotate for automatic log rotation
-- [ ] Create systemd service file for daemon mode
+- [ ] Create systemd service file for daemon mode (for non-Docker deployments)
 - [ ] Add installation/setup documentation for production deployment
+
+### Architecture Improvements (Phase 3)
+- [ ] YAML-based configuration system
+  - Replace hardcoded config with flexible config.yaml
+  - Support multiple instances of same source type (e.g., multiple football teams)
+  - Enable/disable sources via configuration
+  - Define custom schedules per data source
+- [ ] Separate data collection from image generation
+  - Create standalone data collector service
+  - Store collected data as JSON with timestamps
+  - Enable independent scheduling (collect vs render)
+  - Support historical data retention and queries
+  - Allow multiple images from same data source
+- [ ] Plugin architecture for data sources
+  - Registry system for source types
+  - Dynamic source instantiation from config
+  - Standardized data source interface
+  - Easy addition of new source types without code changes
+
+### Future Considerations
+- [ ] Encrypted credentials storage (vs plaintext .env)
+  - Master password approach with encrypted credentials.yaml
+  - OS keyring integration (macOS Keychain, etc.)
+  - Hybrid fallback chain for flexibility
+- [ ] VS Code dev container support
+  - Standardize development environment
+  - Useful if project gains multiple contributors
+  - Lower priority for solo development
 
 ## Completed
 - ✅ Modular architecture refactoring (12 phases)

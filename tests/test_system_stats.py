@@ -1,7 +1,7 @@
 """Tests for system stats collector."""
 
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -12,15 +12,33 @@ from src.utils.system_stats import SystemStats
 @pytest.fixture
 def temp_log_file():
     """Create a temporary log file with test data."""
+    # Use current date/time so logs are within 24-hour window
+    now = datetime.now()
+    base_time = now.strftime("%Y-%m-%d")
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".log", delete=False) as f:
-        # Write sample log entries
-        f.write("2025-11-28 10:00:00 [INFO] Logging to file: signage.log\n")
-        f.write("2025-11-28 10:00:05 [INFO] ✓ Weather signage complete - 42.08°F, Clear Sky\n")
-        f.write("2025-11-28 10:05:00 [INFO] ✓ Tesla signage complete - 80% battery, 237mi range\n")
-        f.write("2025-11-28 10:10:00 [ERROR] ✗ Ferry signage failed: Connection timeout\n")
-        f.write("2025-11-28 10:15:00 [INFO] ✓ Stock signage complete - MSFT $492.01\n")
-        f.write("2025-11-28 10:20:00 [INFO] ✓ Tesla signage complete - 79% battery, 235mi range\n")
-        f.write("2025-11-28 10:25:00 [ERROR] ✗ Tesla signage failed: 408 timeout\n")
+        # Write sample log entries (all within last hour to ensure they're captured)
+        f.write(
+            f"{base_time} {(now - timedelta(minutes=60)).strftime('%H:%M:%S')} [INFO] Logging to file: signage.log\n"
+        )
+        f.write(
+            f"{base_time} {(now - timedelta(minutes=55)).strftime('%H:%M:%S')} [INFO] ✓ Weather signage complete - 42.08°F, Clear Sky\n"
+        )
+        f.write(
+            f"{base_time} {(now - timedelta(minutes=50)).strftime('%H:%M:%S')} [INFO] ✓ Tesla signage complete - 80% battery, 237mi range\n"
+        )
+        f.write(
+            f"{base_time} {(now - timedelta(minutes=45)).strftime('%H:%M:%S')} [ERROR] ✗ Ferry signage failed: Connection timeout\n"
+        )
+        f.write(
+            f"{base_time} {(now - timedelta(minutes=40)).strftime('%H:%M:%S')} [INFO] ✓ Stock signage complete - MSFT $492.01\n"
+        )
+        f.write(
+            f"{base_time} {(now - timedelta(minutes=35)).strftime('%H:%M:%S')} [INFO] ✓ Tesla signage complete - 79% battery, 235mi range\n"
+        )
+        f.write(
+            f"{base_time} {(now - timedelta(minutes=30)).strftime('%H:%M:%S')} [ERROR] ✗ Tesla signage failed: 408 timeout\n"
+        )
 
         temp_path = Path(f.name)
 
