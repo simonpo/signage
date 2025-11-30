@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-Generate data-driven images for Samsung Frame TVs in Art Mode. Fetch live data from weather APIs, ferry schedules, sports scores, and more, then render them as beautiful 4K images to display on your TV.
+Generate data-driven images for Samsung Frame TVs in Art Mode. Fetch live data from weather APIs, ferry schedules, sports scores, Tesla vehicles, and more, then render them as beautiful 4K images to display on your TV.
 
 ## What it does
 
@@ -62,9 +62,9 @@ Multi-location temperature and humidity from Ambient Weather stations (outdoor, 
 
 ## Requirements
 
-**Python Version**: 3.9 or later (tested with Python 3.9.6)
+**Python Version**: 3.11 or later
 
-The project uses a `.python-version` file for version managers like `pyenv` or `asdf`. If you don't have Python 3.9+, install it before proceeding.
+The project uses a `.python-version` file (currently 3.11.11) for version managers like `pyenv` or `asdf`. CI tests run on Python 3.11 and 3.12.
 
 **Dependencies**: Managed via `requirements.txt` (production) and `requirements-dev.txt` (development)
 - All dependencies are pinned to exact versions for reproducible builds
@@ -141,69 +141,107 @@ cp .env.example .env
 nano .env  # or use your preferred editor
 ```
 
-The `.env` file stores all your API keys, credentials, and settings. It's excluded from git to keep your secrets safe. Key settings include:
+The `.env` file stores all your API keys, credentials, and settings. It's excluded from git to keep your secrets safe.
 
-### Required for basic weather
+**Note**: The project also supports a `sources.yaml` configuration file for advanced scheduling and multi-source setups. See `examples/sources.yaml` for reference.
+
+### Key Configuration Settings
+
+#### Weather (Required for basic functionality)
 ```bash
-OPENWEATHER_API_KEY=your_key_here
-OPENWEATHER_LOCATION=Seattle,US
+WEATHER_API_KEY=your_openweathermap_key
+WEATHER_CITY=Seattle,US
+WEATHER_BG_MODE=local  # or: pexels, unsplash, gradient
 ```
 
-### Optional data sources
+#### Optional Data Sources
+
+**Tesla Fleet API**:
 ```bash
-# Ambient Weather personal station
-AMBIENT_WEATHER_API_KEY=your_key
-AMBIENT_WEATHER_APP_KEY=your_app_key
-AMBIENT_WEATHER_MAC_ADDRESS=your_device_mac
-
-# Sports (football-data.org)
-FOOTBALL_API_KEY=your_key
-ARSENAL_ENABLED=true
-
-# Ferry schedules (no key needed)
-FERRY_TERMINAL_ID=3
-FERRY_ROUTE_ID=7
-
-# Stock quotes (Alpha Vantage)
-ALPHA_VANTAGE_API_KEY=your_key
-STOCK_SYMBOL=MSFT
-
-# Tesla Fleet API
 TESLA_CLIENT_ID=your_client_id
 TESLA_CLIENT_SECRET=your_client_secret
-TESLA_REGION=na  # na, eu, or cn
+TESLA_REGION=na  # Options: na (North America), eu (Europe), cn (China)
 ```
 
-### Background options
+**Ambient Weather Personal Station**:
+```bash
+AMBIENT_API_KEY=your_ambient_api_key
+AMBIENT_APP_KEY=your_ambient_application_key
+AMBIENT_SENSOR_NAMES={}  # JSON map of sensor channels to names
+```
 
-Choose how backgrounds are selected:
+**Sports** (football-data.org for football, ESPN for NFL):
+```bash
+FOOTBALL_API_KEY=your_key
+ARSENAL_ENABLED=true
+ARSENAL_TEAM_ID=57
+SEAHAWKS_ENABLED=false
+```
+
+**Ferry Schedules** (Washington State Ferries):
+```bash
+FERRY_ROUTE=Fauntleroy-Southworth
+FERRY_HOME_TERMINAL=Southworth
+WSDOT_API_KEY=your_wsdot_api_key  # Optional
+```
+
+**Speedtest Tracker**:
+```bash
+SPEEDTEST_URL=http://192.168.1.XX:8765
+SPEEDTEST_TOKEN=your_speedtest_token
+```
+
+**Stock Quotes** (Alpha Vantage):
+```bash
+STOCK_API_KEY=your_alphavantage_api_key
+STOCK_SYMBOL=AAPL
+```
+
+#### Background Options
+
+Each data source can specify its own background mode using `*_BG_MODE` variables:
 
 ```bash
-BACKGROUND_MODE=local  # or: pexels, unsplash, gradient
+WEATHER_BG_MODE=local
+SPEEDTEST_BG_MODE=local
+STOCK_BG_MODE=gradient
+# ... etc for each source
 ```
 
-- `local`: Use images from `backgrounds/` directories (organised by topic)
+- `local`: Use images from `backgrounds/` directories (organized by source name)
 - `pexels`: Fetch from Pexels API (requires `PEXELS_API_KEY`)
-- `unsplash`: Fetch from Unsplash API (requires `UNSPLASH_ACCESS_KEY`)
+- `unsplash`: Fetch from Unsplash API (requires `UNSPLASH_API_KEY`)
 - `gradient`: Generate simple gradients
 
-### Rendering mode
-
+For API-based backgrounds:
 ```bash
-USE_HTML_RENDERER=true  # Modern HTML/CSS layouts (recommended)
+PEXELS_API_KEY=your_pexels_api_key
+UNSPLASH_API_KEY=your_unsplash_access_key
 ```
 
-Set to `false` to use legacy PIL-based rendering. The HTML renderer produces better typography and layouts.
+#### Rendering Mode
+
+The project uses HTML rendering by default (via Playwright). You can force rendering mode with command-line flags:
+
+```bash
+# Force HTML rendering (default)
+python generate_signage.py --source weather --html
+
+# Force legacy PIL rendering
+python generate_signage.py --source weather --pil
+```
+
+HTML rendering produces better typography and more flexible layouts. PIL rendering is retained for compatibility.
 
 ## Usage
 
 Activate the virtual environment:
 
 ```bash
-source signage-env/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-Generate an image for a specific topic:
+Generate an image for a specific source:
 
 ```bash
 python generate_signage.py --source weather
@@ -281,13 +319,7 @@ tests/            Test suite
 
 1. **Data collection**: Clients fetch data from APIs or local sources
 2. **Model conversion**: Raw data becomes structured SignageContent objects
-3# Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and contribution guidelines.
-
-**For Contributors**: Install development dependencies with `pip install -r requirements-dev.txt` to get all formatting, linting, and testing tools.
-
-#. **Background selection**: Provider chooses or generates a background image (weather-aware for conditions)
+3. **Background selection**: Provider chooses or generates a background image (weather-aware for conditions)
 4. **Rendering**: Template engine (HTML/CSS or PIL) combines data with background
 5. **Output**: 3840×2160 PNG saved to `art_folder/`
 
@@ -299,12 +331,11 @@ The HTML rendering path uses Playwright to render Jinja2 templates with CSS styl
 - **Nighttime detection**: Ambient weather uses solar radiation data to switch to night backgrounds
 - **Smart caching**: Reduces API calls while keeping data fresh
 
-## Requirements
+## Contributing
 
-- Python 3.9+
-- Playwright (installed automatically via setup script)
-- Samsung Frame TV (2024+ models tested)
-- API keys for your chosen data sources
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and contribution guidelines.
+
+**For Contributors**: Install development dependencies with `pip install -r requirements-dev.txt` to get all formatting, linting, and testing tools.
 
 ## Credits
 
