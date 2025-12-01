@@ -40,6 +40,13 @@ jobs:
       - name: Install Playwright browsers
         run: playwright install --with-deps chromium
 
+      - name: Create test .env
+        run: |  # pragma: allowlist secret
+          cat > .env << 'ENVEOF'
+          WEATHER_CITY=TestCity
+          WEATHER_API_KEY=test_weather_key_123  # pragma: allowlist secret
+          ENVEOF
+
       - name: Lint with black
         run: black --check --diff .
 
