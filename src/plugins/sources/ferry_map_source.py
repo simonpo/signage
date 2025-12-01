@@ -41,7 +41,7 @@ class FerryMapSource(BaseSource):
             return SignageContent(
                 lines=[f"{len(ferry_map_data.vessels)} vessels tracked"],
                 filename_prefix="ferry_map",
-                layout_type="full_map",
+                layout_type="full_map",  # type: ignore[arg-type]  # Special layout for ferry map
                 background_mode="ferry_map",
                 background_query=None,
                 metadata={"vessels": ferry_map_data.vessels, "use_map_renderer": True},

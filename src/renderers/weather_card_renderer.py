@@ -197,7 +197,7 @@ class WeatherCardRenderer:
         """Draw rounded rectangle card background."""
         # Draw rounded rectangle
         draw.rounded_rectangle(
-            [(x, y), (x + width, y + height)], radius=radius, fill=self.CARD_BG_COLOR
+            ((x, y), (x + width, y + height)), radius=radius, fill=self.CARD_BG_COLOR
         )
 
     def _draw_pressure_card(
@@ -482,13 +482,13 @@ class WeatherCardRenderer:
 
         # Draw bar background (gradient from blue to red)
         draw.rounded_rectangle(
-            [(x, y), (x + width, y + bar_height)], radius=8, fill=(100, 100, 150)
+            ((x, y), (x + width, y + bar_height)), radius=8, fill=(100, 100, 150)
         )
 
         # Draw filled portion up to current temp
         fill_width = int(width * current_pos)
         draw.rounded_rectangle(
-            [(x, y), (x + fill_width, y + bar_height)], radius=8, fill=(200, 100, 200)
+            ((x, y), (x + fill_width, y + bar_height)), radius=8, fill=(200, 100, 200)
         )
 
         # Draw current position indicator
@@ -519,9 +519,6 @@ class WeatherCardRenderer:
 
     def _wind_direction_to_compass(self, degrees: int) -> str:
         """Convert wind direction degrees to compass direction."""
-        if degrees is None:
-            return "N"
-
         directions = [
             "N",
             "NNE",

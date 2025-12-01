@@ -94,7 +94,7 @@ class LocalProvider(BackgroundProvider):
             List of image file paths
         """
         extensions = [".jpg", ".jpeg", ".png"]
-        images = []
+        images: list[Path] = []
 
         for ext in extensions:
             images.extend(directory.glob(f"*{ext}"))

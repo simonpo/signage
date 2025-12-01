@@ -5,7 +5,7 @@ Configuration loader for sources.yaml.
 import logging
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from pydantic import ValidationError
 
 from src.plugins.config.schemas import SourcesConfig

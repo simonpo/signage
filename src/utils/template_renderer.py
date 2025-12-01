@@ -130,7 +130,7 @@ class TemplateRenderer:
             html = template.render(**context)
 
             logger.debug(f"Rendered template: {template_name}")
-            return html
+            return html  # type: ignore[no-any-return]  # Jinja2 template result
 
         except Exception as e:
             logger.error(f"Failed to render template {template_name}: {e}", exc_info=True)
@@ -518,7 +518,7 @@ class TemplateRenderer:
         from dataclasses import asdict, is_dataclass
 
         if is_dataclass(system_data):
-            context = asdict(system_data)
+            context = asdict(system_data)  # type: ignore[arg-type]  # Runtime check ensures it's a dataclass
         elif isinstance(system_data, dict):
             context = system_data
         else:

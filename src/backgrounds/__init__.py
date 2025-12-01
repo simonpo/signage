@@ -91,7 +91,9 @@ class BackgroundFactory:
             if mode != "gradient":
                 logger.warning(f"Provider '{mode}' returned None, falling back to gradient")
                 gradient_provider = cls.get_provider("gradient")
-                return gradient_provider.get_background("", width, height)
+                img = gradient_provider.get_background("", width, height)
+                assert img is not None, "Gradient provider must return an image"
+                return img
 
             # Even gradient failed - this shouldn't happen
             raise RuntimeError("Gradient provider failed to generate image")
@@ -103,6 +105,8 @@ class BackgroundFactory:
             if mode != "gradient":
                 logger.warning("Falling back to gradient due to error")
                 gradient_provider = cls.get_provider("gradient")
-                return gradient_provider.get_background("", width, height)
+                img = gradient_provider.get_background("", width, height)
+                assert img is not None, "Gradient provider must return an image"
+                return img
 
             raise

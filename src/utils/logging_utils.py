@@ -185,7 +185,7 @@ class LogContext:
         self.description = description
         self.logger = logger or logging.getLogger()
         self.level = level
-        self.start_time = None
+        self.start_time: float | None = None
 
     def __enter__(self) -> "LogContext":
         """Start timing and log entry."""
@@ -195,6 +195,8 @@ class LogContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Log completion with timing."""
+        if self.start_time is None:
+            return
         elapsed = time.perf_counter() - self.start_time
 
         if exc_type is None:

@@ -61,7 +61,7 @@ class FerryMapRenderer:
         try:
             return ImageFont.truetype(Config.FONT_PATH, size)
         except Exception:
-            return ImageFont.load_default()
+            return ImageFont.load_default()  # type: ignore[return-value]  # Fallback font
 
     def _fetch_satellite_map(self) -> Image.Image | None:
         """
@@ -210,7 +210,7 @@ class FerryMapRenderer:
         draw = ImageDraw.Draw(overlay)
 
         # Draw semi-transparent header background
-        draw.rectangle([0, 0, self.MAP_WIDTH, 280], fill=(0, 0, 0, 180))
+        draw.rectangle((0, 0, self.MAP_WIDTH, 280), fill=(0, 0, 0, 180))
 
         # Composite overlay onto image
         img = img.convert("RGBA")
@@ -241,7 +241,7 @@ class FerryMapRenderer:
 
         # Draw vessels
         # Track positions to avoid label overlap
-        drawn_positions = []
+        drawn_positions: list[tuple[int, int]] = []
         for vessel in vessels:
             if vessel.latitude and vessel.longitude:
                 pos = self._latlon_to_pixel_mercator(vessel.latitude, vessel.longitude)
@@ -302,7 +302,7 @@ class FerryMapRenderer:
         draw: ImageDraw.ImageDraw,
         pos: tuple[int, int],
         vessel: FerryVessel,
-        drawn_positions: list[tuple[int, int]] = None,
+        drawn_positions: list[tuple[int, int]] | None = None,
     ) -> None:
         """
         Draw vessel marker with heading indicator.
@@ -397,7 +397,7 @@ class FerryMapRenderer:
 
         # Legend background
         draw.rectangle(
-            [legend_x - 20, legend_y - 20, legend_x + 480, legend_y + 200],
+            (legend_x - 20, legend_y - 20, legend_x + 480, legend_y + 200),
             fill=(0, 0, 0, 180),
             outline=self.TEXT_COLOR,
             width=2,

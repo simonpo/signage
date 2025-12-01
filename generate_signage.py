@@ -244,7 +244,7 @@ def generate_tesla(
             last_seen=last_seen,
             online=online,
             location_display=location_display,
-            cached_at=cached_data["cached_at"] if using_cache else None,
+            cached_at=cached_data["cached_at"] if (using_cache and cached_data) else None,
         )
 
         # Convert to signage content

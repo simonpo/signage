@@ -128,7 +128,7 @@ class HTMLRenderer:
         with open(html_file, encoding="utf-8") as f:
             html = f.read()
 
-        return await self.render_html_to_image(html, width, height, scale)
+        return await self.render_html_to_image(html, width, height, scale)  # type: ignore[no-any-return]  # Playwright screenshot
 
     async def close(self):
         """Close browser and cleanup resources."""
@@ -186,7 +186,7 @@ class SyncHTMLRenderer:
         Returns:
             PIL Image object
         """
-        return asyncio.run(self.renderer.render_html_to_image(html, width, height, scale))
+        return asyncio.run(self.renderer.render_html_to_image(html, width, height, scale))  # type: ignore[no-any-return]  # Async wrapper
 
     @timeit
     def render_file_to_image(
@@ -208,7 +208,7 @@ class SyncHTMLRenderer:
         Returns:
             PIL Image object
         """
-        return asyncio.run(self.renderer.render_file_to_image(html_file, width, height, scale))
+        return asyncio.run(self.renderer.render_file_to_image(html_file, width, height, scale))  # type: ignore[no-any-return]  # Async wrapper
 
     def close(self):
         """Close renderer."""

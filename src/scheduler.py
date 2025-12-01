@@ -35,6 +35,7 @@ class SignageScheduler:
         """
         self.renderer = renderer
         self.file_mgr = file_mgr
+        self.generators: dict[str, Callable] = {}
         self.last_run: dict[str, datetime | None] = {}
         self.running = False
 
@@ -88,7 +89,7 @@ class SignageScheduler:
             interval = self.live_interval
             logger.debug("Live sports detected - using fast update interval")
 
-        elapsed = (datetime.now() - last).total_seconds()
+        elapsed = (datetime.now() - last).total_seconds() if last else float("inf")
         return elapsed >= interval
 
     def _is_live_sports_event(self) -> bool:

@@ -8,13 +8,21 @@ import re
 from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 import psutil
 
 from src.config import Config
 
 logger = logging.getLogger(__name__)
+
+
+class GeneratorStats(TypedDict):
+    """Type definition for generator statistics."""
+
+    success: int
+    failure: int
+    last_run: datetime | None
 
 
 class SystemStats:
@@ -68,12 +76,14 @@ class SystemStats:
 
         return {"seconds": 0, "formatted": "Unknown"}
 
-    def _get_generator_stats(self) -> dict[str, dict]:
+    def _get_generator_stats(self) -> dict[str, GeneratorStats]:
         """Get statistics for each generator (tesla, weather, etc)."""
         if not self.log_file.exists():
             return {}
 
-        stats = defaultdict(lambda: {"success": 0, "failure": 0, "last_run": None})
+        stats: dict[str, GeneratorStats] = defaultdict(
+            lambda: GeneratorStats(success=0, failure=0, last_run=None)
+        )
         cutoff_time = datetime.now() - timedelta(hours=24)
 
         try:
@@ -104,9 +114,9 @@ class SystemStats:
                         ]:
                             if source.lower() in line.lower():
                                 stats[source]["success"] += 1
-                                if (
-                                    not stats[source]["last_run"]
-                                    or timestamp > stats[source]["last_run"]
+                                last_run = stats[source]["last_run"]
+                                if last_run is None or (
+                                    isinstance(last_run, datetime) and timestamp > last_run
                                 ):
                                     stats[source]["last_run"] = timestamp
                                 break
@@ -171,7 +181,9 @@ class SystemStats:
             logger.error(f"Error parsing errors: {e}")
 
         # Return most recent errors
-        return sorted(errors, key=lambda x: x["timestamp"], reverse=True)[:max_errors]
+        return sorted(errors, key=lambda x: x["timestamp"], reverse=True)[  # type: ignore[arg-type,return-value]  # Timestamp sorting
+            :max_errors
+        ]
 
     def _get_disk_space(self) -> dict[str, Any]:
         """Get disk space information."""
@@ -189,7 +201,7 @@ class SystemStats:
 
     def _get_image_count(self, days: int = 7) -> dict[str, int]:
         """Count images generated in the last N days."""
-        counts = defaultdict(int)
+        counts: dict[str, int] = defaultdict(int)
         cutoff_time = datetime.now() - timedelta(days=days)
 
         try:

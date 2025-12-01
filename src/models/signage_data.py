@@ -239,8 +239,6 @@ class WeatherData:
 
     def _wind_direction_to_compass(self, degrees: int) -> str:
         """Convert wind direction degrees to compass direction."""
-        if degrees is None:
-            return ""
 
         directions = [
             "N",
@@ -341,9 +339,6 @@ class AmbientWeatherData:
 
     def _wind_direction_to_compass(self, degrees: int) -> str:
         """Convert wind direction degrees to compass direction."""
-        if degrees is None:
-            return ""
-
         directions = [
             "N",
             "NNE",
@@ -601,7 +596,7 @@ class SportsData:
         return SignageContent(
             lines=lines,
             filename_prefix=f"{self.sport}_{team_slug}",
-            layout_type=f"modern_{self.sport}",
+            layout_type=f"modern_{self.sport}",  # type: ignore[arg-type]  # Dynamic sport name
             background_mode="local",
             background_query=background_query,
             metadata={"sports_data": self},

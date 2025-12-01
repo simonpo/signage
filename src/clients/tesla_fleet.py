@@ -75,7 +75,7 @@ class TeslaFleetClient(APIClient):
             except Exception as e:
                 logger.warning(f"Failed to load tokens: {e}")
 
-    def _save_tokens(self, access_token: str, expires_in: int, refresh_token: str = None):
+    def _save_tokens(self, access_token: str, expires_in: int, refresh_token: str | None = None):
         """Save tokens to file."""
         self.access_token = access_token
         if refresh_token:
@@ -186,7 +186,7 @@ class TeslaFleetClient(APIClient):
         response = self._make_request(url, method=method, headers=headers)
 
         if response and response.status_code == 200:
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]  # JSON response from Tesla API
         elif response:
             # 408 timeouts are expected for sleeping vehicles
             if response.status_code == 408:
@@ -216,7 +216,7 @@ class TeslaFleetClient(APIClient):
         if data and "response" in data:
             vehicles = data["response"]
             logger.info(f"Found {len(vehicles)} vehicle(s)")
-            return vehicles
+            return vehicles  # type: ignore[no-any-return]  # JSON from Tesla API
 
         return None
 
@@ -238,7 +238,7 @@ class TeslaFleetClient(APIClient):
             vehicle_data = data["response"]
             # Cache successful response
             self._cache_vehicle_data(vehicle_id, vehicle_data)
-            return vehicle_data
+            return vehicle_data  # type: ignore[no-any-return]  # JSON from Tesla API
 
         return None
 
@@ -260,7 +260,7 @@ class TeslaFleetClient(APIClient):
                 cache = json.load(f)
                 vehicle_cache = cache.get(vehicle_id)
                 if vehicle_cache:
-                    return vehicle_cache
+                    return vehicle_cache  # type: ignore[no-any-return]  # Cached JSON
         except Exception as e:
             logger.debug(f"Failed to load cached vehicle data: {e}")
 
@@ -310,7 +310,7 @@ class TeslaFleetClient(APIClient):
         if data and "response" in data:
             sites = data["response"]
             logger.info(f"Found {len(sites)} energy site(s)")
-            return sites
+            return sites  # type: ignore[no-any-return]  # JSON from Tesla API
 
         return None
 
@@ -327,6 +327,6 @@ class TeslaFleetClient(APIClient):
         data = self._api_request(f"/api/1/energy_sites/{site_id}/live_status")
 
         if data and "response" in data:
-            return data["response"]
+            return data["response"]  # type: ignore[no-any-return]  # JSON from Tesla API
 
         return None

@@ -6,7 +6,7 @@ import logging
 import os
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 logger = logging.getLogger(__name__)
 

@@ -34,7 +34,7 @@ class FootballClient(BaseSportsClient):
         if not self.api_key:
             logger.warning("No FOOTBALL_API_KEY configured - FootballClient will not work")
 
-    def _make_request(self, endpoint: str) -> dict | None:
+    def _make_request(self, endpoint: str) -> dict | None:  # type: ignore[override]  # Simplified signature for football API
         """Make API request with authentication."""
         if not self.api_key:
             logger.error("No API key available")
@@ -45,7 +45,7 @@ class FootballClient(BaseSportsClient):
 
         response = super()._make_request(url, headers=headers)
         if response and response.status_code == 200:
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]  # JSON from football API
 
         logger.error(
             f"Football API request failed: {response.status_code if response else 'No response'}"
