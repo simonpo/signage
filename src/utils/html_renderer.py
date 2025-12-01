@@ -49,8 +49,8 @@ class HTMLRenderer:
     async def render_html_to_image(
         self,
         html: str,
-        width: int = Config.IMAGE_WIDTH,
-        height: int = Config.IMAGE_HEIGHT,
+        width: int | None = None,
+        height: int | None = None,
         scale: float = 1.0,
     ) -> Image.Image:
         """
@@ -65,6 +65,12 @@ class HTMLRenderer:
         Returns:
             PIL Image object
         """
+        # Use Config values if not provided
+        if width is None:
+            width = Config.IMAGE_WIDTH if Config else 1920
+        if height is None:
+            height = Config.IMAGE_HEIGHT if Config else 1080
+
         browser = await self._ensure_browser()
 
         # Create new page with exact viewport size
@@ -103,8 +109,8 @@ class HTMLRenderer:
     async def render_file_to_image(
         self,
         html_file: Path,
-        width: int = Config.IMAGE_WIDTH,
-        height: int = Config.IMAGE_HEIGHT,
+        width: int | None = None,
+        height: int | None = None,
         scale: float = 1.0,
     ) -> Image.Image:
         """
@@ -164,8 +170,8 @@ class SyncHTMLRenderer:
     def render_html_to_image(
         self,
         html: str,
-        width: int = Config.IMAGE_WIDTH,
-        height: int = Config.IMAGE_HEIGHT,
+        width: int | None = None,
+        height: int | None = None,
         scale: float = 1.0,
     ) -> Image.Image:
         """
@@ -186,8 +192,8 @@ class SyncHTMLRenderer:
     def render_file_to_image(
         self,
         html_file: Path,
-        width: int = Config.IMAGE_WIDTH,
-        height: int = Config.IMAGE_HEIGHT,
+        width: int | None = None,
+        height: int | None = None,
         scale: float = 1.0,
     ) -> Image.Image:
         """
