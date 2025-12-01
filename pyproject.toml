@@ -91,6 +91,16 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "src.config"
+# Pydantic BaseSettings reads from .env, mypy can't verify required fields at instantiation
+disable_error_code = ["call-arg"]
+
+[[tool.mypy.overrides]]
+module = "src.utils.template_renderer"
+# Jinja2 template.render() returns str, but mypy sees it as Any
+disable_error_code = ["no-any-return"]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q --strict-markers"

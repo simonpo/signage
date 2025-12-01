@@ -130,7 +130,7 @@ class TemplateRenderer:
             html = template.render(**context)
 
             logger.debug(f"Rendered template: {template_name}")
-            return html  # type: ignore[no-any-return]  # Jinja2 template.render() returns str
+            return html
 
         except Exception as e:
             logger.error(f"Failed to render template {template_name}: {e}", exc_info=True)
