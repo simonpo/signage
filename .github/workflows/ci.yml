@@ -80,14 +80,14 @@ jobs:
           pip install -r requirements.txt
 
       - name: Create test .env
-        run: |
+        run: |  # pragma: allowlist secret
           cat > .env << 'ENVEOF'
           WEATHER_CITY=TestCity
           WEATHER_API_KEY=test_weather_key_123  # pragma: allowlist secret
           ENVEOF
 
       - name: Validate configuration
-        run: python src/config_validator.py
+        run: python src/config.py
 
   security:
     name: Security Audit

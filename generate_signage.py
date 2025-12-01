@@ -760,12 +760,8 @@ def main():
         migrator.write_config()
         return
 
-    # Validate configuration
-    try:
-        Config.validate()
-    except RuntimeError as e:
-        logger.error(f"Configuration error: {e}")
-        sys.exit(1)
+    # Config is automatically validated on import via Pydantic
+    # No need for explicit Config.validate() call
 
     # Initialize output manager and renderer
     output_manager = OutputManager()

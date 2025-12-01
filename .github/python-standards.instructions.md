@@ -456,7 +456,7 @@ pip-audit -r requirements-dev.txt
 - **CI Config**: `.github/workflows/ci.yml`
 - **Tool Config**: `pyproject.toml`
 - **Base Client**: `src/clients/base.py`
-- **Config Validation**: `src/config_validator.py`
+- **Config Validation**: `src/config.py` (Pydantic-based)
 - **Requirements**: `requirements.txt` (production), `requirements-dev.txt` (development)
 - **Python Version**: `.python-version`
 

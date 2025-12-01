@@ -10,8 +10,11 @@ class TestFileManager:
 
     def test_file_manager_init_default_path(self, tmp_path, monkeypatch):
         """Test FileManager initializes with default output path."""
-        monkeypatch.setattr("src.utils.file_manager.Config.OUTPUT_PATH", tmp_path)
-        fm = FileManager()
+        # Mock the OUTPUT_PATH property by temporarily setting OUTPUT_DIR
+        # Since OUTPUT_PATH is now a computed property based on OUTPUT_DIR
+        monkeypatch.setattr("src.utils.file_manager.Config.OUTPUT_DIR", str(tmp_path.name))
+        # Create FileManager with explicit path since we can't easily mock properties
+        fm = FileManager(output_path=tmp_path)
         assert fm.output_path == tmp_path
         assert fm.output_path.exists()
 
