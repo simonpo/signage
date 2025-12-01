@@ -76,7 +76,7 @@ class SignageRenderer:
             return font
         except Exception as e:
             logger.warning(f"Failed to load font {path}: {e}. Using default.")
-            return ImageFont.load_default()
+            return ImageFont.load_default()  # type: ignore[return-value]  # Fallback font
 
     def _get_background_image(self, bg_mode: str, bg_query: str | None) -> Image.Image:
         """
@@ -158,14 +158,13 @@ class SignageRenderer:
                 timestamp = content.timestamp or Config.get_current_time()
             timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
             filename = f"{content.filename_prefix}_{timestamp_str}.png"
-
-        # Set timestamp default
-        if timestamp is None:
+        elif timestamp is None:
+            # Filename provided but no timestamp - set timestamp default
             timestamp = content.timestamp or Config.get_current_time()
 
         # Choose rendering path
         if self.use_html:
-            return self._render_html(
+            return self._render_html(  # type: ignore[no-any-return]  # List of paths
                 content,
                 filename,
                 timestamp,
@@ -194,8 +193,6 @@ class SignageRenderer:
         Returns:
             List of paths where image was saved
         """
-        if timestamp is None:
-            timestamp = content.timestamp or Config.get_current_time()
 
         logger.info(
             f"Rendering {content.filename_prefix} with "
@@ -204,20 +201,6 @@ class SignageRenderer:
 
         # Step 1: Get background image
         img = self._get_background_image(content.background_mode, content.background_query)
-
-        # Step 2: Check if we should use card-based weather renderer
-        if content.layout_type == "weather_cards" and weather_data:
-            from src.renderers.weather_card_renderer import WeatherCardRenderer
-
-            # Add light overlay for readability
-            img = add_text_overlay(img, opacity=0.3)
-
-            # Render weather cards
-            card_renderer = WeatherCardRenderer()
-            img = card_renderer.render(weather_data, img)
-
-            # TODO: This branch needs completion - save via output_manager
-            # For now, fall through to standard rendering path
 
         # Standard text-based rendering
         # Step 2: Add semi-transparent overlay for text readability
@@ -277,9 +260,7 @@ class SignageRenderer:
         bg_img = self._get_background_image(content.background_mode, content.background_query)
 
         # Step 2: Check if we should use weather cards template
-        if content.layout_type == "weather_cards" and weather_data:
-            html = self.template_renderer.render_weather_cards(weather_data)
-        elif content.layout_type == "modern_ambient" and weather_data:
+        if content.layout_type == "modern_ambient" and weather_data:
             html = self.template_renderer.render_ambient_dashboard(weather_data)
         elif content.layout_type == "modern_ferry" and ferry_data:
             html = self.template_renderer.render_ferry_schedule(ferry_data)

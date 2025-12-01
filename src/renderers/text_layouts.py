@@ -221,4 +221,4 @@ class LayoutFactory:
             Layout instance (defaults to centered if type unknown)
         """
         layout_class = cls._layouts.get(layout_type.lower(), CenteredLayout)
-        return layout_class(font_title, font_body, font_small)
+        return layout_class(font_title, font_body, font_small)  # type: ignore[abstract]  # Factory creates concrete subclasses

@@ -48,7 +48,7 @@ class MapRenderer:
         try:
             return ImageFont.truetype(Config.FONT_PATH, 40)
         except Exception:
-            return ImageFont.load_default()
+            return ImageFont.load_default()  # type: ignore[return-value]  # Fallback font
 
     def render_ferry_map(
         self, vessels: list[FerryVessel], base_map_path: Path | None = None

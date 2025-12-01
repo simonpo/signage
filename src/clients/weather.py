@@ -103,7 +103,7 @@ class WeatherClient(APIClient):
                 city=self.city,
                 temperature=temp,
                 description=description,
-                condition=condition,
+                condition=condition,  # type: ignore[arg-type]  # Validated by CONDITION_MAP
                 feels_like=feels_like,
                 temp_high=temp_high,
                 temp_low=temp_low,

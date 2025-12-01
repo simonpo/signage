@@ -5,6 +5,7 @@ Fetches Seahawks fixtures, results, and NFC West standings.
 
 import logging
 from datetime import datetime
+from typing import Any
 
 from src.clients.sports.base_sports import BaseSportsClient
 from src.config import Config
@@ -58,7 +59,7 @@ class NFLClient(BaseSportsClient):
 
         # Parse last result and next fixtures
         last_result = None
-        next_fixtures = []
+        next_fixtures: list[SportsFixture] = []
 
         for game in schedule:
             # Status is nested in competitions[0].status
@@ -111,7 +112,7 @@ class NFLClient(BaseSportsClient):
             data = response.json()
             events = data.get("events", [])
             logger.debug(f"Fetched {len(events)} events for team {team_id}")
-            return events
+            return events  # type: ignore[no-any-return]  # JSON from ESPN API
         except (ValueError, KeyError) as e:
             logger.error(f"Failed to parse schedule: {e}")
             return []
@@ -149,7 +150,7 @@ class NFLClient(BaseSportsClient):
                         if div_name in div.get("name", ""):
                             standings = div.get("standings", {}).get("entries", [])
 
-                            rows = []
+                            rows: list[LeagueTableRow] = []
                             for entry in standings[:5]:  # Top 5
                                 team = entry.get("team", {})
                                 stats = {s["name"]: s["value"] for s in entry.get("stats", [])}
@@ -224,8 +225,12 @@ class NFLClient(BaseSportsClient):
             competitions = game.get("competitions", [{}])[0]
             competitors = competitions.get("competitors", [])
 
-            home_team = next((c for c in competitors if c.get("homeAway") == "home"), {})
-            away_team = next((c for c in competitors if c.get("homeAway") == "away"), {})
+            home_team: dict[str, Any] = next(
+                (c for c in competitors if c.get("homeAway") == "home"), {}
+            )
+            away_team: dict[str, Any] = next(
+                (c for c in competitors if c.get("homeAway") == "away"), {}
+            )
 
             date_str = game.get("date", "")
             date_obj = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
@@ -248,8 +253,12 @@ class NFLClient(BaseSportsClient):
             competitions = game.get("competitions", [{}])[0]
             competitors = competitions.get("competitors", [])
 
-            home_team = next((c for c in competitors if c.get("homeAway") == "home"), {})
-            away_team = next((c for c in competitors if c.get("homeAway") == "away"), {})
+            home_team: dict[str, Any] = next(
+                (c for c in competitors if c.get("homeAway") == "home"), {}
+            )
+            away_team: dict[str, Any] = next(
+                (c for c in competitors if c.get("homeAway") == "away"), {}
+            )
 
             date_str = game.get("date", "")
             date_obj = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
@@ -294,8 +303,12 @@ class NFLClient(BaseSportsClient):
                     continue
 
                 # Build score string
-                home = next((c for c in competitors if c.get("homeAway") == "home"), {})
-                away = next((c for c in competitors if c.get("homeAway") == "away"), {})
+                home: dict[str, Any] = next(
+                    (c for c in competitors if c.get("homeAway") == "home"), {}
+                )
+                away: dict[str, Any] = next(
+                    (c for c in competitors if c.get("homeAway") == "away"), {}
+                )
 
                 return (
                     f"{home.get('team', {}).get('abbreviation', '')} "

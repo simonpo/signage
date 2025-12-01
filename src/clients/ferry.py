@@ -84,7 +84,7 @@ class FerryClient(APIClient):
 
             return FerryData(
                 route=self.route,
-                status=status,
+                status=status,  # type: ignore[arg-type]  # Literal values set above
                 delay_minutes=delay_minutes,
                 southworth_departures=southworth_departures[:7],  # Next 7 sailings
                 fauntleroy_departures=fauntleroy_departures[:7],
@@ -206,6 +206,8 @@ class FerryClient(APIClient):
 
     def _get_terminal_name(self, terminal_id: int | None) -> str:
         """Map terminal ID to name."""
+        if terminal_id is None:
+            return "Unknown Terminal"
         id_to_name = {v: k for k, v in TERMINAL_IDS.items()}
         return id_to_name.get(terminal_id, f"Terminal {terminal_id}")
 

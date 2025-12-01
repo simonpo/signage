@@ -518,7 +518,7 @@ class TemplateRenderer:
         from dataclasses import asdict, is_dataclass
 
         if is_dataclass(system_data):
-            context = asdict(system_data)
+            context = asdict(system_data)  # type: ignore[arg-type]  # Runtime check ensures it's a dataclass
         elif isinstance(system_data, dict):
             context = system_data
         else:

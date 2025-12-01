@@ -66,16 +66,27 @@ class SourceConfig(BaseModel):
             raise ValueError(f"Invalid cron expression '{v}': {e}") from e
         return v
 
-    def expand_env_vars(self) -> "SourceConfig":
-        """Expand ${VAR} references in config values."""
+    def expand_env_vars(self, strict: bool = True) -> "SourceConfig":
+        """
+        Expand ${VAR} references in config values.
+
+        Args:
+            strict: If True, raise error on missing env vars. If False, leave unexpanded.
+        """
         expanded_config = {}
         for key, value in self.config.items():
             if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
                 env_var = value[2:-1]
                 expanded_value = os.getenv(env_var)
                 if expanded_value is None:
-                    raise ValueError(f"Environment variable {env_var} not set")
-                expanded_config[key] = expanded_value
+                    if strict and self.enabled:
+                        raise ValueError(
+                            f"Environment variable {env_var} not set for enabled source '{self.id}'"
+                        )
+                    # Leave unexpanded for disabled sources
+                    expanded_config[key] = value
+                else:
+                    expanded_config[key] = expanded_value
             else:
                 expanded_config[key] = value
 

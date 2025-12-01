@@ -55,7 +55,6 @@ jobs:
 
       - name: Type check with mypy
         run: mypy src/ --ignore-missing-imports
-        continue-on-error: true  # Start permissive, enforce later
 
       - name: Run tests with coverage
         run: pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=xml
