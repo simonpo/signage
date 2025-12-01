@@ -2,8 +2,6 @@
 Tests for configuration module.
 """
 
-import pytest
-
 from src.config import Config
 
 
@@ -27,10 +25,3 @@ def test_timezone_handling():
     # Test current time retrieval
     now = Config.get_current_time()
     assert now is not None
-
-
-def test_validation_missing_required():
-    """Test that validation fails with missing required vars."""
-    # Skip this test - Config.validate() is deprecated in favor of config_validator
-    # The new pydantic-based validator is tested separately
-    pytest.skip("Config.validate() deprecated - using pydantic validator instead")

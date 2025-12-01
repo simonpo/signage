@@ -6,7 +6,7 @@ import os
 import pytest
 from pydantic_core import ValidationError
 
-from src.config_validator import SignageConfig
+from src.config import SignageConfig
 
 
 class TestSignageConfig:
@@ -97,7 +97,7 @@ WEATHER_API_KEY=test_weather_key_123
 
         # Required fields should be set
         assert config.WEATHER_CITY == "TestCity"
-        assert config.WEATHER_API_KEY == "test_weather_key_123"
+        assert config.WEATHER_API_KEY == "test_weather_key_123"  # pragma: allowlist secret
         # Optional fields default
         assert config.AMBIENT_API_KEY is None
         assert config.STOCK_API_KEY is None

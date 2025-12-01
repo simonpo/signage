@@ -1,153 +1,318 @@
 """
-Configuration management for the signage system.
-Loads all settings from .env and provides validation.
+Configuration validation using Pydantic.
+Validates .env configuration on startup and provides type-safe config access.
+
+This replaces the old src/config.py class-based config system with a
+type-safe Pydantic model that validates on load.
 """
 
+import json
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
 
 import pytz
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 
 
-class Config:
-    """Central configuration for the signage system."""
+class SignageConfig(BaseSettings):
+    """
+    Type-safe configuration schema for the signage system.
+    Automatically validates .env file on load.
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",  # Ignore unknown env vars
+    )
 
     # ===== Display Settings =====
-    IMAGE_WIDTH = 3840
-    IMAGE_HEIGHT = 2160
-    SAFE_MARGIN_H = 192  # 5% horizontal margin
-    SAFE_MARGIN_V = 108  # 5% vertical margin
+    IMAGE_WIDTH: int = Field(default=3840, description="Output image width")
+    IMAGE_HEIGHT: int = Field(default=2160, description="Output image height")
+    SAFE_MARGIN_H: int = Field(default=192, description="Horizontal safe margin (5%)")
+    SAFE_MARGIN_V: int = Field(default=108, description="Vertical safe margin (5%)")
 
     # ===== Paths =====
-    BASE_DIR = Path(__file__).parent.parent.resolve()
-    OUTPUT_DIR = os.getenv("OUTPUT_DIR", "art_folder")
-    OUTPUT_PATH = BASE_DIR / OUTPUT_DIR
-    BACKGROUNDS_PATH = BASE_DIR / "backgrounds"
-    CACHE_PATH = BASE_DIR / ".cache"
-    FONT_PATH = os.getenv("FONT_PATH", "/System/Library/Fonts/Supplemental/Arial Bold.ttf")
+    OUTPUT_DIR: str = Field(default="art_folder")
+    FONT_PATH: str = Field(default="/System/Library/Fonts/Supplemental/Arial Bold.ttf")
 
-    # ===== Tesla Fleet API =====
-    TESLA_CLIENT_ID = os.getenv("TESLA_CLIENT_ID")
-    TESLA_CLIENT_SECRET = os.getenv("TESLA_CLIENT_SECRET")
-    TESLA_REGION = os.getenv("TESLA_REGION", "na")
+    # ===== TV Configuration (Optional) =====
+    TV_IP: str | None = Field(default=None, description="Samsung Frame TV IP address")
+    TV_PORT: int = Field(default=8002, description="Samsung TV websocket port")
 
-    # ===== Weather =====
-    WEATHER_CITY = os.getenv("WEATHER_CITY")
-    WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
-    WEATHER_BG_MODE = os.getenv("WEATHER_BG_MODE", "local")
+    # ===== Tesla Fleet API (Optional) =====
+    TESLA_CLIENT_ID: str | None = Field(default=None, description="Tesla Fleet API client ID")
+    TESLA_CLIENT_SECRET: str | None = Field(default=None, description="Tesla Fleet API secret")
+    TESLA_REGION: str = Field(default="na", pattern="^(na|eu|cn)$", description="Tesla region")
 
-    # ===== Ambient Weather (Personal Weather Station) =====
-    AMBIENT_API_KEY = os.getenv("AMBIENT_API_KEY")
-    AMBIENT_APP_KEY = os.getenv("AMBIENT_APP_KEY")
-    AMBIENT_BG_MODE = os.getenv("AMBIENT_BG_MODE", "local")
-    # Sensor name mapping: JSON format {"1": "Chickens", "2": "Greenhouse"}
-    AMBIENT_SENSOR_NAMES = os.getenv("AMBIENT_SENSOR_NAMES", "{}")
+    # ===== Required Configuration =====
 
-    # ===== Speedtest Tracker =====
-    SPEEDTEST_URL = os.getenv("SPEEDTEST_URL", "http://192.168.1.36:8765")
-    SPEEDTEST_TOKEN = os.getenv("SPEEDTEST_TOKEN", "")
+    # Weather (OpenWeatherMap)
+    WEATHER_CITY: str = Field(..., min_length=2, description="City name for weather")
+    WEATHER_API_KEY: str = Field(..., min_length=10, description="OpenWeatherMap API key")
+    WEATHER_BG_MODE: str = Field(default="local", pattern="^(local|gradient|unsplash|pexels)$")
 
-    # ===== Stock =====
-    STOCK_SYMBOL = os.getenv("STOCK_SYMBOL")
-    STOCK_API_KEY = os.getenv("STOCK_API_KEY")
-    STOCK_BG_MODE = os.getenv("STOCK_BG_MODE", "gradient")
+    # ===== Optional Configuration =====
 
-    # ===== Ferry =====
-    FERRY_ROUTE = os.getenv("FERRY_ROUTE")
-    FERRY_HOME_TERMINAL = os.getenv("FERRY_HOME_TERMINAL")
-    FERRY_BG_MODE = os.getenv("FERRY_BG_MODE", "local")
-    WSDOT_API_KEY = os.getenv("WSDOT_API_KEY")
+    # Ambient Weather
+    AMBIENT_API_KEY: str | None = Field(default=None, description="Ambient Weather API key")
+    AMBIENT_APP_KEY: str | None = Field(default=None, description="Ambient Weather application key")
+    AMBIENT_BG_MODE: str = Field(default="local", pattern="^(local|gradient|unsplash|pexels)$")
+    AMBIENT_SENSOR_NAMES: str = Field(
+        default="{}", description="JSON mapping of sensor channels to names"
+    )
 
-    # ===== Sports =====
-    ARSENAL_ENABLED = os.getenv("ARSENAL_ENABLED", "false").lower() == "true"
-    SEAHAWKS_ENABLED = os.getenv("SEAHAWKS_ENABLED", "false").lower() == "true"
-    ENGLAND_RUGBY_ENABLED = (
-        os.getenv("ENGLAND_RUGBY_ENABLED", "false").lower() == "true"
-    )  # Mock data
-    BATH_RUGBY_ENABLED = os.getenv("BATH_RUGBY_ENABLED", "false").lower() == "true"
-    ENGLAND_CRICKET_ENABLED = os.getenv("ENGLAND_CRICKET_ENABLED", "false").lower() == "true"
+    # Speedtest
+    SPEEDTEST_URL: str | None = Field(default="http://192.168.1.36:8765")
+    SPEEDTEST_TOKEN: str | None = Field(default=None)
+    SPEEDTEST_BG_MODE: str = Field(default="local", pattern="^(local|gradient|unsplash|pexels)$")
 
-    SEAHAWKS_TEAM_ID = os.getenv("SEAHAWKS_TEAM_ID", "26")  # Seattle Seahawks
-    ARSENAL_TEAM_ID = os.getenv("ARSENAL_TEAM_ID", "57")  # Arsenal FC
-    # Note: England Rugby uses mock data (no team ID needed)
+    # Stock Quotes
+    STOCK_SYMBOL: str | None = Field(default=None, description="Stock ticker symbol")
+    STOCK_API_KEY: str | None = Field(default=None, description="Alpha Vantage API key")
+    STOCK_BG_MODE: str = Field(default="gradient", pattern="^(local|gradient|unsplash|pexels)$")
 
-    # ===== API Keys =====
-    SPORTS_API_KEY = os.getenv("SPORTS_API_KEY")
-    FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
-    UNSPLASH_API_KEY = os.getenv("UNSPLASH_API_KEY")
-    PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+    # Ferry
+    FERRY_ROUTE: str | None = Field(default=None, description="Ferry route name")
+    FERRY_HOME_TERMINAL: str | None = Field(default=None, description="Home terminal name")
+    FERRY_BG_MODE: str = Field(default="local", pattern="^(local|gradient|unsplash|pexels)$")
+    WSDOT_API_KEY: str | None = Field(default=None, description="WSDOT API key")
 
-    # ===== Time & Scheduling =====
-    TIMEZONE = os.getenv("TIMEZONE", "US/Pacific")
-    KEEP_DAYS = int(os.getenv("KEEP_DAYS", "7"))
-    ENABLE_DAEMON_MODE = os.getenv("ENABLE_DAEMON_MODE", "false").lower() == "true"
-    LIVE_UPDATE_INTERVAL = int(os.getenv("LIVE_UPDATE_INTERVAL", "120"))
+    # Sports Teams
+    SEAHAWKS_ENABLED: bool = Field(default=False)
+    SEAHAWKS_TEAM_ID: str = Field(default="26")
+    ARSENAL_ENABLED: bool = Field(default=False)
+    ARSENAL_TEAM_ID: str = Field(default="57")
+    ENGLAND_RUGBY_ENABLED: bool = Field(default=False)
+    BATH_RUGBY_ENABLED: bool = Field(default=False)
+    ENGLAND_CRICKET_ENABLED: bool = Field(default=False)
 
-    # ===== Output Management =====
-    OUTPUT_PROFILES = os.getenv("OUTPUT_PROFILES", "")
-    ARCHIVE_KEEP_COUNT = int(os.getenv("ARCHIVE_KEEP_COUNT", "5"))
+    # API Keys
+    SPORTS_API_KEY: str | None = Field(default=None)
+    FOOTBALL_API_KEY: str | None = Field(default=None, description="football-data.org API key")
+    UNSPLASH_API_KEY: str | None = Field(default=None)
+    PEXELS_API_KEY: str | None = Field(default=None)
+    GOOGLE_MAPS_API_KEY: str | None = Field(default=None)
 
-    # ===== Logging =====
-    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-    LOG_FILE = os.getenv("LOG_FILE", "")
+    # ===== System Configuration =====
+    TIMEZONE: str = Field(default="US/Pacific")
+    KEEP_DAYS: int = Field(default=7, ge=1, le=365)
+    ENABLE_DAEMON_MODE: bool = Field(default=False)
+    LIVE_UPDATE_INTERVAL: int = Field(default=120, ge=30)
 
+    # Logging
+    LOG_LEVEL: str = Field(default="INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
+    LOG_FILE: str | None = Field(default=None)
+
+    # Output management
+    OUTPUT_PROFILES: str = Field(default="")
+    ARCHIVE_KEEP_COUNT: int = Field(default=5, ge=1)
+
+    # ===== Validators =====
+
+    @field_validator("AMBIENT_SENSOR_NAMES")
     @classmethod
-    def validate(cls) -> None:
-        """
-        Validate required configuration and create necessary directories.
-        Raises RuntimeError if critical settings are missing.
-        """
-        # Check required vars
-        required = {
-            "WEATHER_CITY": cls.WEATHER_CITY,
-            "WEATHER_API_KEY": cls.WEATHER_API_KEY,
-        }
+    def validate_sensor_names_json(cls, v: str) -> str:
+        """Validate that sensor names is valid JSON."""
+        try:
+            json.loads(v)
+            return v
+        except json.JSONDecodeError as e:
+            raise ValueError(f"AMBIENT_SENSOR_NAMES must be valid JSON: {e}") from e
 
-        missing = [key for key, value in required.items() if not value]
-        if missing:
-            raise RuntimeError(
-                f"Missing required environment variables: {', '.join(missing)}\n"
-                f"Please check your .env file."
-            )
-
-        # Create directories
-        for directory in [cls.OUTPUT_PATH, cls.CACHE_PATH]:
-            directory.mkdir(parents=True, exist_ok=True)
-            logger.info(f"Ensured directory exists: {directory}")
-
-        # Validate image dimensions
-        assert cls.IMAGE_WIDTH == 3840, "Image width must be 3840px"
-        assert cls.IMAGE_HEIGHT == 2160, "Image height must be 2160px"
-        assert int(cls.IMAGE_WIDTH * 0.05) == cls.SAFE_MARGIN_H, "H margin must be 5%"
-        assert int(cls.IMAGE_HEIGHT * 0.05) == cls.SAFE_MARGIN_V, "V margin must be 5%"
-
-        logger.info("Configuration validated successfully")
-
+    @field_validator("FONT_PATH")
     @classmethod
-    def get_timezone(cls) -> pytz.BaseTzInfo:
+    def validate_font_exists(cls, v: str) -> str:
+        """Warn if font file doesn't exist."""
+        if not Path(v).exists():
+            logger.warning(f"Font file not found: {v}")
+        return v
+
+    @field_validator("TV_IP")
+    @classmethod
+    def validate_tv_ip(cls, v: str | None) -> str | None:
+        """Warn if TV_IP is not set (won't upload to TV)."""
+        if not v:
+            logger.warning("TV_IP not set - images will be generated but not uploaded to TV")
+        return v
+
+    @field_validator("IMAGE_WIDTH", "IMAGE_HEIGHT")
+    @classmethod
+    def validate_dimensions(cls, v: int, info) -> int:
+        """Validate display dimensions."""
+        if info.field_name == "IMAGE_WIDTH" and v != 3840:
+            raise ValueError("IMAGE_WIDTH must be 3840px for 4K displays")
+        if info.field_name == "IMAGE_HEIGHT" and v != 2160:
+            raise ValueError("IMAGE_HEIGHT must be 2160px for 4K displays")
+        return v
+
+    @field_validator("SAFE_MARGIN_H")
+    @classmethod
+    def validate_safe_margin_h(cls, v: int) -> int:
+        """Validate horizontal margin is 5% of width."""
+        if v != 192:  # 5% of 3840
+            raise ValueError("SAFE_MARGIN_H must be 192 (5% of 3840)")
+        return v
+
+    @field_validator("SAFE_MARGIN_V")
+    @classmethod
+    def validate_safe_margin_v(cls, v: int) -> int:
+        """Validate vertical margin is 5% of height."""
+        if v != 108:  # 5% of 2160
+            raise ValueError("SAFE_MARGIN_V must be 108 (5% of 2160)")
+        return v
+
+    # ===== Properties for backward compatibility =====
+
+    @property
+    def BASE_DIR(self) -> Path:  # noqa: N802
+        """Get base directory of the project."""
+        return Path(__file__).parent.parent.resolve()
+
+    @property
+    def OUTPUT_PATH(self) -> Path:  # noqa: N802
+        """Get output directory path."""
+        return self.BASE_DIR / self.OUTPUT_DIR
+
+    @property
+    def BACKGROUNDS_PATH(self) -> Path:  # noqa: N802
+        """Get backgrounds directory path."""
+        return self.BASE_DIR / "backgrounds"
+
+    @property
+    def CACHE_PATH(self) -> Path:  # noqa: N802
+        """Get cache directory path."""
+        return self.BASE_DIR / ".cache"
+
+    # ===== Helper Methods =====
+
+    def get_timezone(self) -> pytz.BaseTzInfo:
         """
         Get the configured timezone.
         Falls back to UTC if the configured timezone is invalid.
         """
         try:
-            return pytz.timezone(cls.TIMEZONE)
+            return pytz.timezone(self.TIMEZONE)
         except pytz.exceptions.UnknownTimeZoneError:
-            logger.warning(f"Invalid timezone '{cls.TIMEZONE}', falling back to UTC")
+            logger.warning(f"Invalid timezone '{self.TIMEZONE}', falling back to UTC")
             return pytz.UTC
 
-    @classmethod
-    def get_current_time(cls) -> datetime:
+    def get_current_time(self) -> datetime:
         """Get the current time in the configured timezone."""
-        tz = cls.get_timezone()
+        tz = self.get_timezone()
         return datetime.now(tz)
 
-    # ===== Google Maps (for ferry map satellite imagery) =====
-    GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
+    def validate_feature_requirements(self) -> None:
+        """
+        Validate that enabled features have required API keys.
+        Raises ValueError if configuration is incomplete.
+        """
+        errors = []
+
+        # Check Arsenal requirements
+        if self.ARSENAL_ENABLED and not self.FOOTBALL_API_KEY:
+            errors.append("Arsenal enabled but FOOTBALL_API_KEY not set")
+
+        # Check stock requirements
+        if self.STOCK_SYMBOL and not self.STOCK_API_KEY:
+            errors.append("STOCK_SYMBOL set but STOCK_API_KEY not set")
+
+        # Check ferry requirements
+        if self.FERRY_ROUTE and not self.WSDOT_API_KEY:
+            errors.append("FERRY_ROUTE set but WSDOT_API_KEY not set")
+
+        # Check ambient weather requirements
+        if self.AMBIENT_API_KEY and not self.AMBIENT_APP_KEY:
+            errors.append("AMBIENT_API_KEY set but AMBIENT_APP_KEY not set")
+        elif self.AMBIENT_APP_KEY and not self.AMBIENT_API_KEY:
+            errors.append("AMBIENT_APP_KEY set but AMBIENT_API_KEY not set")
+
+        # Check background requirements
+        for mode_var in [
+            "WEATHER_BG_MODE",
+            "STOCK_BG_MODE",
+            "FERRY_BG_MODE",
+            "AMBIENT_BG_MODE",
+            "SPEEDTEST_BG_MODE",
+        ]:
+            mode = getattr(self, mode_var)
+            if mode == "unsplash" and not self.UNSPLASH_API_KEY:
+                errors.append(f"{mode_var}=unsplash but UNSPLASH_API_KEY not set")
+            elif mode == "pexels" and not self.PEXELS_API_KEY:
+                errors.append(f"{mode_var}=pexels but PEXELS_API_KEY not set")
+
+        if errors:
+            error_msg = "\n  - ".join(["Configuration errors:"] + errors)
+            raise ValueError(error_msg)
+
+    def create_directories(self) -> None:
+        """Create required directories if they don't exist."""
+        for directory in [self.OUTPUT_PATH, self.CACHE_PATH]:
+            directory.mkdir(parents=True, exist_ok=True)
+            logger.debug(f"Ensured directory exists: {directory}")
+
+
+def load_and_validate_config() -> SignageConfig:
+    """
+    Load and validate configuration from .env file.
+
+    Returns:
+        Validated SignageConfig instance
+
+    Raises:
+        ValidationError: If configuration is invalid
+        ValueError: If feature requirements are not met
+    """
+    try:
+        config = SignageConfig()
+
+        logger.info("Configuration loaded successfully")
+        logger.debug(f"  Weather: {config.WEATHER_CITY}")
+        logger.debug(f"  Timezone: {config.TIMEZONE}")
+        logger.debug(f"  Output: {config.OUTPUT_DIR}")
+
+        # Validate feature requirements
+        config.validate_feature_requirements()
+
+        # Create directories
+        config.create_directories()
+
+        logger.info("✓ Configuration validation complete")
+
+        return config
+
+    except Exception as e:
+        logger.error(f"Configuration validation failed: {e}")
+        logger.error("Please check your .env file")
+        raise
+
+
+# ===== Singleton Instance =====
+# This replaces the old Config class with a validated instance
+# Import this as: from src.config import Config
+try:
+    Config = load_and_validate_config()
+except Exception as e:
+    # Allow import even if config is invalid (for testing, docs generation, etc.)
+    logger.warning(f"Failed to load config: {e}")
+    Config = None  # type: ignore
+
+
+if __name__ == "__main__":
+    """Test configuration loading."""
+    import sys
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    try:
+        config = load_and_validate_config()
+        print("✓ Configuration is valid")
+        sys.exit(0)
+    except Exception as e:
+        print(f"✗ Configuration is invalid: {e}")
+        sys.exit(1)
