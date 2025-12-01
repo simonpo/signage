@@ -6,7 +6,7 @@ import os
 import re
 from typing import Any, Literal
 
-from croniter import croniter  # type: ignore[import-untyped]
+from croniter import croniter
 from pydantic import BaseModel, Field, field_validator
 
 
